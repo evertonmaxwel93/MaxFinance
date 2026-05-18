@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaxFinance - Controlo de Dívidas</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 { color: #2c3e50; }
+        button {
+            background-color: #4285F4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        button:hover { background-color: #357ae8; }
+        .hidden { display: none; }
+        #app-section { text-align: left; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="login-section">
+        <h1>MaxFinance</h1>
+        <p>Faça login para planear e gerir a sua vida financeira e dívidas parceladas.</p>
+        <button onclick="loginComGoogle()">Entrar com o Google</button>
+    </div>
+
+    <div class="container hidden" id="app-section">
+        <h1>As minhas Dívidas</h1>
+        <p id="user-info">Bem-vindo(a)!</p>
+        <button onclick="sair()" style="background-color: #e74c3c;">Sair da Conta</button>
+        <hr style="margin: 20px 0;">
+        <p><em>Em breve: Formulário para adicionar e listar as suas dívidas parceladas aqui.</em></p>
+    </div>
+
+    <script>
+        // 1. Configuração do Supabase com as suas chaves
+        const SUPABASE_URL = 'https://rkwoerrsicftcjgaakte.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_ug1NkS3w4DACmOIpiafAAA_yQtSud7-';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Referências aos elementos do ecrã
+        const loginSection = document.getElementById('login-section');
+        const appSection = document.getElementById('app-section');
+        const userInfo = document.getElementById('user-info');
+
+        // 2. Função para fazer Login com Google
+        async function loginComGoogle() {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+            });
+            if (error) console.error("Erro no login:", error.message);
+        }
+
+        // 3. Função para fazer Logout
+        async function sair() {
+            await supabase.auth.signOut();
+            verificarSessao(); // Atualiza o ecrã
+        }
+
+        // 4. Função para verificar se o utilizador já está logado
+        async function verificarSessao() {
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session) {
+                // Utilizador está logado: mostra a app, esconde o login
+                loginSection.classList.add('hidden');
+                appSection.classList.remove('hidden');
+                userInfo.textContent = `Logado como: ${session.user.email}`;
+            } else {
+                // Não está logado: mostra o login, esconde a app
+                loginSection.classList.remove('hidden');
+                appSection.classList.add('hidden');
+            }
+        }
+
+        // Executar a verificação de sessão assim que a página carrega
+        verificarSessao();
+
+        // Listener para mudanças de estado de autenticação (caso o utilizador volte da página do Google)
+        supabase.auth.onAuthStateChange((event, session) => {
+            verificarSessao();
+        });
+    </script>
+</body>
+</html>
