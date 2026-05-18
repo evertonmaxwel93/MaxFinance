@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Adicionando SheetJS para exportação profissional para Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -53,48 +55,68 @@
         <main class="p-4 md:p-6 flex-1 w-full max-w-6xl mx-auto">
             
             <div id="aba-fluxo" class="space-y-6">
+                <!-- Filtros e Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="col-span-1 md:col-span-4 flex flex-wrap gap-4 items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                        <div>
-                            <select id="filtro-ano" onchange="carregarDadosFluxo()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200">
-                                <option value="Todos">Todos os Anos</option>
-                                <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
-                            </select>
+                    
+                    <!-- BARRA DE FILTROS COMPACTA E PESQUISA -->
+                    <div class="col-span-1 md:col-span-4 flex flex-wrap items-center gap-3 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                        
+                        <!-- Pesquisa Rápida -->
+                        <div class="relative flex-1 min-w-[150px]">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="input-pesquisa" onkeyup="renderizarFluxo()" placeholder="Pesquisar (Descrição ou Categoria)..." class="w-full pl-9 pr-3 py-2 border-none bg-slate-50 rounded-lg text-sm font-medium outline-none ring-1 ring-slate-200 focus:ring-blue-500">
                         </div>
-                        <div>
-                            <select id="filtro-mes" onchange="carregarDadosFluxo()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200">
-                                <option value="Todos">Todos os Meses</option>
-                                <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option>
-                                <option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option>
-                                <option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option>
-                                <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-                            </select>
-                        </div>
-                        <div class="flex border rounded-lg overflow-hidden ml-auto">
-                            <button id="btn-filtro-Pendente" onclick="mudarFiltroStatus('Pendente')" class="px-4 py-2 text-xs font-bold bg-blue-600 text-white border-r">Pendentes</button>
-                            <button id="btn-filtro-Realizado" onclick="mudarFiltroStatus('Realizado')" class="px-4 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 border-r">Realizados</button>
-                            <button id="btn-filtro-Todos" onclick="mudarFiltroStatus('Todos')" class="px-4 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100">Todos</button>
+                        
+                        <!-- Filtro Ano -->
+                        <select id="filtro-ano" onchange="carregarDadosFluxo()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200">
+                            <option value="Todos" selected>Todos Anos</option>
+                            <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
+                        </select>
+                        
+                        <!-- Filtro Mês -->
+                        <select id="filtro-mes" onchange="carregarDadosFluxo()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200">
+                            <option value="Todos" selected>Todos Meses</option>
+                            <option value="01">Jan</option><option value="02">Fev</option><option value="03">Mar</option>
+                            <option value="04">Abr</option><option value="05">Mai</option><option value="06">Jun</option>
+                            <option value="07">Jul</option><option value="08">Ago</option><option value="09">Set</option>
+                            <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+                        </select>
+
+                        <!-- Agrupamento de Fluxo -->
+                        <select id="agrupamento" onchange="renderizarFluxo()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200">
+                            <option value="dia" selected>Por Dia</option>
+                            <option value="semana">Por Semana</option>
+                            <option value="mes">Por Mês</option>
+                        </select>
+
+                        <!-- Filtro Status -->
+                        <div class="flex border rounded-lg overflow-hidden md:ml-auto">
+                            <button id="btn-filtro-Pendente" onclick="mudarFiltroStatus('Pendente')" class="px-3 py-2 text-xs font-bold bg-blue-600 text-white border-r">Pendentes</button>
+                            <button id="btn-filtro-Realizado" onclick="mudarFiltroStatus('Realizado')" class="px-3 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 border-r">Realizados</button>
+                            <button id="btn-filtro-Todos" onclick="mudarFiltroStatus('Todos')" class="px-3 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100">Todos</button>
                         </div>
                     </div>
 
+                    <!-- Cards -->
                     <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative">
                         <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saldo Real Atual</p>
                         <p id="card-saldo-real" class="text-2xl font-black text-slate-800 mt-1">R$ 0,00</p>
                     </div>
                     <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative">
-                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Prev. Entradas (Mês)</p>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Prev. Entradas (Filtro)</p>
                         <p id="card-entradas-prev" class="text-xl font-bold text-green-600 mt-1">R$ 0,00</p>
                     </div>
                     <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative">
-                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Prev. Saídas (Mês)</p>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Prev. Saídas (Filtro)</p>
                         <p id="card-saidas-prev" class="text-xl font-bold text-red-600 mt-1">R$ 0,00</p>
                     </div>
                     <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative">
-                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Balanço do Mês</p>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Balanço (Filtro)</p>
                         <p id="card-balanco-prev" class="text-xl font-bold text-blue-600 mt-1">R$ 0,00</p>
                     </div>
                 </div>
 
+                <!-- Tabela -->
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                     <div class="p-4 border-b flex justify-between items-center bg-slate-50">
                         <h3 class="font-bold text-slate-700">Mapa de Fluxo de Caixa</h3>
@@ -102,7 +124,7 @@
                             <i class="fas fa-plus mr-1"></i> Lançamento
                         </button>
                     </div>
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto min-h-[200px]">
                         <table class="w-full text-left border-collapse whitespace-nowrap">
                             <tbody id="tabela-corpo" class="text-sm divide-y divide-slate-100">
                             </tbody>
@@ -111,6 +133,7 @@
                 </div>
             </div>
 
+            <!-- Aba Ajustes -->
             <div id="aba-configuracoes" class="hidden bg-white border border-slate-200 rounded-xl shadow-sm p-6">
                 <h2 class="text-xl font-bold mb-4 text-slate-800"><i class="fas fa-tags mr-2 text-blue-500"></i>Gerenciar Subcategorias</h2>
                 <form id="form-subcategoria" class="flex flex-col md:flex-row gap-3 mb-8">
@@ -130,12 +153,30 @@
                         <ul id="lista-sub-entradas" class="space-y-2"></ul>
                     </div>
                 </div>
+
+                <!-- Backup e Integrações -->
+                <div class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-2"><i class="fas fa-database mr-2 text-blue-500"></i>Backup e Exportação</h3>
+                    <p class="text-xs text-slate-500 mb-5">Gere cópias de segurança do seu sistema ou exporte seus lançamentos para uma planilha.</p>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="exportarBackupJSON()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-lg border border-slate-300 transition text-sm flex items-center shadow-sm">
+                            <i class="fas fa-file-export mr-2"></i> Exportar (JSON)
+                        </button>
+                        <label class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-lg border border-slate-300 transition text-sm flex items-center cursor-pointer shadow-sm mb-0">
+                            <i class="fas fa-file-import mr-2"></i> Restaurar (JSON)
+                            <input type="file" accept=".json" onchange="importarBackupJSON(event)" class="hidden">
+                        </label>
+                        <button onclick="exportarExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-lg transition text-sm flex items-center shadow-sm md:ml-auto">
+                            <i class="fas fa-file-excel mr-2"></i> Exportar para Excel
+                        </button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
 
     <!-- Modal Unificado de Gestão -->
-    <div id="modalOverlayGestao" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 modal-blur">
+    <div id="modalOverlayGestao" class="fixed inset-0 bg-black/60 hidden z-[50] flex items-center justify-center p-4 modal-blur">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col relative">
             <button onclick="fecharModal('modalOverlayGestao')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition z-10"><i class="fas fa-times"></i></button>
             
@@ -255,16 +296,23 @@
         let userAtual = null;
         let subcategoriasGlobais = [];
         let transacoesMes = [];
-        let filtroStatusAtual = 'Pendente';
+        let filtroStatusAtual = 'Pendente'; // Padrão Inicial
         let saldoInicialProjetado = 0; 
         let editandoId = null;
         let grupoIdAtual = null;
         let baixaIdAtual = null;
 
         async function loginComGoogle() { await clienteSupabase.auth.signInWithOAuth({ provider: 'google' }); }
-        async function sair() { await clienteSupabase.auth.signOut(); verificarSessao(); }
+        
+        async function sair() { 
+            await clienteSupabase.auth.signOut(); 
+            verificarSessao(); 
+        }
 
         async function verificarSessao() {
+            // Garante o fechamento total de modais residuais ao carregar/trocar aba (Correção de Bug)
+            document.querySelectorAll('.modal-blur').forEach(el => el.classList.add('hidden'));
+
             const { data: { session } } = await clienteSupabase.auth.getSession();
             if (session) {
                 userAtual = session.user;
@@ -273,10 +321,7 @@
                 document.getElementById('app-section').classList.add('flex');
                 document.getElementById('user-info').textContent = session.user.email;
                 
-                const dataAtual = new Date();
-                document.getElementById('filtro-ano').value = dataAtual.getFullYear().toString();
-                document.getElementById('filtro-mes').value = String(dataAtual.getMonth() + 1).padStart(2, '0');
-                
+                // O estado padrão no HTML já é "Todos" e "Pendentes"
                 await carregarSubcategoriasBanco();
                 atualizarTudo();
             } else {
@@ -286,10 +331,15 @@
                 document.getElementById('app-section').classList.remove('flex');
             }
         }
+        
         verificarSessao();
         clienteSupabase.auth.onAuthStateChange(() => verificarSessao());
 
         function mudarAba(abaId) {
+            // Força fechamento de modais para evitar bugs de foco/z-index
+            fecharModal('modalOverlayGestao');
+            fecharModal('modalOverlayBaixa');
+
             document.getElementById('aba-fluxo').classList.add('hidden');
             document.getElementById('aba-configuracoes').classList.add('hidden');
             document.getElementById(abaId).classList.remove('hidden');
@@ -304,9 +354,9 @@
         function mudarFiltroStatus(status) {
             filtroStatusAtual = status;
             ['Pendente', 'Realizado', 'Todos'].forEach(id => {
-                document.getElementById(`btn-filtro-${id}`).className = "px-4 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 border-r last:border-0";
+                document.getElementById(`btn-filtro-${id}`).className = "px-3 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 border-r last:border-0";
             });
-            document.getElementById(`btn-filtro-${status}`).className = "px-4 py-2 text-xs font-bold bg-blue-600 text-white border-r last:border-0";
+            document.getElementById(`btn-filtro-${status}`).className = "px-3 py-2 text-xs font-bold bg-blue-600 text-white border-r last:border-0";
             renderizarFluxo();
         }
 
@@ -336,8 +386,6 @@
                 const anoFiltro = parseInt(ano);
                 const mesFiltro = parseInt(mes);
                 const dataInicioMes = `${anoFiltro}-${String(mesFiltro).padStart(2, '0')}-01`;
-                
-                // Correção de Fuso Horário (Timezone Shift)
                 const ultimoDia = new Date(anoFiltro, mesFiltro, 0).getDate();
                 const dataFimMes = `${anoFiltro}-${String(mesFiltro).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`;
                 
@@ -350,11 +398,18 @@
                         saldoInicialProjetado += t.tipo === 'Entrada' ? v : -v;
                     });
                 }
-
             } else if (ano !== "Todos") {
                 const dataInicioAno = `${ano}-01-01`;
                 const dataFimAno = `${ano}-12-31`;
                 query = query.gte('data_vencimento', dataInicioAno).lte('data_vencimento', dataFimAno);
+                
+                const { data: dataAnt } = await clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado').lt('data_vencimento', dataInicioAno);
+                if(dataAnt) {
+                    dataAnt.forEach(t => {
+                        const v = parseFloat(t.status === 'Realizado' ? t.valor_realizado : t.valor_parcela);
+                        saldoInicialProjetado += t.tipo === 'Entrada' ? v : -v;
+                    });
+                }
             }
 
             const { data } = await query.order('data_vencimento', { ascending: true });
@@ -378,46 +433,81 @@
             const tbody = document.getElementById('tabela-corpo');
             tbody.innerHTML = '';
 
+            // 1. Filtro de Status
             let tFiltradas = transacoesMes;
             if (filtroStatusAtual !== 'Todos') {
-                tFiltradas = transacoesMes.filter(t => t.status === filtroStatusAtual);
+                tFiltradas = tFiltradas.filter(t => t.status === filtroStatusAtual);
             }
 
+            // 2. Filtro de Pesquisa (Texto)
+            const termoBusca = document.getElementById('input-pesquisa').value.toLowerCase().trim();
+            if (termoBusca) {
+                tFiltradas = tFiltradas.filter(t => 
+                    t.descricao.toLowerCase().includes(termoBusca) || 
+                    t.subcategoria.toLowerCase().includes(termoBusca)
+                );
+            }
+
+            // 3. Lógica de Agrupamento Dinâmico
+            const tipoAgrupamento = document.getElementById('agrupamento').value;
             const grupos = {};
+
             tFiltradas.forEach(t => {
-                if(!grupos[t.data_vencimento]) grupos[t.data_vencimento] = { itens: [], in: 0, out: 0 };
-                grupos[t.data_vencimento].itens.push(t);
+                let chaveGrupo = t.data_vencimento;
+
+                if (tipoAgrupamento === 'mes') {
+                    chaveGrupo = t.data_vencimento.substring(0, 7); // YYYY-MM
+                } else if (tipoAgrupamento === 'semana') {
+                    const d = new Date(t.data_vencimento + 'T12:00:00');
+                    const day = d.getDay();
+                    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Força Segunda-feira
+                    const monday = new Date(d.setDate(diff));
+                    chaveGrupo = monday.toISOString().split('T')[0];
+                }
+
+                if(!grupos[chaveGrupo]) grupos[chaveGrupo] = { itens: [], in: 0, out: 0 };
+                grupos[chaveGrupo].itens.push(t);
                 
                 const val = parseFloat(t.status === 'Realizado' ? t.valor_realizado : t.valor_parcela);
-                if(t.tipo === 'Entrada') grupos[t.data_vencimento].in += val; else grupos[t.data_vencimento].out += val;
+                if(t.tipo === 'Entrada') grupos[chaveGrupo].in += val; else grupos[chaveGrupo].out += val;
             });
 
             if (Object.keys(grupos).length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhum lançamento encontrado para este filtro.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhum lançamento encontrado para os filtros atuais.</td></tr>';
                 return;
             }
 
             let saldoEmCaixa = saldoInicialProjetado;
+            const labelPeriodo = tipoAgrupamento === 'dia' ? 'Dia' : (tipoAgrupamento === 'semana' ? 'Semana' : 'Mês');
 
-            Object.keys(grupos).sort().forEach(data => {
-                const grp = grupos[data];
+            Object.keys(grupos).sort().forEach(chave => {
+                const grp = grupos[chave];
                 const balancoDia = grp.in - grp.out;
                 saldoEmCaixa += balancoDia;
                 
-                const dataFormatada = data.split('-').reverse().join('/');
+                let tituloGrupo = '';
+                if (tipoAgrupamento === 'dia') {
+                    tituloGrupo = `<i class="far fa-calendar-alt mr-2 text-blue-500"></i> ${chave.split('-').reverse().join('/')}`;
+                } else if (tipoAgrupamento === 'mes') {
+                    const [a, m] = chave.split('-');
+                    tituloGrupo = `<i class="far fa-calendar-alt mr-2 text-blue-500"></i> Mês: ${m}/${a}`;
+                } else if (tipoAgrupamento === 'semana') {
+                    tituloGrupo = `<i class="far fa-calendar-alt mr-2 text-blue-500"></i> Semana de ${chave.split('-').reverse().join('/')}`;
+                }
+
                 const corBalanco = balancoDia >= 0 ? 'text-green-600' : 'text-red-600';
                 const corCaixa = saldoEmCaixa >= 0 ? 'text-blue-600' : 'text-red-600';
 
                 tbody.innerHTML += `
                     <tr class="bg-slate-100 border-y">
-                        <td colspan="4" class="py-1 px-3">
-                            <div class="flex justify-between items-center">
-                                <span class="font-bold text-slate-700 text-[10px] uppercase tracking-wider"><i class="far fa-calendar-alt mr-2 text-blue-500"></i> ${dataFormatada}</span>
-                                <div class="flex items-center text-[9px] font-bold text-slate-500">
-                                    <span class="mr-3"><i class="fas fa-arrow-up text-green-500"></i> R$ ${grp.in.toFixed(2).replace('.',',')}</span>
-                                    <span class="mr-3"><i class="fas fa-arrow-down text-red-500"></i> R$ ${grp.out.toFixed(2).replace('.',',')}</span>
-                                    <span class="${corBalanco} border-l border-slate-300 pl-3">Dia: R$ ${balancoDia.toFixed(2).replace('.',',')}</span>
-                                    <span class="${corCaixa} border-l border-slate-300 pl-3 ml-3">Caixa: R$ ${saldoEmCaixa.toFixed(2).replace('.',',')}</span>
+                        <td colspan="4" class="py-2 px-3">
+                            <div class="flex flex-col md:flex-row justify-between md:items-center gap-2">
+                                <span class="font-bold text-slate-700 text-[11px] uppercase tracking-wider">${tituloGrupo}</span>
+                                <div class="flex items-center text-[10px] font-bold text-slate-500 overflow-x-auto hide-scrollbar">
+                                    <span class="mr-3 whitespace-nowrap"><i class="fas fa-arrow-up text-green-500"></i> R$ ${grp.in.toFixed(2).replace('.',',')}</span>
+                                    <span class="mr-3 whitespace-nowrap"><i class="fas fa-arrow-down text-red-500"></i> R$ ${grp.out.toFixed(2).replace('.',',')}</span>
+                                    <span class="${corBalanco} border-l border-slate-300 pl-3 mr-3 whitespace-nowrap">${labelPeriodo}: R$ ${balancoDia.toFixed(2).replace('.',',')}</span>
+                                    <span class="${corCaixa} border-l border-slate-300 pl-3 whitespace-nowrap">Caixa: R$ ${saldoEmCaixa.toFixed(2).replace('.',',')}</span>
                                 </div>
                             </div>
                         </td>
@@ -433,7 +523,7 @@
 
                     tbody.innerHTML += `
                         <tr onclick="abrirModalGestao('${t.id}')" class="hover:bg-blue-50/50 transition cursor-pointer group ${opacidade} clickable-row">
-                            <td class="py-1 px-3 flex items-center gap-3">
+                            <td class="py-1.5 px-3 flex items-center gap-3">
                                 <div onclick="event.stopPropagation(); alternarBaixaRapida('${t.id}', ${isRealizado}, ${t.valor_parcela})" class="text-lg cursor-pointer">
                                     ${isRealizado ? 
                                         `<i class="fas fa-check-circle text-green-500"></i>` : 
@@ -445,8 +535,8 @@
                                     <span class="text-[10px] text-slate-400 font-medium">${t.subcategoria}</span>
                                 </div>
                             </td>
-                            <td class="py-1 px-3 text-slate-400 text-[11px] font-bold">${textoParcela}</td>
-                            <td class="py-1 px-3 text-right font-black ${corValor} text-sm">R$ ${valorExibido.toFixed(2).replace('.', ',')}</td>
+                            <td class="py-1.5 px-3 text-slate-400 text-[11px] font-bold text-center md:text-left">${textoParcela}</td>
+                            <td class="py-1.5 px-3 text-right font-black ${corValor} text-sm">R$ ${valorExibido.toFixed(2).replace('.', ',')}</td>
                         </tr>
                     `;
                 });
@@ -475,7 +565,9 @@
             atualizarTudo();
         }
 
-        function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function fecharModal(id) { 
+            document.getElementById(id).classList.add('hidden'); 
+        }
 
         function abrirModalNovo() {
             editandoId = null;
@@ -620,13 +712,7 @@
             const dtInput = document.getElementById('data_vencimento').value;
             
             if (editandoId) {
-                let updateData = { 
-                    tipo, 
-                    subcategoria, 
-                    descricao, 
-                    valor_parcela: valor, 
-                    data_vencimento: dtInput 
-                };
+                let updateData = { tipo, subcategoria, descricao, valor_parcela: valor, data_vencimento: dtInput };
 
                 if (!document.getElementById('campos-realizado').classList.contains('hidden')) {
                     updateData.data_realizacao = document.getElementById('data_realizacao').value;
@@ -650,17 +736,9 @@
                     else if (freq === 'Anual') dP.setFullYear(dP.getFullYear() + i);
 
                     ins.push({ 
-                        user_id: userAtual.id, 
-                        grupo_id, 
-                        tipo, 
-                        subcategoria, 
-                        descricao, 
-                        valor_parcela: valor, 
-                        data_vencimento: dP.toISOString().split('T')[0], 
-                        parcela_atual: i + 1, 
-                        total_parcelas: pTotal, 
-                        frequencia, 
-                        status: 'Pendente' 
+                        user_id: userAtual.id, grupo_id, tipo, subcategoria, descricao, valor_parcela: valor, 
+                        data_vencimento: dP.toISOString().split('T')[0], parcela_atual: i + 1, total_parcelas: pTotal, 
+                        frequencia, status: 'Pendente' 
                     });
                 }
                 await clienteSupabase.from('transacoes').insert(ins);
@@ -668,6 +746,123 @@
             }
             atualizarTudo();
         });
+
+        /* ========================================================
+           MÓDULO DE BACKUP E EXPORTAÇÃO (NOVO)
+        ======================================================== */
+
+        async function exportarBackupJSON() {
+            try {
+                const btn = event.currentTarget;
+                const txt = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Gerando...';
+                btn.disabled = true;
+
+                const { data: categorias } = await clienteSupabase.from('subcategorias').select('*');
+                const { data: transacoes } = await clienteSupabase.from('transacoes').select('*');
+
+                const backupData = {
+                    data_exportacao: new Date().toISOString(),
+                    app: "MaxFinance",
+                    usuario: userAtual.email,
+                    subcategorias: categorias || [],
+                    transacoes: transacoes || []
+                };
+
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+                const a = document.createElement('a');
+                a.href = dataStr;
+                a.download = `MaxFinance_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                
+                btn.innerHTML = txt;
+                btn.disabled = false;
+            } catch (err) {
+                alert("Erro ao exportar backup: " + err.message);
+            }
+        }
+
+        async function importarBackupJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!confirm("⚠️ ATENÇÃO: A restauração apagará TODOS os dados atuais e os substituirá pelo backup. Esta ação não pode ser desfeita. Tem a certeza que deseja continuar?")) {
+                event.target.value = ''; 
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    if (!backup.app || backup.app !== "MaxFinance") throw new Error("Ficheiro inválido.");
+
+                    // Limpar Banco Atual do Utilizador
+                    await clienteSupabase.from('transacoes').delete().eq('user_id', userAtual.id);
+                    await clienteSupabase.from('subcategorias').delete().eq('user_id', userAtual.id);
+
+                    // Restaurar Categorias
+                    if (backup.subcategorias && backup.subcategorias.length > 0) {
+                        const subsClean = backup.subcategorias.map(s => { delete s.id; return s; });
+                        await clienteSupabase.from('subcategorias').insert(subsClean);
+                    }
+
+                    // Restaurar Transações (preservando o grupo_id se possível ou recriando)
+                    if (backup.transacoes && backup.transacoes.length > 0) {
+                        const transClean = backup.transacoes.map(t => { delete t.id; return t; });
+                        await clienteSupabase.from('transacoes').insert(transClean);
+                    }
+
+                    alert("✅ Backup restaurado com sucesso!");
+                    atualizarTudo();
+                } catch (err) {
+                    alert("Erro ao restaurar: " + err.message);
+                } finally {
+                    event.target.value = ''; 
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportarExcel() {
+            if (transacoesMes.length === 0) {
+                alert("Não há dados carregados para exportar. Tente alterar os filtros.");
+                return;
+            }
+
+            try {
+                const btn = event.currentTarget;
+                const txt = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Exportando...';
+                btn.disabled = true;
+
+                const dadosExcel = transacoesMes.map(t => ({
+                    "Data de Vencimento": t.data_vencimento.split('-').reverse().join('/'),
+                    "Data do Pagamento": t.data_realizacao ? t.data_realizacao.split('-').reverse().join('/') : "-",
+                    "Status": t.status,
+                    "Tipo": t.tipo,
+                    "Categoria": t.subcategoria,
+                    "Descrição": t.descricao,
+                    "Parcela": t.total_parcelas === 0 ? "Recorrente" : `${t.parcela_atual}/${t.total_parcelas}`,
+                    "Valor Previsto": parseFloat(t.valor_parcela),
+                    "Valor Realizado": t.valor_realizado ? parseFloat(t.valor_realizado) : ""
+                }));
+
+                const ws = XLSX.utils.json_to_sheet(dadosExcel);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Lançamentos");
+                
+                const dataStr = new Date().toISOString().split('T')[0];
+                XLSX.writeFile(wb, `MaxFinance_Exportacao_${dataStr}.xlsx`);
+
+                btn.innerHTML = txt;
+                btn.disabled = false;
+            } catch(e) {
+                alert("Erro ao exportar Excel: " + e.message);
+            }
+        }
     </script>
 </body>
 </html>
