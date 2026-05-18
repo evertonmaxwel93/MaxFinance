@@ -61,7 +61,9 @@
         // 1. Configuração do Supabase com as suas chaves
         const SUPABASE_URL = 'https://rkwoerrsicftcjgaakte.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_ug1NkS3w4DACmOIpiafAAA_yQtSud7-';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // CORREÇÃO: Usamos o nome 'clienteSupabase' para evitar conflito com a biblioteca
+        const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Referências aos elementos do ecrã
         const loginSection = document.getElementById('login-section');
@@ -70,21 +72,22 @@
 
         // 2. Função para fazer Login com Google
         async function loginComGoogle() {
-            const { data, error } = await supabase.auth.signInWithOAuth({
+            const { data, error } = await clienteSupabase.auth.signInWithOAuth({
                 provider: 'google',
             });
-            if (error) console.error("Erro no login:", error.message);
+            // Adicionei um alerta visual caso dê algum erro de configuração
+            if (error) alert("Erro no login: " + error.message);
         }
 
         // 3. Função para fazer Logout
         async function sair() {
-            await supabase.auth.signOut();
+            await clienteSupabase.auth.signOut();
             verificarSessao(); // Atualiza o ecrã
         }
 
         // 4. Função para verificar se o utilizador já está logado
         async function verificarSessao() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await clienteSupabase.auth.getSession();
             
             if (session) {
                 // Utilizador está logado: mostra a app, esconde o login
@@ -101,8 +104,8 @@
         // Executar a verificação de sessão assim que a página carrega
         verificarSessao();
 
-        // Listener para mudanças de estado de autenticação (caso o utilizador volte da página do Google)
-        supabase.auth.onAuthStateChange((event, session) => {
+        // Listener para mudanças de estado de autenticação
+        clienteSupabase.auth.onAuthStateChange((event, session) => {
             verificarSessao();
         });
     </script>
