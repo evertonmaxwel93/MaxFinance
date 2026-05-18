@@ -6,170 +6,204 @@
     <title>MaxFinance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        #modalOverlay {
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex items-center justify-center p-4">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
 
-    <div id="login-section" class="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
-        <h1 class="text-3xl font-bold text-slate-800 mb-2">MaxFinance</h1>
-        <button onclick="loginComGoogle()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 mt-4">
-            Entrar com o Google
-        </button>
+    <div id="login-section" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
+            <div class="mx-auto w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg mb-4 text-white">
+                <i class="fas fa-wallet text-3xl"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-800 mb-2 tracking-wide">MaxFinance</h1>
+            <p class="text-xs text-slate-500 font-medium mb-6">Controle Financeiro</p>
+            <button onclick="loginComGoogle()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition duration-200">
+                <i class="fab fa-google mr-2"></i> Entrar com o Google
+            </button>
+        </div>
     </div>
 
-    <div id="app-section" class="hidden w-full max-w-6xl bg-white rounded-2xl shadow-xl p-6 md:p-8 flex flex-col h-full self-start mt-4">
+    <div id="app-section" class="hidden flex-col min-h-screen">
         
-        <div class="flex justify-between items-center mb-6 border-b pb-4">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-800">MaxFinance</h1>
-                <p id="user-info" class="text-sm text-slate-500">Logado como...</p>
+        <header class="bg-white border-b sticky top-0 z-40 shadow-sm flex items-center overflow-x-auto hide-scrollbar px-4 py-3">
+            <div class="font-bold text-slate-800 whitespace-nowrap border-r border-slate-100 pr-4 mr-4 flex items-center gap-2">
+                <i class="fas fa-wallet text-blue-600"></i> MaxFinance
             </div>
-            <button onclick="sair()" class="text-sm text-red-500 hover:text-red-700 font-medium">Sair</button>
-        </div>
-
-        <div class="flex gap-2 mb-6 border-b pb-4 overflow-x-auto">
-            <button id="btn-aba-fluxo" onclick="mudarAba('aba-fluxo')" class="px-4 py-2 bg-slate-800 text-white rounded font-medium text-sm transition">Fluxo de Caixa</button>
-            <button id="btn-aba-lancamento" onclick="mudarAba('aba-lancamento')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-medium text-sm transition">Novo Lançamento</button>
-            <button id="btn-aba-configuracoes" onclick="mudarAba('aba-configuracoes')" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-medium text-sm transition">Configurações</button>
-        </div>
-
-        <div id="aba-fluxo" class="space-y-6">
-            <div class="flex gap-4 items-center bg-slate-100 p-4 rounded-xl">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Ano</label>
-                    <select id="filtro-ano" onchange="carregarDadosFluxo()" class="border border-slate-300 rounded-lg p-2 bg-white outline-none text-sm">
-                        <option value="2025">2025</option>
-                        <option value="2026" selected>2026</option>
-                        <option value="2027">2027</option>
-                        <option value="2028">2028</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Mês</label>
-                    <select id="filtro-mes" onchange="carregarDadosFluxo()" class="border border-slate-300 rounded-lg p-2 bg-white outline-none text-sm">
-                        <option value="01">Janeiro</option>
-                        <option value="02">Fevereiro</option>
-                        <option value="03">Março</option>
-                        <option value="04">Abril</option>
-                        <option value="05">Maio</option>
-                        <option value="06">Junho</option>
-                        <option value="07">Julho</option>
-                        <option value="08">Agosto</option>
-                        <option value="09">Setembro</option>
-                        <option value="10">Outubro</option>
-                        <option value="11">Novembro</option>
-                        <option value="12">Dezembro</option>
-                    </select>
-                </div>
+            <nav class="flex flex-1 gap-2">
+                <button onclick="mudarAba('aba-fluxo')" id="btn-aba-fluxo" class="px-3 py-2 text-sm font-bold rounded-lg bg-blue-50 text-blue-700 transition flex items-center">
+                    <i class="fas fa-chart-pie mr-2"></i> Dashboard
+                </button>
+                <button onclick="mudarAba('aba-configuracoes')" id="btn-aba-configuracoes" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
+                    <i class="fas fa-cog mr-2"></i> Ajustes
+                </button>
+            </nav>
+            <div class="flex items-center gap-4 ml-auto pl-4">
+                <span id="user-info" class="text-xs text-slate-400 font-medium hidden md:inline"></span>
+                <button onclick="sair()" class="text-xs text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg font-bold transition flex items-center">
+                    <i class="fas fa-sign-out-alt mr-1"></i> Sair
+                </button>
             </div>
+        </header>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm">
-                    <p class="text-sm font-medium text-slate-500">Total Entradas</p>
-                    <p id="card-entradas" class="text-2xl font-bold text-green-600 mt-1">R$ 0,00</p>
-                </div>
-                <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm">
-                    <p class="text-sm font-medium text-slate-500">Total Saídas</p>
-                    <p id="card-saidas" class="text-2xl font-bold text-red-600 mt-1">R$ 0,00</p>
-                </div>
-                <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm">
-                    <p class="text-sm font-medium text-slate-500">Saldo do Mês</p>
-                    <p id="card-saldo" class="text-2xl font-bold text-slate-800 mt-1">R$ 0,00</p>
-                </div>
-            </div>
-
-            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                <div class="p-4 border-b">
-                    <h3 class="font-bold text-slate-700">Lançamentos do Período</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 text-slate-400 text-xs font-semibold uppercase border-b border-slate-200">
-                                <th class="p-4">Descrição</th>
-                                <th class="p-4">Subcategoria</th>
-                                <th class="p-4">Vencimento</th>
-                                <th class="p-4">Parcela</th>
-                                <th class="p-4 text-right">Valor</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-corpo" class="text-sm divide-y divide-slate-100">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div id="aba-lancamento" class="hidden">
-            <form id="transacao-form" class="space-y-5 max-w-2xl">
-                <div class="grid grid-cols-2 gap-4">
+        <main class="p-4 md:p-6 flex-1 w-full max-w-6xl mx-auto">
+            
+            <div id="aba-fluxo" class="space-y-6">
+                <div class="flex gap-4 items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Categoria</label>
-                        <select id="tipo" class="w-full border border-slate-300 rounded-lg p-2.5 outline-none" onchange="carregarSelectSubcategorias()">
-                            <option value="Saída">Saída (Despesa)</option>
-                            <option value="Entrada">Entrada (Receita)</option>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Ano</label>
+                        <select id="filtro-ano" onchange="carregarDadosFluxo()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200 focus:ring-blue-500">
+                            <option value="2025">2025</option>
+                            <option value="2026" selected>2026</option>
+                            <option value="2027">2027</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Subcategoria</label>
-                        <select id="subcategoria" class="w-full border border-slate-300 rounded-lg p-2.5 outline-none" required></select>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mês</label>
+                        <select id="filtro-mes" onchange="carregarDadosFluxo()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200 focus:ring-blue-500">
+                            <option value="01">Janeiro</option><option value="02">Fevereiro</option><option value="03">Março</option>
+                            <option value="04">Abril</option><option value="05">Maio</option><option value="06">Junho</option>
+                            <option value="07">Julho</option><option value="08">Agosto</option><option value="09">Setembro</option>
+                            <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+                        </select>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Descrição</label>
-                        <input type="text" id="descricao" required class="w-full border border-slate-300 rounded-lg p-2.5 outline-none">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative overflow-hidden">
+                        <div class="absolute top-4 right-4 text-green-100"><i class="fas fa-arrow-up text-4xl"></i></div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Entradas</p>
+                        <p id="card-entradas" class="text-2xl font-black text-green-600 mt-1 relative z-10">R$ 0,00</p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Valor da Parcela (R$)</label>
-                        <input type="number" step="0.01" id="valor" required class="w-full border border-slate-300 rounded-lg p-2.5 outline-none">
+                    <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative overflow-hidden">
+                        <div class="absolute top-4 right-4 text-red-100"><i class="fas fa-arrow-down text-4xl"></i></div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Saídas</p>
+                        <p id="card-saidas" class="text-2xl font-black text-red-600 mt-1 relative z-10">R$ 0,00</p>
                     </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1">Qtd. Parcelas (0 = Recorrente)</label>
-                        <input type="number" id="parcelas" value="1" min="0" required class="w-full border border-slate-300 rounded-lg p-2.5 outline-none" onchange="verificarParcelamento()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1" id="label-data">Data de Vencimento</label>
-                        <input type="date" id="data_inicio" required class="w-full border border-slate-300 rounded-lg p-2.5 outline-none">
+                    <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative overflow-hidden">
+                        <div class="absolute top-4 right-4 text-slate-100"><i class="fas fa-piggy-bank text-4xl"></i></div>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saldo do Mês</p>
+                        <p id="card-saldo" class="text-2xl font-black text-slate-800 mt-1 relative z-10">R$ 0,00</p>
                     </div>
                 </div>
 
-                <div id="div-frequencia" class="hidden">
-                    <label class="block text-sm font-medium text-slate-700 mb-1">Forma de Parcelamento</label>
-                    <select id="frequencia" class="w-full border border-slate-300 rounded-lg p-2.5 outline-none">
-                        <option value="Mensal">Mensal</option>
-                        <option value="Semanal">Semanal</option>
-                        <option value="Anual">Anual</option>
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                        <h3 class="font-bold text-slate-700">Lançamentos do Período</h3>
+                        <button onclick="abrirModalNovo()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition">
+                            <i class="fas fa-plus mr-1"></i> Novo Lançamento
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead>
+                                <tr class="bg-white text-slate-400 text-[10px] font-bold uppercase tracking-wider border-b border-slate-200">
+                                    <th class="p-4">Descrição</th>
+                                    <th class="p-4">Categoria</th>
+                                    <th class="p-4">Vencimento</th>
+                                    <th class="p-4">Parc.</th>
+                                    <th class="p-4 text-right">Valor (R$)</th>
+                                    <th class="p-4 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-corpo" class="text-sm divide-y divide-slate-100">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="aba-configuracoes" class="hidden bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+                <h2 class="text-xl font-bold mb-4 text-slate-800"><i class="fas fa-tags mr-2 text-blue-500"></i>Gerenciar Subcategorias</h2>
+                <form id="form-subcategoria" class="flex flex-col md:flex-row gap-3 mb-8">
+                    <select id="novo-sub-tipo" class="border-none bg-slate-50 rounded-lg p-3 font-bold text-sm outline-none ring-1 ring-slate-200 focus:ring-blue-500">
+                        <option value="Saída">Saída</option>
+                        <option value="Entrada">Entrada</option>
                     </select>
-                </div>
+                    <input type="text" id="novo-sub-nome" placeholder="Nome da subcategoria" required class="flex-1 border-none bg-slate-50 rounded-lg p-3 text-sm font-medium outline-none ring-1 ring-slate-200 focus:ring-blue-500">
+                    <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-lg font-bold shadow transition">Adicionar</button>
+                </form>
 
-                <button type="submit" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 px-4 rounded-lg mt-4">Salvar Lançamento</button>
-            </form>
-        </div>
-
-        <div id="aba-configuracoes" class="hidden">
-            <h2 class="text-xl font-bold mb-4">Gerenciar Subcategorias</h2>
-            <form id="form-subcategoria" class="flex gap-4 mb-6 max-w-2xl">
-                <select id="novo-sub-tipo" class="border border-slate-300 rounded-lg p-2.5 outline-none">
-                    <option value="Saída">Saída</option>
-                    <option value="Entrada">Entrada</option>
-                </select>
-                <input type="text" id="novo-sub-nome" placeholder="Nome da subcategoria" required class="flex-1 border border-slate-300 rounded-lg p-2.5 outline-none">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium">Adicionar</button>
-            </form>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
-                <div>
-                    <h3 class="font-semibold text-red-600 border-b pb-2 mb-2">Saídas</h3>
-                    <ul id="lista-sub-saidas" class="space-y-2"></ul>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-bold text-red-600 border-b-2 border-red-100 pb-2 mb-3 uppercase text-xs tracking-wider">Saídas</h3>
+                        <ul id="lista-sub-saidas" class="space-y-2"></ul>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-green-600 border-b-2 border-green-100 pb-2 mb-3 uppercase text-xs tracking-wider">Entradas</h3>
+                        <ul id="lista-sub-entradas" class="space-y-2"></ul>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="font-semibold text-green-600 border-b pb-2 mb-2">Entradas</h3>
-                    <ul id="lista-sub-entradas" class="space-y-2"></ul>
-                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="modalOverlay" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto relative">
+            <button onclick="fecharModal()" class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition"><i class="fas fa-times"></i></button>
+            <div class="p-6 md:p-8">
+                <h2 class="text-xl font-extrabold mb-6 text-slate-800 border-b pb-4" id="modal-titulo">Novo Lançamento</h2>
+                
+                <form id="transacao-form" class="space-y-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tipo</label>
+                            <select id="tipo" class="w-full border-none bg-slate-50 rounded-xl p-3 font-bold text-sm outline-none ring-1 ring-slate-200 focus:ring-blue-500 transition" onchange="carregarSelectSubcategorias()">
+                                <option value="Saída">Saída (Despesa)</option>
+                                <option value="Entrada">Entrada (Receita)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Subcategoria</label>
+                            <select id="subcategoria" class="w-full border-none bg-slate-50 rounded-xl p-3 font-bold text-sm outline-none ring-1 ring-slate-200 focus:ring-blue-500 transition" required></select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Descrição</label>
+                            <input type="text" id="descricao" required placeholder="Ex: Compra do Mês" class="w-full border-none bg-slate-50 rounded-xl p-3 text-sm font-medium outline-none ring-1 ring-slate-200 focus:ring-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Valor da Parcela (R$)</label>
+                            <input type="number" step="0.01" id="valor" required placeholder="0.00" class="w-full border-none bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200 focus:ring-blue-500 transition">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1" id="label-data">Data de Vencimento</label>
+                            <input type="date" id="data_inicio" required class="w-full border-none bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200 focus:ring-blue-500 transition">
+                        </div>
+                        <div id="div-parcelas">
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Parcelas (0 = Recorrente)</label>
+                            <input type="number" id="parcelas" value="1" min="0" required class="w-full border-none bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200 focus:ring-blue-500 transition" onchange="verificarParcelamento()">
+                        </div>
+                    </div>
+
+                    <div id="div-frequencia" class="hidden bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <label class="block text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1">Forma de Parcelamento</label>
+                        <select id="frequencia" class="w-full border-none bg-white rounded-lg p-3 font-bold text-sm outline-none ring-1 ring-blue-200 focus:ring-blue-500">
+                            <option value="Mensal">Mensal</option>
+                            <option value="Semanal">Semanal</option>
+                            <option value="Anual">Anual</option>
+                        </select>
+                    </div>
+
+                    <div class="pt-4 mt-4 border-t">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-4 px-4 rounded-xl shadow-lg transition duration-200">
+                            Salvar Lançamento
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -181,6 +215,8 @@
 
         let userAtual = null;
         let subcategoriasGlobais = [];
+        let transacoesGlobais = [];
+        let editandoId = null;
 
         async function loginComGoogle() { await clienteSupabase.auth.signInWithOAuth({ provider: 'google' }); }
         async function sair() { await clienteSupabase.auth.signOut(); verificarSessao(); }
@@ -191,9 +227,9 @@
                 userAtual = session.user;
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('app-section').classList.remove('hidden');
+                document.getElementById('app-section').classList.add('flex');
                 document.getElementById('user-info').textContent = session.user.email;
                 
-                // Define mês atual no filtro ao carregar
                 const hoje = new Date();
                 document.getElementById('filtro-mes').value = String(hoje.getMonth() + 1).padStart(2, '0');
                 
@@ -203,225 +239,226 @@
                 userAtual = null;
                 document.getElementById('login-section').classList.remove('hidden');
                 document.getElementById('app-section').classList.add('hidden');
+                document.getElementById('app-section').classList.remove('flex');
             }
         }
         verificarSessao();
         clienteSupabase.auth.onAuthStateChange(() => verificarSessao());
 
+        // --- NAVEGAÇÃO ---
         function mudarAba(abaId) {
             document.getElementById('aba-fluxo').classList.add('hidden');
-            document.getElementById('aba-lancamento').classList.add('hidden');
             document.getElementById('aba-configuracoes').classList.add('hidden');
             document.getElementById(abaId).classList.remove('hidden');
 
-            // Resetar estilos dos botões do menu
-            ['fluxo', 'lancamento', 'configuracoes'].forEach(aba => {
-                const btn = document.getElementById(`btn-aba-${aba}`);
-                if (`aba-${aba}` === abaId) {
-                    btn.className = "px-4 py-2 bg-slate-800 text-white rounded font-medium text-sm transition";
-                } else {
-                    btn.className = "px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-medium text-sm transition";
-                }
-            });
+            const btnFluxo = document.getElementById('btn-aba-fluxo');
+            const btnConfig = document.getElementById('btn-aba-configuracoes');
 
-            if(abaId === 'aba-fluxo') carregarDadosFluxo();
+            btnFluxo.className = "px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center";
+            btnConfig.className = "px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center";
+
+            if(abaId === 'aba-fluxo') {
+                btnFluxo.className = "px-3 py-2 text-sm font-bold rounded-lg bg-blue-50 text-blue-700 transition flex items-center";
+                carregarDadosFluxo();
+            } else {
+                btnConfig.className = "px-3 py-2 text-sm font-bold rounded-lg bg-blue-50 text-blue-700 transition flex items-center";
+            }
         }
 
-        // --- LÓGICA DO DASHBOARD E FLUXO DE CAIXA ---
+        // --- CONTROLE DO MODAL ---
+        function abrirModalNovo() {
+            editandoId = null;
+            document.getElementById('modal-titulo').innerHTML = '<i class="fas fa-plus-circle text-blue-500 mr-2"></i>Novo Lançamento';
+            document.getElementById('transacao-form').reset();
+            document.getElementById('div-parcelas').classList.remove('hidden');
+            document.getElementById('modalOverlay').classList.remove('hidden');
+            verificarParcelamento();
+        }
+
+        function abrirModalEdicao(id) {
+            editandoId = id;
+            const t = transacoesGlobais.find(x => x.id === id);
+            if (!t) return;
+
+            document.getElementById('modal-titulo').innerHTML = '<i class="fas fa-edit text-blue-500 mr-2"></i>Editar Parcela';
+            document.getElementById('tipo').value = t.tipo;
+            carregarSelectSubcategorias();
+            setTimeout(() => document.getElementById('subcategoria').value = t.subcategoria, 100);
+            document.getElementById('descricao').value = t.descricao;
+            document.getElementById('valor').value = t.valor_parcela;
+            document.getElementById('data_inicio').value = t.data_vencimento;
+
+            // Oculta opção de gerar novas parcelas na edição
+            document.getElementById('div-parcelas').classList.add('hidden');
+            document.getElementById('div-frequencia').classList.add('hidden');
+            document.getElementById('label-data').textContent = "Data de Vencimento";
+
+            document.getElementById('modalOverlay').classList.remove('hidden');
+        }
+
+        function fecharModal() {
+            document.getElementById('modalOverlay').classList.add('hidden');
+        }
+
+        // --- EXCLUSÃO INTELIGENTE ---
+        async function deletarTransacao(id, grupoId) {
+            const excluirTodas = confirm("ATENÇÃO: Este item faz parte de um lançamento parcelado/recorrente.\n\nClique em [OK] para EXCLUIR TODAS as parcelas deste grupo.\nClique em [Cancelar] para excluir APENAS ESTA parcela.");
+            
+            if (excluirTodas) {
+                await clienteSupabase.from('transacoes').delete().eq('grupo_id', grupoId);
+            } else {
+                await clienteSupabase.from('transacoes').delete().eq('id', id);
+            }
+            carregarDadosFluxo();
+        }
+
+        // --- LÓGICA DO FLUXO DE CAIXA ---
         async function carregarDadosFluxo() {
             const ano = document.getElementById('filtro-ano').value;
             const mes = document.getElementById('filtro-mes').value;
-            
             const dataInicio = `${ano}-${mes}-01`;
-            const dataFim = `${ano}-${mes}-31`; // Supabase lida bem com o limite do mês via filtros de string ou date
+            const dataFim = `${ano}-${mes}-31`;
 
             const { data, error } = await clienteSupabase
-                .from('transacoes')
-                .select('*')
-                .gte('data_vencimento', dataInicio)
-                .lte('data_vencimento', dataFim)
-                .order('data_vencimento', { ascending: true });
+                .from('transacoes').select('*').gte('data_vencimento', dataInicio).lte('data_vencimento', dataFim).order('data_vencimento', { ascending: true });
 
-            if (error) {
-                console.error("Erro ao carregar fluxo:", error.message);
-                return;
+            if (!error) {
+                transacoesGlobais = data || [];
+                renderizarFluxo(transacoesGlobais);
             }
-
-            renderizarFluxo(data);
         }
 
         function renderizarFluxo(transacoes) {
             const tbody = document.getElementById('tabela-corpo');
             tbody.innerHTML = '';
 
-            let totalEntradas = 0;
-            let totalSaidas = 0;
+            let totalEntradas = 0; let totalSaidas = 0;
 
             transacoes.forEach(t => {
                 const valor = parseFloat(t.valor_parcela);
-                if (t.tipo === 'Entrada') totalEntradas += valor;
-                else totalSaidas += valor;
+                if (t.tipo === 'Entrada') totalEntradas += valor; else totalSaidas += valor;
 
                 const dataFormatada = t.data_vencimento.split('-').reverse().join('/');
-                const textoParcela = t.total_parcelas === 0 ? 'Recorrente' : `${t.parcela_atual}/${t.total_parcelas}`;
+                const textoParcela = t.total_parcelas === 0 ? '<i class="fas fa-sync-alt text-xs text-slate-300" title="Recorrente"></i>' : `<span class="bg-slate-100 text-slate-500 px-2 py-1 rounded font-bold text-[10px]">${t.parcela_atual}/${t.total_parcelas}</span>`;
                 const corValor = t.tipo === 'Entrada' ? 'text-green-600' : 'text-slate-800';
 
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-4 font-medium">${t.descricao}</td>
-                        <td class="p-4 text-slate-500">${t.subcategoria}</td>
-                        <td class="p-4 text-slate-500">${dataFormatada}</td>
-                        <td class="p-4 text-slate-500">${textoParcela}</td>
-                        <td class="p-4 text-right font-semibold ${corValor}">R$ ${valor.toFixed(2).replace('.', ',')}</td>
+                    <tr class="hover:bg-blue-50/50 transition group">
+                        <td class="p-4 font-bold text-slate-700">${t.descricao}</td>
+                        <td class="p-4 text-slate-500 text-xs font-medium"><span class="bg-slate-100 px-2 py-1 rounded">${t.subcategoria}</span></td>
+                        <td class="p-4 text-slate-500 font-medium">${dataFormatada}</td>
+                        <td class="p-4">${textoParcela}</td>
+                        <td class="p-4 text-right font-black ${corValor}">R$ ${valor.toFixed(2).replace('.', ',')}</td>
+                        <td class="p-4 text-center opacity-50 group-hover:opacity-100 transition">
+                            <button onclick="abrirModalEdicao('${t.id}')" class="text-blue-500 hover:bg-blue-100 p-2 rounded-lg transition mr-1" title="Editar"><i class="fas fa-edit"></i></button>
+                            <button onclick="deletarTransacao('${t.id}', '${t.grupo_id}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition" title="Excluir"><i class="fas fa-trash-alt"></i></button>
+                        </td>
                     </tr>
                 `;
             });
 
             const saldo = totalEntradas - totalSaidas;
-
             document.getElementById('card-entradas').textContent = `R$ ${totalEntradas.toFixed(2).replace('.', ',')}`;
             document.getElementById('card-saidas').textContent = `R$ ${totalSaidas.toFixed(2).replace('.', ',')}`;
             
             const cardSaldo = document.getElementById('card-saldo');
             cardSaldo.textContent = `R$ ${saldo.toFixed(2).replace('.', ',')}`;
-            if (saldo < 0) {
-                cardSaldo.className = "text-2xl font-bold text-red-600 mt-1";
-            } else if (saldo > 0) {
-                cardSaldo.className = "text-2xl font-bold text-green-600 mt-1";
-            } else {
-                cardSaldo.className = "text-2xl font-bold text-slate-800 mt-1";
-            }
+            cardSaldo.className = saldo < 0 ? "text-2xl font-black text-red-600 mt-1 relative z-10" : saldo > 0 ? "text-2xl font-black text-green-600 mt-1 relative z-10" : "text-2xl font-black text-slate-800 mt-1 relative z-10";
         }
 
-        // --- LÓGICA DE SUBCATEGORIAS ---
+        // --- SUBCATEGORIAS ---
         async function carregarSubcategoriasBanco() {
-            const { data, error } = await clienteSupabase.from('subcategorias').select('*').order('nome', { ascending: true });
-            if (!error) {
+            const { data } = await clienteSupabase.from('subcategorias').select('*').order('nome', { ascending: true });
+            if (data) {
                 subcategoriasGlobais = data;
-                renderizarListasConfiguracao();
+                const listaSaidas = document.getElementById('lista-sub-saidas');
+                const listaEntradas = document.getElementById('lista-sub-entradas');
+                listaSaidas.innerHTML = ''; listaEntradas.innerHTML = '';
+
+                subcategoriasGlobais.forEach(sub => {
+                    const li = `<li class="flex justify-between items-center bg-slate-50 border border-slate-100 p-3 rounded-lg text-sm font-bold shadow-sm">
+                        <span class="text-slate-600">${sub.nome}</span> 
+                        <button onclick="deletarSubcategoria('${sub.id}')" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded transition"><i class="fas fa-trash-alt"></i></button>
+                    </li>`;
+                    if (sub.tipo === 'Saída') listaSaidas.innerHTML += li; else listaEntradas.innerHTML += li;
+                });
                 carregarSelectSubcategorias();
             }
-        }
-
-        function renderizarListasConfiguracao() {
-            const listaSaidas = document.getElementById('lista-sub-saidas');
-            const listaEntradas = document.getElementById('lista-sub-entradas');
-            listaSaidas.innerHTML = ''; listaEntradas.innerHTML = '';
-
-            subcategoriasGlobais.forEach(sub => {
-                const li = document.createElement('li');
-                li.className = 'flex justify-between items-center bg-slate-100 p-2 rounded text-sm';
-                li.innerHTML = `<span>${sub.nome}</span> <button onclick="deletarSubcategoria('${sub.id}')" class="text-red-500 hover:underline">Excluir</button>`;
-                
-                if (sub.tipo === 'Saída') listaSaidas.appendChild(li);
-                else listaEntradas.appendChild(li);
-            });
         }
 
         function carregarSelectSubcategorias() {
             const tipo = document.getElementById('tipo').value;
             const select = document.getElementById('subcategoria');
             select.innerHTML = '';
-            
             const filtradas = subcategoriasGlobais.filter(s => s.tipo === tipo);
-            if (filtradas.length === 0) {
-                select.innerHTML = '<option value="">Nenhuma subcategoria cadastrada</option>';
-            } else {
-                filtradas.forEach(sub => {
-                    select.innerHTML += `<option value="${sub.nome}">${sub.nome}</option>`;
-                });
-            }
+            if (filtradas.length === 0) select.innerHTML = '<option value="">Nenhuma subcategoria cadastrada</option>';
+            else filtradas.forEach(sub => select.innerHTML += `<option value="${sub.nome}">${sub.nome}</option>`);
         }
 
         document.getElementById('form-subcategoria').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const tipo = document.getElementById('novo-sub-tipo').value;
-            const nome = document.getElementById('novo-sub-nome').value;
-
-            const { error } = await clienteSupabase.from('subcategorias').insert([{ user_id: userAtual.id, tipo, nome }]);
-            if (!error) {
-                document.getElementById('novo-sub-nome').value = '';
-                await carregarSubcategoriasBanco();
-            } else alert("Erro ao adicionar: " + error.message);
+            const { error } = await clienteSupabase.from('subcategorias').insert([{ user_id: userAtual.id, tipo: document.getElementById('novo-sub-tipo').value, nome: document.getElementById('novo-sub-nome').value }]);
+            if (!error) { document.getElementById('novo-sub-nome').value = ''; carregarSubcategoriasBanco(); }
         });
 
         async function deletarSubcategoria(id) {
-            const { error } = await clienteSupabase.from('subcategorias').delete().eq('id', id);
-            if (!error) await carregarSubcategoriasBanco();
+            await clienteSupabase.from('subcategorias').delete().eq('id', id);
+            carregarSubcategoriasBanco();
         }
 
-        // --- LÓGICA DE TRANSAÇÕES ---
+        // --- SALVAR LANÇAMENTO OU EDIÇÃO ---
         function verificarParcelamento() {
             const parcelas = parseInt(document.getElementById('parcelas').value);
             const divFreq = document.getElementById('div-frequencia');
             const labelData = document.getElementById('label-data');
-            
-            if (parcelas === 1) {
-                divFreq.classList.add('hidden');
-                labelData.textContent = "Data de Vencimento";
-            } else {
-                divFreq.classList.remove('hidden');
-                labelData.textContent = "Data da 1ª Parcela";
-            }
+            if (parcelas === 1) { divFreq.classList.add('hidden'); labelData.textContent = "Data de Vencimento"; } 
+            else { divFreq.classList.remove('hidden'); labelData.textContent = "Data da 1ª Parcela"; }
         }
 
         function adicionarMes(dataBase, meses) {
-            let novaData = new Date(dataBase);
-            let diaOriginal = novaData.getDate();
-            novaData.setMonth(novaData.getMonth() + meses);
-            if (novaData.getDate() !== diaOriginal) novaData.setDate(0); 
-            return novaData;
+            let novaData = new Date(dataBase); let diaOriginal = novaData.getDate(); novaData.setMonth(novaData.getMonth() + meses);
+            if (novaData.getDate() !== diaOriginal) novaData.setDate(0); return novaData;
         }
 
         document.getElementById('transacao-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const subcategoria = document.getElementById('subcategoria').value;
-            if (!subcategoria) {
-                alert("Cadastre uma subcategoria em Configurações primeiro.");
-                return;
-            }
-
             const tipo = document.getElementById('tipo').value;
+            const subcategoria = document.getElementById('subcategoria').value;
             const descricao = document.getElementById('descricao').value;
             const valor = parseFloat(document.getElementById('valor').value);
             const dataBase = new Date(document.getElementById('data_inicio').value + 'T12:00:00'); 
-            const parcelasTotal = parseInt(document.getElementById('parcelas').value);
-            const frequencia = parcelasTotal === 1 ? 'Única' : document.getElementById('frequencia').value;
 
-            const grupo_id = crypto.randomUUID();
-            const iteracoes = parcelasTotal === 0 ? 12 : parcelasTotal;
-            let insercoes = [];
-
-            for (let i = 0; i < iteracoes; i++) {
-                let dataParcela = new Date(dataBase);
-
-                if (frequencia === 'Mensal') dataParcela = adicionarMes(dataBase, i);
-                else if (frequencia === 'Semanal') dataParcela.setDate(dataBase.getDate() + (i * 7));
-                else if (frequencia === 'Anual') dataParcela.setFullYear(dataBase.getFullYear() + i);
-
-                insercoes.push({
-                    user_id: userAtual.id,
-                    grupo_id: grupo_id,
-                    tipo, subcategoria, descricao,
-                    valor_parcela: valor,
-                    data_vencimento: dataParcela.toISOString().split('T')[0],
-                    parcela_atual: i + 1,
-                    total_parcelas: parcelasTotal,
-                    frequencia
-                });
-            }
-
-            const { error } = await clienteSupabase.from('transacoes').insert(insercoes);
-
-            if (error) {
-                alert("Erro ao salvar: " + error.message);
+            if (editandoId) {
+                // Modo Edição (Altera apenas a linha selecionada)
+                await clienteSupabase.from('transacoes').update({
+                    tipo, subcategoria, descricao, valor_parcela: valor,
+                    data_vencimento: document.getElementById('data_inicio').value
+                }).eq('id', editandoId);
             } else {
-                alert("Lançamento salvo com sucesso!");
-                document.getElementById('transacao-form').reset();
-                verificarParcelamento();
-                mudarAba('aba-fluxo'); // Volta para o fluxo para ver o resultado
+                // Modo Criação (Gera as parcelas)
+                const parcelasTotal = parseInt(document.getElementById('parcelas').value);
+                const frequencia = parcelasTotal === 1 ? 'Única' : document.getElementById('frequencia').value;
+                const grupo_id = crypto.randomUUID();
+                const iteracoes = parcelasTotal === 0 ? 12 : parcelasTotal;
+                let insercoes = [];
+
+                for (let i = 0; i < iteracoes; i++) {
+                    let dataParcela = new Date(dataBase);
+                    if (frequencia === 'Mensal') dataParcela = adicionarMes(dataBase, i);
+                    else if (frequencia === 'Semanal') dataParcela.setDate(dataBase.getDate() + (i * 7));
+                    else if (frequencia === 'Anual') dataParcela.setFullYear(dataBase.getFullYear() + i);
+
+                    insercoes.push({
+                        user_id: userAtual.id, grupo_id, tipo, subcategoria, descricao,
+                        valor_parcela: valor, data_vencimento: dataParcela.toISOString().split('T')[0],
+                        parcela_atual: i + 1, total_parcelas: parcelasTotal, frequencia
+                    });
+                }
+                await clienteSupabase.from('transacoes').insert(insercoes);
             }
+
+            fecharModal();
+            carregarDadosFluxo();
         });
     </script>
 </body>
