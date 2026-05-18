@@ -68,14 +68,14 @@
                             </select>
                         </div>
                         <div class="flex border rounded-lg overflow-hidden ml-auto">
-                            <button id="btn-filtro-pendentes" onclick="mudarFiltroStatus('Pendente')" class="px-4 py-2 text-xs font-bold bg-blue-600 text-white">Pendentes</button>
-                            <button id="btn-filtro-realizados" onclick="mudarFiltroStatus('Realizado')" class="px-4 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100">Realizados</button>
-                            <button id="btn-filtro-todos" onclick="mudarFiltroStatus('Todos')" class="px-4 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100">Todos</button>
+                            <button id="btn-filtro-Pendente" onclick="mudarFiltroStatus('Pendente')" class="px-4 py-2 text-xs font-bold bg-blue-600 text-white border-r">Pendentes</button>
+                            <button id="btn-filtro-Realizado" onclick="mudarFiltroStatus('Realizado')" class="px-4 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 border-r">Realizados</button>
+                            <button id="btn-filtro-Todos" onclick="mudarFiltroStatus('Todos')" class="px-4 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100">Todos</button>
                         </div>
                     </div>
 
                     <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative">
-                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saldo Real (Em Caixa)</p>
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saldo Real Atual</p>
                         <p id="card-saldo-real" class="text-2xl font-black text-slate-800 mt-1">R$ 0,00</p>
                     </div>
                     <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative">
@@ -134,8 +134,8 @@
     <div id="modalOverlayNovo" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 modal-blur">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto relative p-6 md:p-8">
             <button onclick="fecharModal('modalOverlayNovo')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition"><i class="fas fa-times"></i></button>
-            <h2 class="text-xl font-extrabold mb-6 border-b pb-4"><i class="fas fa-plus-circle text-blue-500 mr-2"></i>Novo Lançamento</h2>
-            <form id="transacao-form" class="space-y-5">
+            <h2 id="modal-titulo-novo" class="text-xl font-extrabold mb-6 border-b pb-4"><i class="fas fa-plus-circle text-blue-500 mr-2"></i>Novo Lançamento</h2>
+            <form id="transacao-form" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tipo</label>
@@ -163,7 +163,7 @@
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1" id="label-data">Data</label>
                         <input type="date" id="data_inicio" required class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200">
                     </div>
-                    <div>
+                    <div id="div-parcelas">
                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Parcelas (0 = Recorrente)</label>
                         <input type="number" id="parcelas" value="1" min="0" required class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200" onchange="verificarParcelamento()">
                     </div>
@@ -174,8 +174,26 @@
                         <option value="Mensal">Mensal</option><option value="Semanal">Semanal</option><option value="Anual">Anual</option>
                     </select>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-4 px-4 rounded-xl mt-4">Salvar Lançamento</button>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 px-4 rounded-xl mt-4">Salvar</button>
             </form>
+        </div>
+    </div>
+
+    <div id="modalOverlayBaixa" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4 modal-blur">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm relative p-6">
+            <button onclick="fecharModal('modalOverlayBaixa')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition"><i class="fas fa-times"></i></button>
+            <h2 class="text-lg font-extrabold mb-4 border-b pb-3"><i class="fas fa-check-circle text-green-500 mr-2"></i>Confirmar Baixa</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data do Pagamento</label>
+                    <input type="date" id="baixa_data" class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Valor Final Pago (R$)</label>
+                    <input type="number" step="0.01" id="baixa_valor" class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200">
+                </div>
+                <button onclick="confirmarBaixa()" class="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 rounded-xl mt-2">Salvar Pagamento</button>
+            </div>
         </div>
     </div>
 
@@ -189,7 +207,7 @@
                 <table class="w-full text-left border-collapse whitespace-nowrap">
                     <thead class="bg-white sticky top-0 border-b z-10 shadow-sm">
                         <tr class="text-slate-400 text-[10px] font-bold uppercase tracking-wider">
-                            <th class="p-4">Parc.</th><th class="p-4">Vencimento</th><th class="p-4">Valor</th><th class="p-4 text-center">Status</th><th class="p-4 text-center">Ações</th>
+                            <th class="py-2 px-3 text-center">Parc.</th><th class="py-2 px-3">Vencimento</th><th class="py-2 px-3">Valor</th><th class="py-2 px-3 text-right">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabela-grupo" class="text-sm divide-y divide-slate-100">
@@ -208,6 +226,9 @@
         let subcategoriasGlobais = [];
         let transacoesMes = [];
         let filtroStatusAtual = 'Pendente';
+        let saldoInicialProjetado = 0; 
+        let editandoId = null;
+        let baixaIdAtual = null;
 
         async function loginComGoogle() { await clienteSupabase.auth.signInWithOAuth({ provider: 'google' }); }
         async function sair() { await clienteSupabase.auth.signOut(); verificarSessao(); }
@@ -223,8 +244,7 @@
                 document.getElementById('filtro-mes').value = String(new Date().getMonth() + 1).padStart(2, '0');
                 
                 await carregarSubcategoriasBanco();
-                await calcularSaldoRealTotal();
-                carregarDadosFluxo();
+                atualizarTudo();
             } else {
                 document.getElementById('login-section').classList.remove('hidden');
                 document.getElementById('app-section').classList.add('hidden');
@@ -242,25 +262,28 @@
             document.getElementById('btn-aba-configuracoes').className = "px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center";
             document.getElementById(`btn-${abaId}`).className = "px-3 py-2 text-sm font-bold rounded-lg bg-blue-50 text-blue-700 transition flex items-center";
             
-            if(abaId === 'aba-fluxo') { calcularSaldoRealTotal(); carregarDadosFluxo(); }
+            if(abaId === 'aba-fluxo') atualizarTudo();
         }
 
         function mudarFiltroStatus(status) {
             filtroStatusAtual = status;
-            ['pendentes', 'realizados', 'todos'].forEach(id => {
-                document.getElementById(`btn-filtro-${id}`).className = "px-4 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100";
+            ['Pendente', 'Realizado', 'Todos'].forEach(id => {
+                document.getElementById(`btn-filtro-${id}`).className = "px-4 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 border-r last:border-0";
             });
-            document.getElementById(`btn-filtro-${status.toLowerCase()}`).className = "px-4 py-2 text-xs font-bold bg-blue-600 text-white";
+            document.getElementById(`btn-filtro-${status}`).className = "px-4 py-2 text-xs font-bold bg-blue-600 text-white border-r last:border-0";
             renderizarFluxo();
         }
 
+        function atualizarTudo() {
+            calcularSaldoRealTotal();
+            carregarDadosFluxo();
+        }
+
         async function calcularSaldoRealTotal() {
-            // Busca TODAS as transacoes realizadas para o saldo real (independente do mes)
             const { data } = await clienteSupabase.from('transacoes').select('tipo, valor_realizado').eq('status', 'Realizado');
             let saldo = 0;
-            if(data) {
-                data.forEach(t => { saldo += t.tipo === 'Entrada' ? parseFloat(t.valor_realizado) : -parseFloat(t.valor_realizado); });
-            }
+            if(data) data.forEach(t => { saldo += t.tipo === 'Entrada' ? parseFloat(t.valor_realizado) : -parseFloat(t.valor_realizado); });
+            
             const el = document.getElementById('card-saldo-real');
             el.textContent = `R$ ${saldo.toFixed(2).replace('.', ',')}`;
             el.className = saldo < 0 ? "text-2xl font-black text-red-600 mt-1" : "text-2xl font-black text-green-600 mt-1";
@@ -269,13 +292,25 @@
         async function carregarDadosFluxo() {
             const ano = document.getElementById('filtro-ano').value;
             const mes = document.getElementById('filtro-mes').value;
+            const dataInicio = `${ano}-${mes}-01`;
+            const dataFim = new Date(ano, mes, 0).toISOString().split('T')[0];
+
+            // 1. Calcula o Saldo Acumulado de tudo ANTES do mês atual (projetado)
+            const { data: dataAnt } = await clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado').lt('data_vencimento', dataInicio);
+            saldoInicialProjetado = 0;
+            if(dataAnt) {
+                dataAnt.forEach(t => {
+                    const v = parseFloat(t.status === 'Realizado' ? t.valor_realizado : t.valor_parcela);
+                    saldoInicialProjetado += t.tipo === 'Entrada' ? v : -v;
+                });
+            }
+
+            // 2. Carrega dados do mês
             const { data } = await clienteSupabase.from('transacoes')
-                .select('*').gte('data_vencimento', `${ano}-${mes}-01`).lte('data_vencimento', `${ano}-${mes}-31`).order('data_vencimento', { ascending: true });
+                .select('*').gte('data_vencimento', dataInicio).lte('data_vencimento', dataFim).order('data_vencimento', { ascending: true });
             
             if (data) {
                 transacoesMes = data;
-                
-                // Calcular Cards de Previsão do Mês
                 let pIn = 0; let pOut = 0;
                 transacoesMes.forEach(t => {
                     const v = parseFloat(t.valor_parcela);
@@ -293,66 +328,69 @@
             const tbody = document.getElementById('tabela-corpo');
             tbody.innerHTML = '';
 
-            // Filtrar pelo status selecionado
             let tFiltradas = transacoesMes;
             if (filtroStatusAtual !== 'Todos') {
-                tFiltradas = transacoesMes.filter(t => t.status === (filtroStatusAtual === 'Pendente' ? 'Pendente' : 'Realizado'));
+                tFiltradas = transacoesMes.filter(t => t.status === filtroStatusAtual);
             }
 
-            // Agrupar por data
             const grupos = {};
             tFiltradas.forEach(t => {
-                if(!grupos[t.data_vencimento]) grupos[t.data_vencimento] = { itens: [], in: 0, out: 0 };
+                if(!grupos[t.data_vencimento]) grupos[t.data_vencimento] = { itens: [], in: 0, out: 0, balancoRealDia: 0 };
                 grupos[t.data_vencimento].itens.push(t);
+                
                 const val = parseFloat(t.status === 'Realizado' ? t.valor_realizado : t.valor_parcela);
                 if(t.tipo === 'Entrada') grupos[t.data_vencimento].in += val; else grupos[t.data_vencimento].out += val;
             });
 
             if (Object.keys(grupos).length === 0) {
-                tbody.innerHTML = '<tr><td class="p-8 text-center text-slate-400 font-medium text-sm">Nenhum lançamento encontrado para este filtro.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhum lançamento encontrado para este filtro.</td></tr>';
                 return;
             }
 
-            // Renderizar Mapa
+            let saldoEmCaixa = saldoInicialProjetado;
+
             Object.keys(grupos).sort().forEach(data => {
                 const grp = grupos[data];
                 const balancoDia = grp.in - grp.out;
+                saldoEmCaixa += balancoDia; // Acumula para dar o Saldo no Dia
+                
                 const dataFormatada = data.split('-').reverse().join('/');
                 const corBalanco = balancoDia >= 0 ? 'text-green-600' : 'text-red-600';
+                const corCaixa = saldoEmCaixa >= 0 ? 'text-blue-600' : 'text-red-600';
 
-                // Cabeçalho do Dia
                 tbody.innerHTML += `
                     <tr class="bg-slate-100 border-y">
-                        <td colspan="6" class="p-3 px-4 flex justify-between items-center">
-                            <span class="font-bold text-slate-700 text-xs uppercase tracking-wider"><i class="far fa-calendar-alt mr-2 text-blue-500"></i> ${dataFormatada}</span>
-                            <div class="flex gap-4 text-[11px] font-bold text-slate-500">
-                                <span><i class="fas fa-arrow-up text-green-500"></i> R$ ${grp.in.toFixed(2).replace('.',',')}</span>
-                                <span><i class="fas fa-arrow-down text-red-500"></i> R$ ${grp.out.toFixed(2).replace('.',',')}</span>
-                                <span class="${corBalanco} ml-2">Saldo: R$ ${balancoDia.toFixed(2).replace('.',',')}</span>
+                        <td colspan="5" class="py-2 px-3 flex justify-between items-center">
+                            <span class="font-bold text-slate-700 text-[11px] uppercase tracking-wider"><i class="far fa-calendar-alt mr-2 text-blue-500"></i> ${dataFormatada}</span>
+                            <div class="flex items-center text-[10px] font-bold text-slate-500">
+                                <span class="mr-3"><i class="fas fa-arrow-up text-green-500"></i> R$ ${grp.in.toFixed(2).replace('.',',')}</span>
+                                <span class="mr-3"><i class="fas fa-arrow-down text-red-500"></i> R$ ${grp.out.toFixed(2).replace('.',',')}</span>
+                                <span class="${corBalanco} border-l border-slate-300 pl-3 mr-3">Dia: R$ ${balancoDia.toFixed(2).replace('.',',')}</span>
+                                <span class="${corCaixa} border-l border-slate-300 pl-3">Caixa: R$ ${saldoEmCaixa.toFixed(2).replace('.',',')}</span>
                             </div>
                         </td>
                     </tr>
                 `;
 
-                // Linhas das Transações
                 grp.itens.forEach(t => {
                     const isRealizado = t.status === 'Realizado';
                     const valorExibido = parseFloat(isRealizado ? t.valor_realizado : t.valor_parcela);
                     const corValor = t.tipo === 'Entrada' ? 'text-green-600' : 'text-slate-800';
                     const textoParcela = t.total_parcelas === 0 ? 'Recorrente' : `${t.parcela_atual}/${t.total_parcelas}`;
-                    const iconeStatus = isRealizado ? '<i class="fas fa-check-circle text-green-500 text-lg"></i>' : '<i class="far fa-circle text-slate-300 text-lg"></i>';
-                    const opacidade = isRealizado ? 'opacity-60' : '';
+                    const opacidade = isRealizado ? 'opacity-60 bg-slate-50' : '';
 
                     tbody.innerHTML += `
-                        <tr class="hover:bg-blue-50/30 transition group ${opacidade}">
-                            <td class="p-3 px-4 w-10 text-center cursor-pointer" onclick="alternarStatus('${t.id}', '${t.status}', ${t.valor_parcela})" title="Clique para dar baixa/desfazer">
-                                ${iconeStatus}
-                            </td>
-                            <td class="p-3 font-bold text-slate-700">${t.descricao} <span class="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[10px] ml-2 font-medium">${t.subcategoria}</span></td>
-                            <td class="p-3 text-slate-400 text-xs font-bold">${textoParcela}</td>
-                            <td class="p-3 text-right font-black ${corValor} w-32">R$ ${valorExibido.toFixed(2).replace('.', ',')}</td>
-                            <td class="p-3 text-center opacity-30 group-hover:opacity-100 transition w-24">
-                                <button onclick="abrirModalGrupo('${t.grupo_id}', '${t.descricao}')" class="text-blue-500 hover:bg-blue-100 p-2 rounded-lg" title="Ver Grupo de Parcelas"><i class="fas fa-layer-group"></i></button>
+                        <tr class="hover:bg-blue-50/50 transition group ${opacidade}">
+                            <td class="py-1.5 px-3 font-bold text-slate-700">${t.descricao} <span class="bg-slate-200 text-slate-500 px-1.5 py-0.5 rounded text-[9px] ml-1 font-medium">${t.subcategoria}</span></td>
+                            <td class="py-1.5 px-3 text-slate-400 text-xs font-bold">${textoParcela}</td>
+                            <td class="py-1.5 px-3 text-right font-black ${corValor} w-28">R$ ${valorExibido.toFixed(2).replace('.', ',')}</td>
+                            <td class="py-1.5 px-3 text-right whitespace-nowrap w-36">
+                                <button onclick="abrirModalEdicao('${t.id}')" class="text-blue-500 hover:bg-blue-100 p-1.5 rounded transition" title="Editar"><i class="fas fa-edit"></i></button>
+                                ${isRealizado ? 
+                                    `<button onclick="desfazerBaixa('${t.id}')" class="text-green-500 hover:bg-green-100 p-1.5 rounded transition mx-1" title="Desfazer Baixa"><i class="fas fa-check-circle"></i></button>` : 
+                                    `<button onclick="abrirModalBaixa('${t.id}', ${t.valor_parcela})" class="text-slate-400 hover:text-green-500 hover:bg-green-50 p-1.5 rounded transition mx-1" title="Dar Baixa"><i class="far fa-check-circle"></i></button>`
+                                }
+                                <button onclick="abrirModalGrupo('${t.grupo_id}', '${t.descricao}')" class="text-slate-400 hover:text-blue-500 hover:bg-blue-50 p-1.5 rounded transition" title="Ver Grupo"><i class="fas fa-layer-group"></i></button>
                             </td>
                         </tr>
                     `;
@@ -360,24 +398,36 @@
             });
         }
 
-        // --- AÇÕES DE REALIZADO / GRUPO ---
-        async function alternarStatus(id, statusAtual, valorPadrao) {
-            if (statusAtual === 'Pendente') {
-                // Marcar como Realizado
-                const dt = new Date().toISOString().split('T')[0];
-                await clienteSupabase.from('transacoes').update({ status: 'Realizado', data_realizacao: dt, valor_realizado: valorPadrao }).eq('id', id);
-            } else {
-                // Desfazer (Voltar a Pendente)
-                await clienteSupabase.from('transacoes').update({ status: 'Pendente', data_realizacao: null, valor_realizado: null }).eq('id', id);
-            }
-            calcularSaldoRealTotal(); carregarDadosFluxo();
-            if(!document.getElementById('modalOverlayGrupo').classList.contains('hidden')) renderizarTabelaGrupo(idGrupoAberto); // atualiza modal se aberto
+        // --- AÇÕES DE BAIXA ---
+        function abrirModalBaixa(id, valorPadrao) {
+            baixaIdAtual = id;
+            document.getElementById('baixa_valor').value = valorPadrao;
+            document.getElementById('baixa_data').value = new Date().toISOString().split('T')[0];
+            document.getElementById('modalOverlayBaixa').classList.remove('hidden');
         }
 
+        async function confirmarBaixa() {
+            const v = parseFloat(document.getElementById('baixa_valor').value);
+            const d = document.getElementById('baixa_data').value;
+            await clienteSupabase.from('transacoes').update({ status: 'Realizado', data_realizacao: d, valor_realizado: v }).eq('id', baixaIdAtual);
+            fecharModal('modalOverlayBaixa');
+            atualizarTudo();
+            if(!document.getElementById('modalOverlayGrupo').classList.contains('hidden')) renderizarTabelaGrupo(idGrupoAberto);
+        }
+
+        async function desfazerBaixa(id) {
+            if(confirm("Desfazer a baixa e marcar como pendente novamente?")) {
+                await clienteSupabase.from('transacoes').update({ status: 'Pendente', data_realizacao: null, valor_realizado: null }).eq('id', id);
+                atualizarTudo();
+                if(!document.getElementById('modalOverlayGrupo').classList.contains('hidden')) renderizarTabelaGrupo(idGrupoAberto);
+            }
+        }
+
+        // --- GESTÃO DE GRUPO ---
         let idGrupoAberto = null;
         async function abrirModalGrupo(grupoId, descricao) {
             idGrupoAberto = grupoId;
-            document.getElementById('grupo-titulo').innerHTML = `<i class="fas fa-layer-group text-blue-500 mr-2"></i>Gestão: ${descricao}`;
+            document.getElementById('grupo-titulo').innerHTML = `<i class="fas fa-layer-group text-blue-500 mr-2"></i>Grupo: ${descricao}`;
             document.getElementById('modalOverlayGrupo').classList.remove('hidden');
             renderizarTabelaGrupo(grupoId);
         }
@@ -391,18 +441,19 @@
                 const isRealizado = t.status === 'Realizado';
                 const v = parseFloat(isRealizado ? t.valor_realizado : t.valor_parcela);
                 const dt = t.data_vencimento.split('-').reverse().join('/');
-                const btnStatus = isRealizado ? 
-                    `<button onclick="alternarStatus('${t.id}', 'Realizado')" class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold"><i class="fas fa-check mr-1"></i>Realizado</button>` : 
-                    `<button onclick="alternarStatus('${t.id}', 'Pendente', ${t.valor_parcela})" class="bg-slate-100 text-slate-500 hover:bg-blue-100 hover:text-blue-600 px-3 py-1 rounded-full text-[10px] font-bold transition">Dar Baixa</button>`;
-
+                
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-3 font-bold text-slate-500 text-center">${t.total_parcelas === 0 ? 'Rec.' : t.parcela_atual}</td>
-                        <td class="p-3 text-sm font-medium">${dt}</td>
-                        <td class="p-3 font-bold">R$ ${v.toFixed(2).replace('.',',')}</td>
-                        <td class="p-3 text-center">${btnStatus}</td>
-                        <td class="p-3 text-center">
-                            <button onclick="excluirUnico('${t.id}')" class="text-red-400 hover:text-red-600 p-2"><i class="fas fa-trash-alt"></i></button>
+                    <tr class="hover:bg-slate-50 border-b">
+                        <td class="py-1.5 px-3 font-bold text-slate-500 text-center">${t.total_parcelas === 0 ? 'Rec.' : t.parcela_atual}</td>
+                        <td class="py-1.5 px-3 text-sm font-medium ${isRealizado ? 'text-green-600 line-through opacity-70' : ''}">${dt}</td>
+                        <td class="py-1.5 px-3 font-bold">R$ ${v.toFixed(2).replace('.',',')}</td>
+                        <td class="py-1.5 px-3 text-right whitespace-nowrap">
+                            <button onclick="abrirModalEdicao('${t.id}')" class="text-blue-500 hover:bg-blue-100 p-1.5 rounded transition"><i class="fas fa-edit"></i></button>
+                            ${isRealizado ? 
+                                `<button onclick="desfazerBaixa('${t.id}')" class="text-green-500 hover:bg-green-100 p-1.5 rounded transition mx-1"><i class="fas fa-check-circle"></i></button>` : 
+                                `<button onclick="abrirModalBaixa('${t.id}', ${t.valor_parcela})" class="text-slate-400 hover:text-green-500 hover:bg-green-50 p-1.5 rounded transition mx-1"><i class="far fa-check-circle"></i></button>`
+                            }
+                            <button onclick="excluirUnico('${t.id}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded transition"><i class="fas fa-trash-alt"></i></button>
                         </td>
                     </tr>
                 `;
@@ -413,19 +464,44 @@
             if(confirm("Deseja excluir permanentemente apenas esta parcela?")) {
                 await clienteSupabase.from('transacoes').delete().eq('id', id);
                 renderizarTabelaGrupo(idGrupoAberto);
-                calcularSaldoRealTotal(); carregarDadosFluxo();
+                atualizarTudo();
             }
         }
 
-        // --- MANUTENÇÃO (Modais e Cadastro) ---
+        // --- MANUTENÇÃO / CADASTRO / EDIÇÃO ---
+        function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+
         function abrirModalNovo() {
+            editandoId = null;
             document.getElementById('transacao-form').reset();
+            document.getElementById('div-parcelas').classList.remove('hidden');
+            document.getElementById('label-data').textContent = "Data da 1ª Parcela";
+            document.getElementById('modal-titulo-novo').innerHTML = '<i class="fas fa-plus-circle text-blue-500 mr-2"></i>Novo Lançamento';
             document.getElementById('modalOverlayNovo').classList.remove('hidden');
             verificarParcelamento();
         }
-        function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        async function abrirModalEdicao(id) {
+            const { data } = await clienteSupabase.from('transacoes').select('*').eq('id', id).single();
+            if(data) {
+                editandoId = id;
+                document.getElementById('modal-titulo-novo').innerHTML = '<i class="fas fa-edit text-blue-500 mr-2"></i>Editar Parcela';
+                document.getElementById('tipo').value = data.tipo;
+                carregarSelectSubcategorias();
+                setTimeout(() => document.getElementById('subcategoria').value = data.subcategoria, 50);
+                document.getElementById('descricao').value = data.descricao;
+                document.getElementById('valor').value = data.valor_parcela;
+                document.getElementById('data_inicio').value = data.data_vencimento;
+                
+                document.getElementById('div-parcelas').classList.add('hidden');
+                document.getElementById('div-frequencia').classList.add('hidden');
+                document.getElementById('label-data').textContent = "Data de Vencimento";
+                document.getElementById('modalOverlayNovo').classList.remove('hidden');
+            }
+        }
 
         function verificarParcelamento() {
+            if(editandoId) return; // Não mostra opções de parcelamento na edição
             const p = parseInt(document.getElementById('parcelas').value);
             document.getElementById('div-frequencia').classList.toggle('hidden', p === 1);
             document.getElementById('label-data').textContent = p === 1 ? "Data de Vencimento" : "Data da 1ª Parcela";
@@ -444,6 +520,7 @@
                 carregarSelectSubcategorias();
             }
         }
+        
         function carregarSelectSubcategorias() {
             const t = document.getElementById('tipo').value; const sel = document.getElementById('subcategoria');
             sel.innerHTML = '';
@@ -463,21 +540,28 @@
             e.preventDefault();
             const tipo = document.getElementById('tipo').value; const subcategoria = document.getElementById('subcategoria').value;
             const descricao = document.getElementById('descricao').value; const valor = parseFloat(document.getElementById('valor').value);
-            const dataBase = new Date(document.getElementById('data_inicio').value + 'T12:00:00'); 
-            const pTotal = parseInt(document.getElementById('parcelas').value);
-            const freq = pTotal === 1 ? 'Única' : document.getElementById('frequencia').value;
+            const dtInput = document.getElementById('data_inicio').value;
             
-            const grupo_id = crypto.randomUUID(); const iter = pTotal === 0 ? 12 : pTotal; let ins = [];
-            for (let i = 0; i < iter; i++) {
-                let dP = new Date(dataBase);
-                if (freq === 'Mensal') { let d = dP.getDate(); dP.setMonth(dP.getMonth() + i); if(dP.getDate() !== d) dP.setDate(0); }
-                else if (freq === 'Semanal') dP.setDate(dP.getDate() + (i * 7));
-                else if (freq === 'Anual') dP.setFullYear(dP.getFullYear() + i);
+            if (editandoId) {
+                await clienteSupabase.from('transacoes').update({ tipo, subcategoria, descricao, valor_parcela: valor, data_vencimento: dtInput }).eq('id', editandoId);
+            } else {
+                const dataBase = new Date(dtInput + 'T12:00:00'); 
+                const pTotal = parseInt(document.getElementById('parcelas').value);
+                const freq = pTotal === 1 ? 'Única' : document.getElementById('frequencia').value;
+                const grupo_id = crypto.randomUUID(); const iter = pTotal === 0 ? 12 : pTotal; let ins = [];
+                for (let i = 0; i < iter; i++) {
+                    let dP = new Date(dataBase);
+                    if (freq === 'Mensal') { let d = dP.getDate(); dP.setMonth(dP.getMonth() + i); if(dP.getDate() !== d) dP.setDate(0); }
+                    else if (freq === 'Semanal') dP.setDate(dP.getDate() + (i * 7));
+                    else if (freq === 'Anual') dP.setFullYear(dP.getFullYear() + i);
 
-                ins.push({ user_id: userAtual.id, grupo_id, tipo, subcategoria, descricao, valor_parcela: valor, data_vencimento: dP.toISOString().split('T')[0], parcela_atual: i + 1, total_parcelas: pTotal, frequencia, status: 'Pendente' });
+                    ins.push({ user_id: userAtual.id, grupo_id, tipo, subcategoria, descricao, valor_parcela: valor, data_vencimento: dP.toISOString().split('T')[0], parcela_atual: i + 1, total_parcelas: pTotal, frequencia, status: 'Pendente' });
+                }
+                await clienteSupabase.from('transacoes').insert(ins);
             }
-            await clienteSupabase.from('transacoes').insert(ins);
-            fecharModal('modalOverlayNovo'); carregarDadosFluxo();
+            fecharModal('modalOverlayNovo');
+            atualizarTudo();
+            if(!document.getElementById('modalOverlayGrupo').classList.contains('hidden') && editandoId) renderizarTabelaGrupo(idGrupoAberto);
         });
     </script>
 </body>
