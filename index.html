@@ -65,7 +65,7 @@
             </div>
             <nav class="flex flex-1 gap-2">
                 <button onclick="mudarAba('aba-fluxo')" id="btn-aba-fluxo" class="px-3 py-2 text-sm font-bold rounded-lg bg-blue-50 text-blue-700 transition flex items-center">
-                    <i class="fas fa-chart-pie mr-2"></i> Dashboard
+                    <i class="fas fa-chart-pie mr-2"></i> Financeiro
                 </button>
                 <button onclick="mudarAba('aba-compras')" id="btn-aba-compras" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
                     <i class="fas fa-shopping-cart mr-2"></i> Compras
@@ -170,30 +170,81 @@
             </div>
 
             <!-- Aba Compras -->
-            <div id="aba-compras" class="hidden bg-white border border-slate-200 rounded-xl shadow-sm p-6 text-center py-12">
-                <div class="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 text-blue-600">
-                    <i class="fas fa-shopping-cart text-3xl"></i>
+            <div id="aba-compras" class="hidden space-y-6">
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                        <h3 class="font-bold text-slate-700">Histórico de Compras</h3>
+                        <button onclick="abrirModalCompra()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition">
+                            <i class="fas fa-plus mr-1"></i> Nova Compra
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto min-h-[200px]">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead class="bg-slate-50 border-b">
+                                <tr class="text-[10px] font-bold text-slate-400 uppercase">
+                                    <th class="py-3 px-4">Data</th>
+                                    <th class="py-3 px-4">Fornecedor</th>
+                                    <th class="py-3 px-4 text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-compras" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
                 </div>
-                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Compras</h2>
-                <p class="text-slate-500 text-sm font-medium">Página em construção</p>
             </div>
 
             <!-- Aba Estoque -->
-            <div id="aba-estoque" class="hidden bg-white border border-slate-200 rounded-xl shadow-sm p-6 text-center py-12">
-                <div class="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 text-blue-600">
-                    <i class="fas fa-boxes text-3xl"></i>
+            <div id="aba-estoque" class="hidden space-y-6">
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                        <h3 class="font-bold text-slate-700">Controle de Estoque</h3>
+                        <button onclick="abrirModalEstoque()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition">
+                            <i class="fas fa-plus mr-1"></i> Novo Produto
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto min-h-[200px]">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead class="bg-slate-50 border-b">
+                                <tr class="text-[10px] font-bold text-slate-400 uppercase">
+                                    <th class="py-3 px-4">Categoria</th>
+                                    <th class="py-3 px-4">Produto</th>
+                                    <th class="py-3 px-4 text-center">Qtd Atual</th>
+                                    <th class="py-3 px-4 text-right">Custo Un.</th>
+                                    <th class="py-3 px-4 text-right">Valor Venda</th>
+                                    <th class="py-3 px-4 text-right text-blue-600">Lucro Un.</th>
+                                    <th class="py-3 px-4 text-right text-green-600">Lucro Possível</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-estoque" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
                 </div>
-                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Estoque</h2>
-                <p class="text-slate-500 text-sm font-medium">Página em construção</p>
             </div>
 
             <!-- Aba Vendas -->
-            <div id="aba-vendas" class="hidden bg-white border border-slate-200 rounded-xl shadow-sm p-6 text-center py-12">
-                <div class="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 text-blue-600">
-                    <i class="fas fa-cash-register text-3xl"></i>
+            <div id="aba-vendas" class="hidden space-y-6">
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                        <h3 class="font-bold text-slate-700">Histórico de Vendas</h3>
+                        <button onclick="abrirModalVenda()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition">
+                            <i class="fas fa-plus mr-1"></i> Nova Venda
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto min-h-[200px]">
+                        <table class="w-full text-left border-collapse whitespace-nowrap">
+                            <thead class="bg-slate-50 border-b">
+                                <tr class="text-[10px] font-bold text-slate-400 uppercase">
+                                    <th class="py-3 px-4">Data</th>
+                                    <th class="py-3 px-4">Cliente</th>
+                                    <th class="py-3 px-4 text-right text-red-600">Custo Total</th>
+                                    <th class="py-3 px-4 text-right text-green-600">Venda Total</th>
+                                    <th class="py-3 px-4 text-right text-blue-600">Lucro Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-vendas" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
                 </div>
-                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Vendas</h2>
-                <p class="text-slate-500 text-sm font-medium">Página em construção</p>
             </div>
 
             <!-- Aba Ajustes -->
@@ -328,6 +379,108 @@
             <div id="modal-footer" class="p-4 bg-slate-50 border-t flex gap-3 hidden">
                 <button type="button" onclick="excluirParcelaAtual()" class="flex-1 bg-white hover:bg-red-50 text-red-500 font-bold py-2 px-4 rounded-lg border border-red-200 transition text-sm">Excluir esta Parcela</button>
                 <button type="button" onclick="excluirGrupoAtual()" class="flex-1 bg-white hover:bg-red-50 text-red-500 font-bold py-2 px-4 rounded-lg border border-red-200 transition text-sm">Excluir Todo o Grupo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Estoque -->
+    <div id="modalEstoque" class="fixed inset-0 bg-black/60 hidden z-[50] flex items-center justify-center p-4 modal-blur">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md relative p-6">
+            <button type="button" onclick="fecharModal('modalEstoque')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition"><i class="fas fa-times"></i></button>
+            <h2 id="modal-estoque-titulo" class="text-xl font-extrabold mb-6 border-b pb-4"><i class="fas fa-box text-blue-500 mr-2"></i>Novo Produto</h2>
+            <form id="form-estoque" class="space-y-4">
+                <input type="hidden" id="estoque_id">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Categoria</label>
+                    <input type="text" id="estoque_categoria" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome do Produto</label>
+                    <input type="text" id="estoque_nome" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Valor de Venda (R$)</label>
+                    <input type="number" step="0.01" min="0" id="estoque_valor_venda" required class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl mt-2">Salvar Produto</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Compra -->
+    <div id="modalCompra" class="fixed inset-0 bg-black/60 hidden z-[50] flex items-center justify-center p-4 modal-blur">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col relative">
+            <button type="button" onclick="fecharModal('modalCompra')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition z-10"><i class="fas fa-times"></i></button>
+            <div class="p-6 overflow-y-auto flex-1">
+                <h2 class="text-xl font-extrabold mb-6 border-b pb-4"><i class="fas fa-shopping-cart text-blue-500 mr-2"></i>Lançar Compra</h2>
+                <form id="form-compra" class="space-y-4">
+                    <input type="hidden" id="compra_id">
+                    <input type="hidden" id="compra_transacao_id">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data da Compra</label>
+                            <input type="date" id="compra_data" required class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fornecedor</label>
+                            <input type="text" id="compra_fornecedor" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                        </div>
+                    </div>
+                    <div class="border rounded-xl p-4 bg-slate-50 mt-4">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3">Itens da Compra</h3>
+                        <div id="compra_itens_container" class="space-y-3"></div>
+                        <button type="button" onclick="adicionarItemCompra()" class="mt-3 text-xs font-bold text-blue-600 hover:text-blue-800"><i class="fas fa-plus mr-1"></i> Adicionar Item</button>
+                    </div>
+                    <div class="text-right pt-4">
+                        <span class="text-sm font-bold text-slate-500 uppercase">Total:</span>
+                        <span id="compra_total_exibicao" class="text-2xl font-black text-slate-800 ml-2">R$ 0,00</span>
+                    </div>
+                    <div class="flex gap-3 mt-2">
+                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl">Salvar Compra</button>
+                        <button type="button" id="btn_excluir_compra" class="hidden bg-red-100 hover:bg-red-200 text-red-600 font-bold py-3 px-4 rounded-xl" onclick="excluirCompraModal()">Excluir</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Venda -->
+    <div id="modalVenda" class="fixed inset-0 bg-black/60 hidden z-[50] flex items-center justify-center p-4 modal-blur">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col relative">
+            <button type="button" onclick="fecharModal('modalVenda')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition z-10"><i class="fas fa-times"></i></button>
+            <div class="p-6 overflow-y-auto flex-1">
+                <h2 class="text-xl font-extrabold mb-6 border-b pb-4"><i class="fas fa-cash-register text-blue-500 mr-2"></i>Lançar Venda</h2>
+                <form id="form-venda" class="space-y-4">
+                    <input type="hidden" id="venda_id">
+                    <input type="hidden" id="venda_transacao_id">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data da Venda</label>
+                            <input type="date" id="venda_data" required class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cliente</label>
+                            <input type="text" id="venda_cliente" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Endereço (Opcional)</label>
+                        <input type="text" id="venda_endereco" class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                    </div>
+                    <div class="border rounded-xl p-4 bg-slate-50 mt-4">
+                        <h3 class="text-sm font-bold text-slate-700 mb-3">Itens da Venda</h3>
+                        <div id="venda_itens_container" class="space-y-3"></div>
+                        <button type="button" onclick="adicionarItemVenda()" class="mt-3 text-xs font-bold text-blue-600 hover:text-blue-800"><i class="fas fa-plus mr-1"></i> Adicionar Item</button>
+                    </div>
+                    <div class="text-right pt-4">
+                        <span class="text-sm font-bold text-slate-500 uppercase">Total:</span>
+                        <span id="venda_total_exibicao" class="text-2xl font-black text-slate-800 ml-2">R$ 0,00</span>
+                    </div>
+                    <div class="flex gap-3 mt-2">
+                        <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 rounded-xl">Finalizar Venda</button>
+                        <button type="button" id="btn_excluir_venda" class="hidden bg-red-100 hover:bg-red-200 text-red-600 font-bold py-3 px-4 rounded-xl" onclick="excluirVendaModal()">Excluir</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -1105,6 +1258,602 @@
                 mostrarToast("Erro ao exportar Excel: " + e.message, "error");
             }
         }
+        // ==========================================
+        // LÓGICA DE COMPRAS, ESTOQUE E VENDAS
+        // ==========================================
+
+        let produtos = [];
+
+        async function carregarProdutos() {
+            try {
+                const { data, error } = await clienteSupabase.from('produtos').select('*').order('categoria').order('nome');
+                if (error) throw error;
+                produtos = data || [];
+                renderizarEstoque();
+            } catch (err) {
+                mostrarToast("Erro ao carregar estoque: " + err.message, "error");
+            }
+        }
+
+        function renderizarEstoque() {
+            const tbody = document.getElementById('tabela-estoque');
+            tbody.innerHTML = '';
+            if (produtos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhum produto cadastrado.</td></tr>';
+                return;
+            }
+
+            produtos.forEach(p => {
+                const lucroUn = p.valor_venda - p.custo_unitario;
+                const lucroTot = lucroUn * p.estoque_atual;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="editarEstoque('${p.id}')">
+                        <td class="py-3 px-4 font-bold text-slate-600 text-xs">${p.categoria}</td>
+                        <td class="py-3 px-4 font-bold text-slate-800 text-sm">${p.nome}</td>
+                        <td class="py-3 px-4 text-center font-bold ${p.estoque_atual <= 0 ? 'text-red-500' : 'text-slate-800'}">${p.estoque_atual}</td>
+                        <td class="py-3 px-4 text-right font-medium text-slate-500">R$ ${parseFloat(p.custo_unitario).toFixed(2).replace('.', ',')}</td>
+                        <td class="py-3 px-4 text-right font-bold text-slate-800">R$ ${parseFloat(p.valor_venda).toFixed(2).replace('.', ',')}</td>
+                        <td class="py-3 px-4 text-right font-bold text-blue-600">R$ ${lucroUn.toFixed(2).replace('.', ',')}</td>
+                        <td class="py-3 px-4 text-right font-bold text-green-600">R$ ${lucroTot.toFixed(2).replace('.', ',')}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function abrirModalEstoque() {
+            document.getElementById('form-estoque').reset();
+            document.getElementById('estoque_id').value = '';
+            document.getElementById('modal-estoque-titulo').innerHTML = '<i class="fas fa-box text-blue-500 mr-2"></i>Novo Produto';
+            document.getElementById('modalEstoque').classList.remove('hidden');
+        }
+
+        function editarEstoque(id) {
+            const p = produtos.find(x => x.id === id);
+            if (!p) return;
+            document.getElementById('form-estoque').reset();
+            document.getElementById('estoque_id').value = p.id;
+            document.getElementById('estoque_categoria').value = p.categoria;
+            document.getElementById('estoque_nome').value = p.nome;
+            document.getElementById('estoque_valor_venda').value = p.valor_venda;
+            document.getElementById('modal-estoque-titulo').innerHTML = '<i class="fas fa-edit text-blue-500 mr-2"></i>Editar Produto';
+            document.getElementById('modalEstoque').classList.remove('hidden');
+        }
+
+        document.getElementById('form-estoque').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('estoque_id').value;
+            const payload = {
+                user_id: userAtual.id,
+                categoria: document.getElementById('estoque_categoria').value,
+                nome: document.getElementById('estoque_nome').value,
+                valor_venda: parseFloat(document.getElementById('estoque_valor_venda').value)
+            };
+
+            try {
+                if (id) {
+                    const { error } = await clienteSupabase.from('produtos').update(payload).eq('id', id);
+                    if (error) throw error;
+                    mostrarToast("Produto atualizado com sucesso!", "success");
+                } else {
+                    const { error } = await clienteSupabase.from('produtos').insert(payload);
+                    if (error) throw error;
+                    mostrarToast("Produto cadastrado com sucesso!", "success");
+                }
+                fecharModal('modalEstoque');
+                carregarProdutos();
+            } catch (err) {
+                mostrarToast("Erro ao salvar produto: " + err.message, "error");
+            }
+        });
+
+        async function excluirEstoque(id) {
+            try {
+                const { data: vendasCount, error: vErr } = await clienteSupabase.from('vendas_itens').select('id').eq('produto_id', id).limit(1);
+                const { data: comprasCount, error: cErr } = await clienteSupabase.from('compras_itens').select('id').eq('produto_id', id).limit(1);
+                
+                if (vendasCount?.length > 0 || comprasCount?.length > 0) {
+                    mostrarToast("Não é possível excluir o produto pois ele possui histórico de compras ou vendas.", "warning");
+                    return;
+                }
+
+                if (confirm("Tem certeza que deseja excluir este produto?")) {
+                    const { error } = await clienteSupabase.from('produtos').delete().eq('id', id);
+                    if (error) throw error;
+                    mostrarToast("Produto excluído!", "success");
+                    carregarProdutos();
+                }
+            } catch (err) {
+                mostrarToast("Erro ao excluir: " + err.message, "error");
+            }
+        }
+
+        // ================= COMPRAS =================
+        async function carregarCompras() {
+            try {
+                const { data, error } = await clienteSupabase.from('compras').select('*').order('data', { ascending: false });
+                if (error) throw error;
+                const tbody = document.getElementById('tabela-compras');
+                tbody.innerHTML = '';
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhuma compra registrada.</td></tr>';
+                    return;
+                }
+                data.forEach(c => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="abrirModalCompraEdicao('${c.id}')">
+                            <td class="py-3 px-4 font-bold text-slate-800 text-sm">${c.data.split('-').reverse().join('/')}</td>
+                            <td class="py-3 px-4 text-slate-600 font-medium">${c.fornecedor}</td>
+                            <td class="py-3 px-4 text-right font-black text-red-600">R$ ${parseFloat(c.total).toFixed(2).replace('.', ',')}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                mostrarToast("Erro ao carregar compras", "error");
+            }
+        }
+
+        function abrirModalCompra() {
+            if (produtos.length === 0) {
+                mostrarToast("Cadastre produtos no estoque antes de realizar compras.", "warning");
+                return;
+            }
+            document.getElementById('form-compra').reset();
+            document.getElementById('compra_id').value = '';
+            document.getElementById('compra_transacao_id').value = '';
+            document.getElementById('compra_data').value = new Date().toISOString().split('T')[0];
+            document.getElementById('compra_itens_container').innerHTML = '';
+            document.getElementById('btn_excluir_compra').classList.add('hidden');
+            adicionarItemCompra();
+            calcularTotalCompra();
+            document.getElementById('modalCompra').classList.remove('hidden');
+        }
+
+        async function abrirModalCompraEdicao(id) {
+            try {
+                const { data: compra, error: cErr } = await clienteSupabase.from('compras').select('*').eq('id', id).single();
+                if (cErr) throw cErr;
+                const { data: itens, error: iErr } = await clienteSupabase.from('compras_itens').select('*').eq('compra_id', id);
+                if (iErr) throw iErr;
+
+                document.getElementById('form-compra').reset();
+                document.getElementById('compra_id').value = compra.id;
+                document.getElementById('compra_transacao_id').value = compra.transacao_id;
+                document.getElementById('compra_data').value = compra.data;
+                document.getElementById('compra_fornecedor').value = compra.fornecedor;
+                
+                document.getElementById('compra_itens_container').innerHTML = '';
+                
+                itens.forEach(it => {
+                    adicionarItemCompra(it.produto_id, it.quantidade, it.custo_unitario);
+                });
+                
+                calcularTotalCompra();
+                document.getElementById('btn_excluir_compra').classList.remove('hidden');
+                document.getElementById('modalCompra').classList.remove('hidden');
+            } catch (err) {
+                mostrarToast("Erro ao carregar compra: " + err.message, "error");
+            }
+        }
+
+        function adicionarItemCompra(produtoId = '', quantidade = '', custo = '') {
+            const container = document.getElementById('compra_itens_container');
+            const div = document.createElement('div');
+            div.className = "flex flex-wrap md:flex-nowrap gap-2 items-center item-compra";
+            
+            let options = '<option value="">Selecione o produto</option>';
+            produtos.forEach(p => {
+                const selected = p.id === produtoId ? 'selected' : '';
+                options += `<option value="${p.id}" ${selected}>${p.nome} (Atual: ${p.estoque_atual})</option>`;
+            });
+
+            div.innerHTML = `
+                <select class="produto-select flex-1 min-w-[150px] bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required>
+                    ${options}
+                </select>
+                <input type="number" step="0.01" min="0.01" value="${quantidade}" placeholder="Qtd" class="quantidade-input w-24 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalCompra()">
+                <input type="number" step="0.01" min="0.01" value="${custo}" placeholder="Custo Un." class="custo-input w-28 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalCompra()">
+                <button type="button" onclick="this.parentElement.remove(); calcularTotalCompra()" class="text-red-500 p-2 ml-auto"><i class="fas fa-times"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        function calcularTotalCompra() {
+            let total = 0;
+            document.querySelectorAll('.item-compra').forEach(el => {
+                const q = parseFloat(el.querySelector('.quantidade-input').value) || 0;
+                const c = parseFloat(el.querySelector('.custo-input').value) || 0;
+                total += (q * c);
+            });
+            document.getElementById('compra_total_exibicao').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            return total;
+        }
+
+        document.getElementById('form-compra').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const total = calcularTotalCompra();
+            if (total <= 0) return mostrarToast("Adicione itens válidos à compra.", "warning");
+            
+            const compraId = document.getElementById('compra_id').value;
+            const transacaoId = document.getElementById('compra_transacao_id').value;
+
+            try {
+                // Se for edição, exclui a antiga primeiro para reverter estoque
+                if (compraId) {
+                    const { data: itensAntigos } = await clienteSupabase.from('compras_itens').select('*').eq('compra_id', compraId);
+                    for (const it of itensAntigos) {
+                        const p = produtos.find(x => x.id === it.produto_id);
+                        if (p) {
+                            const novoEstoque = p.estoque_atual - it.quantidade;
+                            if (novoEstoque < 0) return mostrarToast(`A reversão deixaria o estoque de ${p.nome} negativo.`, "error");
+                            await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                        }
+                    }
+                    await clienteSupabase.from('compras').delete().eq('id', compraId);
+                    if (transacaoId) await clienteSupabase.from('transacoes').delete().eq('id', transacaoId);
+                    // Atualiza a lista local de produtos antes da nova inserção
+                    await carregarProdutos();
+                }
+
+                // 1. Inserir Transação (Financeiro)
+                const { data: trData, error: trErr } = await clienteSupabase.from('transacoes').insert({
+                    user_id: userAtual.id,
+                    tipo: 'Saída',
+                    subcategoria: 'Compras',
+                    descricao: document.getElementById('compra_fornecedor').value,
+                    valor_parcela: total,
+                    valor_realizado: total,
+                    data_vencimento: document.getElementById('compra_data').value,
+                    data_realizacao: document.getElementById('compra_data').value,
+                    status: 'Realizado',
+                    grupo_id: crypto.randomUUID(),
+                    total_parcelas: 1,
+                    parcela_atual: 1
+                }).select().single();
+                if (trErr) throw trErr;
+
+                // 2. Inserir Compra
+                const { data: compData, error: cErr } = await clienteSupabase.from('compras').insert({
+                    user_id: userAtual.id,
+                    data: document.getElementById('compra_data').value,
+                    fornecedor: document.getElementById('compra_fornecedor').value,
+                    total: total,
+                    transacao_id: trData.id
+                }).select().single();
+                if (cErr) throw cErr;
+
+                // 3. Inserir Itens e Atualizar Estoque
+                const itemsDiv = document.querySelectorAll('.item-compra');
+                const itensInsert = [];
+                for (const el of itemsDiv) {
+                    const prodId = el.querySelector('.produto-select').value;
+                    const qtd = parseFloat(el.querySelector('.quantidade-input').value);
+                    const custo = parseFloat(el.querySelector('.custo-input').value);
+                    
+                    itensInsert.push({
+                        compra_id: compData.id,
+                        produto_id: prodId,
+                        quantidade: qtd,
+                        custo_unitario: custo
+                    });
+
+                    const prod = produtos.find(p => p.id === prodId);
+                    await clienteSupabase.from('produtos').update({
+                        estoque_atual: prod.estoque_atual + qtd,
+                        custo_unitario: custo
+                    }).eq('id', prodId);
+                }
+
+                const { error: itErr } = await clienteSupabase.from('compras_itens').insert(itensInsert);
+                if (itErr) throw itErr;
+
+                mostrarToast(compraId ? "Compra atualizada!" : "Compra registrada com sucesso!", "success");
+                fecharModal('modalCompra');
+                carregarProdutos();
+                carregarCompras();
+                atualizarTudo();
+            } catch (err) {
+                mostrarToast("Erro ao registrar compra: " + err.message, "error");
+            }
+        });
+
+        async function excluirCompraModal() {
+            const id = document.getElementById('compra_id').value;
+            const transacaoId = document.getElementById('compra_transacao_id').value;
+            if(!id) return;
+            
+            if(!confirm("Deseja realmente excluir esta compra? O estoque será revertido e a transação apagada.")) return;
+            
+            try {
+                const { data: itens, error: iErr } = await clienteSupabase.from('compras_itens').select('*').eq('compra_id', id);
+                if (iErr) throw iErr;
+
+                for (const it of itens) {
+                    const p = produtos.find(x => x.id === it.produto_id);
+                    if (p) {
+                        const novoEstoque = p.estoque_atual - it.quantidade;
+                        if (novoEstoque < 0) {
+                            mostrarToast(`A exclusão deixaria o estoque de ${p.nome} negativo.`, "error");
+                            return;
+                        }
+                        await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                    }
+                }
+
+                if (transacaoId) await clienteSupabase.from('transacoes').delete().eq('id', transacaoId);
+                await clienteSupabase.from('compras').delete().eq('id', id);
+
+                mostrarToast("Compra excluída e revertida!", "success");
+                fecharModal('modalCompra');
+                carregarProdutos();
+                carregarCompras();
+                atualizarTudo();
+            } catch (err) {
+                mostrarToast("Erro ao excluir compra: " + err.message, "error");
+            }
+        }
+
+        // ================= VENDAS =================
+        async function carregarVendas() {
+            try {
+                const { data, error } = await clienteSupabase.from('vendas').select('*').order('data', { ascending: false });
+                if (error) throw error;
+                const tbody = document.getElementById('tabela-vendas');
+                tbody.innerHTML = '';
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhuma venda registrada.</td></tr>';
+                    return;
+                }
+                data.forEach(v => {
+                    const custo = v.custo_total || 0;
+                    const venda = v.total || 0;
+                    const lucro = venda - custo;
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="abrirModalVendaEdicao('${v.id}')">
+                            <td class="py-3 px-4 font-bold text-slate-800 text-sm">${v.data.split('-').reverse().join('/')}</td>
+                            <td class="py-3 px-4 text-slate-600 font-medium">${v.cliente}</td>
+                            <td class="py-3 px-4 text-right font-bold text-red-500">R$ ${parseFloat(custo).toFixed(2).replace('.', ',')}</td>
+                            <td class="py-3 px-4 text-right font-black text-green-600">R$ ${parseFloat(venda).toFixed(2).replace('.', ',')}</td>
+                            <td class="py-3 px-4 text-right font-black text-blue-600">R$ ${parseFloat(lucro).toFixed(2).replace('.', ',')}</td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                mostrarToast("Erro ao carregar vendas", "error");
+            }
+        }
+
+        function abrirModalVenda() {
+            if (produtos.length === 0) {
+                mostrarToast("Cadastre produtos no estoque antes de vender.", "warning");
+                return;
+            }
+            document.getElementById('form-venda').reset();
+            document.getElementById('venda_id').value = '';
+            document.getElementById('venda_transacao_id').value = '';
+            document.getElementById('venda_data').value = new Date().toISOString().split('T')[0];
+            document.getElementById('venda_itens_container').innerHTML = '';
+            document.getElementById('btn_excluir_venda').classList.add('hidden');
+            adicionarItemVenda();
+            calcularTotalVenda();
+            document.getElementById('modalVenda').classList.remove('hidden');
+        }
+
+        async function abrirModalVendaEdicao(id) {
+            try {
+                const { data: venda, error: vErr } = await clienteSupabase.from('vendas').select('*').eq('id', id).single();
+                if (vErr) throw vErr;
+                const { data: itens, error: iErr } = await clienteSupabase.from('vendas_itens').select('*').eq('venda_id', id);
+                if (iErr) throw iErr;
+
+                document.getElementById('form-venda').reset();
+                document.getElementById('venda_id').value = venda.id;
+                document.getElementById('venda_transacao_id').value = venda.transacao_id;
+                document.getElementById('venda_data').value = venda.data;
+                document.getElementById('venda_cliente').value = venda.cliente;
+                document.getElementById('venda_endereco').value = venda.endereco || '';
+                
+                document.getElementById('venda_itens_container').innerHTML = '';
+                
+                itens.forEach(it => {
+                    adicionarItemVenda(it.produto_id, it.quantidade, it.valor_venda);
+                });
+                
+                calcularTotalVenda();
+                document.getElementById('btn_excluir_venda').classList.remove('hidden');
+                document.getElementById('modalVenda').classList.remove('hidden');
+            } catch (err) {
+                mostrarToast("Erro ao carregar venda: " + err.message, "error");
+            }
+        }
+
+        function adicionarItemVenda(produtoId = '', quantidade = '', valorVenda = '') {
+            const container = document.getElementById('venda_itens_container');
+            const div = document.createElement('div');
+            div.className = "flex flex-wrap md:flex-nowrap gap-2 items-center item-venda";
+            
+            let options = '<option value="">Selecione o produto</option>';
+            produtos.forEach(p => {
+                const selected = p.id === produtoId ? 'selected' : '';
+                options += `<option value="${p.id}" data-preco="${p.valor_venda}" data-estoque="${p.estoque_atual}" data-custo="${p.custo_unitario}" ${selected}>${p.nome} (Disp: ${p.estoque_atual})</option>`;
+            });
+
+            div.innerHTML = `
+                <select class="produto-select flex-1 min-w-[150px] bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required onchange="atualizarPrecoVenda(this)">
+                    ${options}
+                </select>
+                <input type="number" step="0.01" min="0.01" value="${quantidade}" placeholder="Qtd" class="quantidade-input w-24 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalVenda()">
+                <input type="number" step="0.01" min="0.01" value="${valorVenda}" placeholder="Venda Un." class="venda-input w-28 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalVenda()">
+                <button type="button" onclick="this.parentElement.remove(); calcularTotalVenda()" class="text-red-500 p-2 ml-auto"><i class="fas fa-times"></i></button>
+            `;
+            container.appendChild(div);
+        }
+
+        function atualizarPrecoVenda(selectElement) {
+            const option = selectElement.options[selectElement.selectedIndex];
+            const preco = option.getAttribute('data-preco');
+            const inputPreco = selectElement.parentElement.querySelector('.venda-input');
+            if(preco && !inputPreco.value) inputPreco.value = preco; 
+            calcularTotalVenda();
+        }
+
+        function calcularTotalVenda() {
+            let total = 0;
+            document.querySelectorAll('.item-venda').forEach(el => {
+                const q = parseFloat(el.querySelector('.quantidade-input').value) || 0;
+                const v = parseFloat(el.querySelector('.venda-input').value) || 0;
+                total += (q * v);
+            });
+            document.getElementById('venda_total_exibicao').textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+            return total;
+        }
+
+        document.getElementById('form-venda').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const total = calcularTotalVenda();
+            if (total <= 0) return mostrarToast("Adicione itens válidos à venda.", "warning");
+
+            const vendaId = document.getElementById('venda_id').value;
+            const transacaoId = document.getElementById('venda_transacao_id').value;
+
+            const itemsDiv = document.querySelectorAll('.item-venda');
+            const comprasDict = {};
+            let custoTotalVenda = 0;
+
+            for (const el of itemsDiv) {
+                const prodSelect = el.querySelector('.produto-select');
+                const prodId = prodSelect.value;
+                const qtd = parseFloat(el.querySelector('.quantidade-input').value);
+                const custoUn = parseFloat(prodSelect.options[prodSelect.selectedIndex].getAttribute('data-custo')) || 0;
+                
+                custoTotalVenda += (qtd * custoUn);
+
+                if (!comprasDict[prodId]) comprasDict[prodId] = 0;
+                comprasDict[prodId] += qtd;
+            }
+            
+            try {
+                if (vendaId) {
+                    const { data: itensAntigos } = await clienteSupabase.from('vendas_itens').select('*').eq('venda_id', vendaId);
+                    for (const it of itensAntigos) {
+                        const p = produtos.find(x => x.id === it.produto_id);
+                        if (p) {
+                            const novoEstoque = p.estoque_atual + it.quantidade;
+                            await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                        }
+                    }
+                    await clienteSupabase.from('vendas').delete().eq('id', vendaId);
+                    if (transacaoId) await clienteSupabase.from('transacoes').delete().eq('id', transacaoId);
+                    await carregarProdutos(); 
+                }
+
+                for (const prodId of Object.keys(comprasDict)) {
+                    const p = produtos.find(x => x.id === prodId);
+                    if (p.estoque_atual < comprasDict[prodId]) {
+                        return mostrarToast(`Estoque insuficiente para o produto: ${p.nome}`, "error");
+                    }
+                }
+
+                const { data: trData, error: trErr } = await clienteSupabase.from('transacoes').insert({
+                    user_id: userAtual.id,
+                    tipo: 'Entrada',
+                    subcategoria: 'Vendas',
+                    descricao: document.getElementById('venda_cliente').value,
+                    valor_parcela: total,
+                    valor_realizado: total,
+                    data_vencimento: document.getElementById('venda_data').value,
+                    data_realizacao: document.getElementById('venda_data').value,
+                    status: 'Realizado',
+                    grupo_id: crypto.randomUUID(),
+                    total_parcelas: 1,
+                    parcela_atual: 1
+                }).select().single();
+                if (trErr) throw trErr;
+
+                const { data: vData, error: vErr } = await clienteSupabase.from('vendas').insert({
+                    user_id: userAtual.id,
+                    data: document.getElementById('venda_data').value,
+                    cliente: document.getElementById('venda_cliente').value,
+                    endereco: document.getElementById('venda_endereco').value,
+                    total: total,
+                    custo_total: custoTotalVenda,
+                    transacao_id: trData.id
+                }).select().single();
+                if (vErr) throw vErr;
+
+                const itensInsert = [];
+                for (const el of itemsDiv) {
+                    const prodSelect = el.querySelector('.produto-select');
+                    const prodId = prodSelect.value;
+                    const qtd = parseFloat(el.querySelector('.quantidade-input').value);
+                    const vendaVal = parseFloat(el.querySelector('.venda-input').value);
+                    const custoUn = parseFloat(prodSelect.options[prodSelect.selectedIndex].getAttribute('data-custo')) || 0;
+                    
+                    itensInsert.push({
+                        venda_id: vData.id,
+                        produto_id: prodId,
+                        quantidade: qtd,
+                        valor_venda: vendaVal,
+                        custo_unitario: custoUn
+                    });
+
+                    const prod = produtos.find(p => p.id === prodId);
+                    await clienteSupabase.from('produtos').update({
+                        estoque_atual: prod.estoque_atual - qtd
+                    }).eq('id', prodId);
+                }
+
+                const { error: itErr } = await clienteSupabase.from('vendas_itens').insert(itensInsert);
+                if (itErr) throw itErr;
+
+                mostrarToast(vendaId ? "Venda atualizada!" : "Venda registrada com sucesso!", "success");
+                fecharModal('modalVenda');
+                carregarProdutos();
+                carregarVendas();
+                atualizarTudo();
+            } catch (err) {
+                mostrarToast("Erro ao registrar venda: " + err.message, "error");
+            }
+        });
+
+        async function excluirVendaModal() {
+            const id = document.getElementById('venda_id').value;
+            const transacaoId = document.getElementById('venda_transacao_id').value;
+            if(!id) return;
+            
+            if(!confirm("Deseja realmente excluir esta venda? O estoque será revertido e a transação apagada.")) return;
+            
+            try {
+                const { data: itens, error: iErr } = await clienteSupabase.from('vendas_itens').select('*').eq('venda_id', id);
+                if (iErr) throw iErr;
+
+                for (const it of itens) {
+                    const p = produtos.find(x => x.id === it.produto_id);
+                    if (p) {
+                        const novoEstoque = p.estoque_atual + it.quantidade;
+                        await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                    }
+                }
+
+                if (transacaoId) await clienteSupabase.from('transacoes').delete().eq('id', transacaoId);
+                await clienteSupabase.from('vendas').delete().eq('id', id);
+
+                mostrarToast("Venda excluída e revertida!", "success");
+                fecharModal('modalVenda');
+                carregarProdutos();
+                carregarVendas();
+                atualizarTudo();
+            } catch (err) {
+                mostrarToast("Erro ao excluir venda: " + err.message, "error");
+            }
+        }
+
+        const _oldMudarAba = mudarAba;
+        mudarAba = function(abaId) {
+            _oldMudarAba(abaId);
+            if (abaId === 'aba-estoque') carregarProdutos();
+            if (abaId === 'aba-compras') { carregarProdutos(); carregarCompras(); }
+            if (abaId === 'aba-vendas') { carregarProdutos(); carregarVendas(); }
+        };
     </script>
 </body>
 </html>
