@@ -185,7 +185,6 @@
                                     <th class="py-3 px-4">Data</th>
                                     <th class="py-3 px-4">Fornecedor</th>
                                     <th class="py-3 px-4 text-right">Total</th>
-                                    <th class="py-3 px-4 text-center">Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="tabela-compras" class="text-sm divide-y divide-slate-100"></tbody>
@@ -212,8 +211,8 @@
                                     <th class="py-3 px-4 text-center">Qtd Atual</th>
                                     <th class="py-3 px-4 text-right">Custo Un.</th>
                                     <th class="py-3 px-4 text-right">Valor Venda</th>
+                                    <th class="py-3 px-4 text-right text-blue-600">Lucro Un.</th>
                                     <th class="py-3 px-4 text-right text-green-600">Lucro Possível</th>
-                                    <th class="py-3 px-4 text-center">Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="tabela-estoque" class="text-sm divide-y divide-slate-100"></tbody>
@@ -237,8 +236,9 @@
                                 <tr class="text-[10px] font-bold text-slate-400 uppercase">
                                     <th class="py-3 px-4">Data</th>
                                     <th class="py-3 px-4">Cliente</th>
-                                    <th class="py-3 px-4 text-right">Total</th>
-                                    <th class="py-3 px-4 text-center">Ações</th>
+                                    <th class="py-3 px-4 text-right text-red-600">Custo Total</th>
+                                    <th class="py-3 px-4 text-right text-green-600">Venda Total</th>
+                                    <th class="py-3 px-4 text-right text-blue-600">Lucro Total</th>
                                 </tr>
                             </thead>
                             <tbody id="tabela-vendas" class="text-sm divide-y divide-slate-100"></tbody>
@@ -414,6 +414,8 @@
             <div class="p-6 overflow-y-auto flex-1">
                 <h2 class="text-xl font-extrabold mb-6 border-b pb-4"><i class="fas fa-shopping-cart text-blue-500 mr-2"></i>Lançar Compra</h2>
                 <form id="form-compra" class="space-y-4">
+                    <input type="hidden" id="compra_id">
+                    <input type="hidden" id="compra_transacao_id">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data da Compra</label>
@@ -433,7 +435,10 @@
                         <span class="text-sm font-bold text-slate-500 uppercase">Total:</span>
                         <span id="compra_total_exibicao" class="text-2xl font-black text-slate-800 ml-2">R$ 0,00</span>
                     </div>
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl mt-2">Salvar Compra</button>
+                    <div class="flex gap-3 mt-2">
+                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl">Salvar Compra</button>
+                        <button type="button" id="btn_excluir_compra" class="hidden bg-red-100 hover:bg-red-200 text-red-600 font-bold py-3 px-4 rounded-xl" onclick="excluirCompraModal()">Excluir</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -446,6 +451,8 @@
             <div class="p-6 overflow-y-auto flex-1">
                 <h2 class="text-xl font-extrabold mb-6 border-b pb-4"><i class="fas fa-cash-register text-blue-500 mr-2"></i>Lançar Venda</h2>
                 <form id="form-venda" class="space-y-4">
+                    <input type="hidden" id="venda_id">
+                    <input type="hidden" id="venda_transacao_id">
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data da Venda</label>
@@ -469,7 +476,10 @@
                         <span class="text-sm font-bold text-slate-500 uppercase">Total:</span>
                         <span id="venda_total_exibicao" class="text-2xl font-black text-slate-800 ml-2">R$ 0,00</span>
                     </div>
-                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 rounded-xl mt-2">Finalizar Venda</button>
+                    <div class="flex gap-3 mt-2">
+                        <button type="submit" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 rounded-xl">Finalizar Venda</button>
+                        <button type="button" id="btn_excluir_venda" class="hidden bg-red-100 hover:bg-red-200 text-red-600 font-bold py-3 px-4 rounded-xl" onclick="excluirVendaModal()">Excluir</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -1274,19 +1284,17 @@
             }
 
             produtos.forEach(p => {
-                const lucro = (p.valor_venda - p.custo_unitario) * p.estoque_atual;
+                const lucroUn = p.valor_venda - p.custo_unitario;
+                const lucroTot = lucroUn * p.estoque_atual;
                 tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
+                    <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="editarEstoque('${p.id}')">
                         <td class="py-3 px-4 font-bold text-slate-600 text-xs">${p.categoria}</td>
                         <td class="py-3 px-4 font-bold text-slate-800 text-sm">${p.nome}</td>
                         <td class="py-3 px-4 text-center font-bold ${p.estoque_atual <= 0 ? 'text-red-500' : 'text-slate-800'}">${p.estoque_atual}</td>
                         <td class="py-3 px-4 text-right font-medium text-slate-500">R$ ${parseFloat(p.custo_unitario).toFixed(2).replace('.', ',')}</td>
                         <td class="py-3 px-4 text-right font-bold text-slate-800">R$ ${parseFloat(p.valor_venda).toFixed(2).replace('.', ',')}</td>
-                        <td class="py-3 px-4 text-right font-bold text-green-600">R$ ${lucro.toFixed(2).replace('.', ',')}</td>
-                        <td class="py-3 px-4 text-center">
-                            <button onclick="editarEstoque('${p.id}')" class="text-blue-500 hover:bg-blue-50 p-2 rounded-lg transition"><i class="fas fa-edit"></i></button>
-                            <button onclick="excluirEstoque('${p.id}')" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition"><i class="fas fa-trash"></i></button>
-                        </td>
+                        <td class="py-3 px-4 text-right font-bold text-blue-600">R$ ${lucroUn.toFixed(2).replace('.', ',')}</td>
+                        <td class="py-3 px-4 text-right font-bold text-green-600">R$ ${lucroTot.toFixed(2).replace('.', ',')}</td>
                     </tr>
                 `;
             });
@@ -1367,18 +1375,15 @@
                 const tbody = document.getElementById('tabela-compras');
                 tbody.innerHTML = '';
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhuma compra registrada.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhuma compra registrada.</td></tr>';
                     return;
                 }
                 data.forEach(c => {
                     tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 transition">
+                        <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="abrirModalCompraEdicao('${c.id}')">
                             <td class="py-3 px-4 font-bold text-slate-800 text-sm">${c.data.split('-').reverse().join('/')}</td>
                             <td class="py-3 px-4 text-slate-600 font-medium">${c.fornecedor}</td>
                             <td class="py-3 px-4 text-right font-black text-red-600">R$ ${parseFloat(c.total).toFixed(2).replace('.', ',')}</td>
-                            <td class="py-3 px-4 text-center">
-                                <button onclick="excluirCompra('${c.id}', '${c.transacao_id}')" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition"><i class="fas fa-trash"></i></button>
-                            </td>
                         </tr>
                     `;
                 });
@@ -1393,29 +1398,60 @@
                 return;
             }
             document.getElementById('form-compra').reset();
+            document.getElementById('compra_id').value = '';
+            document.getElementById('compra_transacao_id').value = '';
             document.getElementById('compra_data').value = new Date().toISOString().split('T')[0];
             document.getElementById('compra_itens_container').innerHTML = '';
+            document.getElementById('btn_excluir_compra').classList.add('hidden');
             adicionarItemCompra();
             calcularTotalCompra();
             document.getElementById('modalCompra').classList.remove('hidden');
         }
 
-        function adicionarItemCompra() {
+        async function abrirModalCompraEdicao(id) {
+            try {
+                const { data: compra, error: cErr } = await clienteSupabase.from('compras').select('*').eq('id', id).single();
+                if (cErr) throw cErr;
+                const { data: itens, error: iErr } = await clienteSupabase.from('compras_itens').select('*').eq('compra_id', id);
+                if (iErr) throw iErr;
+
+                document.getElementById('form-compra').reset();
+                document.getElementById('compra_id').value = compra.id;
+                document.getElementById('compra_transacao_id').value = compra.transacao_id;
+                document.getElementById('compra_data').value = compra.data;
+                document.getElementById('compra_fornecedor').value = compra.fornecedor;
+                
+                document.getElementById('compra_itens_container').innerHTML = '';
+                
+                itens.forEach(it => {
+                    adicionarItemCompra(it.produto_id, it.quantidade, it.custo_unitario);
+                });
+                
+                calcularTotalCompra();
+                document.getElementById('btn_excluir_compra').classList.remove('hidden');
+                document.getElementById('modalCompra').classList.remove('hidden');
+            } catch (err) {
+                mostrarToast("Erro ao carregar compra: " + err.message, "error");
+            }
+        }
+
+        function adicionarItemCompra(produtoId = '', quantidade = '', custo = '') {
             const container = document.getElementById('compra_itens_container');
             const div = document.createElement('div');
             div.className = "flex flex-wrap md:flex-nowrap gap-2 items-center item-compra";
             
             let options = '<option value="">Selecione o produto</option>';
             produtos.forEach(p => {
-                options += `<option value="${p.id}">${p.nome} (Atual: ${p.estoque_atual})</option>`;
+                const selected = p.id === produtoId ? 'selected' : '';
+                options += `<option value="${p.id}" ${selected}>${p.nome} (Atual: ${p.estoque_atual})</option>`;
             });
 
             div.innerHTML = `
                 <select class="produto-select flex-1 min-w-[150px] bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required>
                     ${options}
                 </select>
-                <input type="number" step="0.01" min="0.01" placeholder="Qtd" class="quantidade-input w-24 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalCompra()">
-                <input type="number" step="0.01" min="0.01" placeholder="Custo Un." class="custo-input w-28 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalCompra()">
+                <input type="number" step="0.01" min="0.01" value="${quantidade}" placeholder="Qtd" class="quantidade-input w-24 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalCompra()">
+                <input type="number" step="0.01" min="0.01" value="${custo}" placeholder="Custo Un." class="custo-input w-28 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalCompra()">
                 <button type="button" onclick="this.parentElement.remove(); calcularTotalCompra()" class="text-red-500 p-2 ml-auto"><i class="fas fa-times"></i></button>
             `;
             container.appendChild(div);
@@ -1436,8 +1472,28 @@
             e.preventDefault();
             const total = calcularTotalCompra();
             if (total <= 0) return mostrarToast("Adicione itens válidos à compra.", "warning");
+            
+            const compraId = document.getElementById('compra_id').value;
+            const transacaoId = document.getElementById('compra_transacao_id').value;
 
             try {
+                // Se for edição, exclui a antiga primeiro para reverter estoque
+                if (compraId) {
+                    const { data: itensAntigos } = await clienteSupabase.from('compras_itens').select('*').eq('compra_id', compraId);
+                    for (const it of itensAntigos) {
+                        const p = produtos.find(x => x.id === it.produto_id);
+                        if (p) {
+                            const novoEstoque = p.estoque_atual - it.quantidade;
+                            if (novoEstoque < 0) return mostrarToast(`A reversão deixaria o estoque de ${p.nome} negativo.`, "error");
+                            await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                        }
+                    }
+                    await clienteSupabase.from('compras').delete().eq('id', compraId);
+                    if (transacaoId) await clienteSupabase.from('transacoes').delete().eq('id', transacaoId);
+                    // Atualiza a lista local de produtos antes da nova inserção
+                    await carregarProdutos();
+                }
+
                 // 1. Inserir Transação (Financeiro)
                 const { data: trData, error: trErr } = await clienteSupabase.from('transacoes').insert({
                     user_id: userAtual.id,
@@ -1490,7 +1546,7 @@
                 const { error: itErr } = await clienteSupabase.from('compras_itens').insert(itensInsert);
                 if (itErr) throw itErr;
 
-                mostrarToast("Compra registrada com sucesso!", "success");
+                mostrarToast(compraId ? "Compra atualizada!" : "Compra registrada com sucesso!", "success");
                 fecharModal('modalCompra');
                 carregarProdutos();
                 carregarCompras();
@@ -1500,8 +1556,13 @@
             }
         });
 
-        async function excluirCompra(id, transacaoId) {
-            if(!confirm("Deseja realmente excluir esta compra? O estoque será revertido e a transação financeira apagada.")) return;
+        async function excluirCompraModal() {
+            const id = document.getElementById('compra_id').value;
+            const transacaoId = document.getElementById('compra_transacao_id').value;
+            if(!id) return;
+            
+            if(!confirm("Deseja realmente excluir esta compra? O estoque será revertido e a transação apagada.")) return;
+            
             try {
                 const { data: itens, error: iErr } = await clienteSupabase.from('compras_itens').select('*').eq('compra_id', id);
                 if (iErr) throw iErr;
@@ -1511,7 +1572,7 @@
                     if (p) {
                         const novoEstoque = p.estoque_atual - it.quantidade;
                         if (novoEstoque < 0) {
-                            mostrarToast(`A exclusão deixaria o estoque de ${p.nome} negativo. Cancelando exclusão.`, "error");
+                            mostrarToast(`A exclusão deixaria o estoque de ${p.nome} negativo.`, "error");
                             return;
                         }
                         await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
@@ -1522,6 +1583,7 @@
                 await clienteSupabase.from('compras').delete().eq('id', id);
 
                 mostrarToast("Compra excluída e revertida!", "success");
+                fecharModal('modalCompra');
                 carregarProdutos();
                 carregarCompras();
                 atualizarTudo();
@@ -1538,18 +1600,20 @@
                 const tbody = document.getElementById('tabela-vendas');
                 tbody.innerHTML = '';
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhuma venda registrada.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhuma venda registrada.</td></tr>';
                     return;
                 }
                 data.forEach(v => {
+                    const custo = v.custo_total || 0;
+                    const venda = v.total || 0;
+                    const lucro = venda - custo;
                     tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 transition">
+                        <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="abrirModalVendaEdicao('${v.id}')">
                             <td class="py-3 px-4 font-bold text-slate-800 text-sm">${v.data.split('-').reverse().join('/')}</td>
                             <td class="py-3 px-4 text-slate-600 font-medium">${v.cliente}</td>
-                            <td class="py-3 px-4 text-right font-black text-green-600">R$ ${parseFloat(v.total).toFixed(2).replace('.', ',')}</td>
-                            <td class="py-3 px-4 text-center">
-                                <button onclick="excluirVenda('${v.id}', '${v.transacao_id}')" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition"><i class="fas fa-trash"></i></button>
-                            </td>
+                            <td class="py-3 px-4 text-right font-bold text-red-500">R$ ${parseFloat(custo).toFixed(2).replace('.', ',')}</td>
+                            <td class="py-3 px-4 text-right font-black text-green-600">R$ ${parseFloat(venda).toFixed(2).replace('.', ',')}</td>
+                            <td class="py-3 px-4 text-right font-black text-blue-600">R$ ${parseFloat(lucro).toFixed(2).replace('.', ',')}</td>
                         </tr>
                     `;
                 });
@@ -1564,29 +1628,61 @@
                 return;
             }
             document.getElementById('form-venda').reset();
+            document.getElementById('venda_id').value = '';
+            document.getElementById('venda_transacao_id').value = '';
             document.getElementById('venda_data').value = new Date().toISOString().split('T')[0];
             document.getElementById('venda_itens_container').innerHTML = '';
+            document.getElementById('btn_excluir_venda').classList.add('hidden');
             adicionarItemVenda();
             calcularTotalVenda();
             document.getElementById('modalVenda').classList.remove('hidden');
         }
 
-        function adicionarItemVenda() {
+        async function abrirModalVendaEdicao(id) {
+            try {
+                const { data: venda, error: vErr } = await clienteSupabase.from('vendas').select('*').eq('id', id).single();
+                if (vErr) throw vErr;
+                const { data: itens, error: iErr } = await clienteSupabase.from('vendas_itens').select('*').eq('venda_id', id);
+                if (iErr) throw iErr;
+
+                document.getElementById('form-venda').reset();
+                document.getElementById('venda_id').value = venda.id;
+                document.getElementById('venda_transacao_id').value = venda.transacao_id;
+                document.getElementById('venda_data').value = venda.data;
+                document.getElementById('venda_cliente').value = venda.cliente;
+                document.getElementById('venda_endereco').value = venda.endereco || '';
+                
+                document.getElementById('venda_itens_container').innerHTML = '';
+                
+                itens.forEach(it => {
+                    adicionarItemVenda(it.produto_id, it.quantidade, it.valor_venda);
+                });
+                
+                calcularTotalVenda();
+                document.getElementById('btn_excluir_venda').classList.remove('hidden');
+                document.getElementById('modalVenda').classList.remove('hidden');
+            } catch (err) {
+                mostrarToast("Erro ao carregar venda: " + err.message, "error");
+            }
+        }
+
+        function adicionarItemVenda(produtoId = '', quantidade = '', valorVenda = '') {
             const container = document.getElementById('venda_itens_container');
             const div = document.createElement('div');
             div.className = "flex flex-wrap md:flex-nowrap gap-2 items-center item-venda";
             
             let options = '<option value="">Selecione o produto</option>';
             produtos.forEach(p => {
-                options += `<option value="${p.id}" data-preco="${p.valor_venda}" data-estoque="${p.estoque_atual}">${p.nome} (Disp: ${p.estoque_atual})</option>`;
+                const selected = p.id === produtoId ? 'selected' : '';
+                options += `<option value="${p.id}" data-preco="${p.valor_venda}" data-estoque="${p.estoque_atual}" data-custo="${p.custo_unitario}" ${selected}>${p.nome} (Disp: ${p.estoque_atual})</option>`;
             });
 
             div.innerHTML = `
                 <select class="produto-select flex-1 min-w-[150px] bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required onchange="atualizarPrecoVenda(this)">
                     ${options}
                 </select>
-                <input type="number" step="0.01" min="0.01" placeholder="Qtd" class="quantidade-input w-24 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalVenda()">
-                <input type="number" step="0.01" min="0.01" placeholder="Venda Un." class="venda-input w-28 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalVenda()">
+                <input type="number" step="0.01" min="0.01" value="${quantidade}" placeholder="Qtd" class="quantidade-input w-24 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalVenda()">
+                <input type="number" step="0.01" min="0.01" value="${valorVenda}" placeholder="Venda Un." class="venda-input w-28 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalVenda()">
                 <button type="button" onclick="this.parentElement.remove(); calcularTotalVenda()" class="text-red-500 p-2 ml-auto"><i class="fas fa-times"></i></button>
             `;
             container.appendChild(div);
@@ -1596,7 +1692,7 @@
             const option = selectElement.options[selectElement.selectedIndex];
             const preco = option.getAttribute('data-preco');
             const inputPreco = selectElement.parentElement.querySelector('.venda-input');
-            if(preco) inputPreco.value = preco;
+            if(preco && !inputPreco.value) inputPreco.value = preco; 
             calcularTotalVenda();
         }
 
@@ -1616,23 +1712,47 @@
             const total = calcularTotalVenda();
             if (total <= 0) return mostrarToast("Adicione itens válidos à venda.", "warning");
 
+            const vendaId = document.getElementById('venda_id').value;
+            const transacaoId = document.getElementById('venda_transacao_id').value;
+
             const itemsDiv = document.querySelectorAll('.item-venda');
             const comprasDict = {};
+            let custoTotalVenda = 0;
+
             for (const el of itemsDiv) {
-                const prodId = el.querySelector('.produto-select').value;
+                const prodSelect = el.querySelector('.produto-select');
+                const prodId = prodSelect.value;
                 const qtd = parseFloat(el.querySelector('.quantidade-input').value);
+                const custoUn = parseFloat(prodSelect.options[prodSelect.selectedIndex].getAttribute('data-custo')) || 0;
+                
+                custoTotalVenda += (qtd * custoUn);
+
                 if (!comprasDict[prodId]) comprasDict[prodId] = 0;
                 comprasDict[prodId] += qtd;
             }
             
-            for (const prodId of Object.keys(comprasDict)) {
-                const p = produtos.find(x => x.id === prodId);
-                if (p.estoque_atual < comprasDict[prodId]) {
-                    return mostrarToast(`Estoque insuficiente para o produto: ${p.nome}`, "error");
-                }
-            }
-
             try {
+                if (vendaId) {
+                    const { data: itensAntigos } = await clienteSupabase.from('vendas_itens').select('*').eq('venda_id', vendaId);
+                    for (const it of itensAntigos) {
+                        const p = produtos.find(x => x.id === it.produto_id);
+                        if (p) {
+                            const novoEstoque = p.estoque_atual + it.quantidade;
+                            await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                        }
+                    }
+                    await clienteSupabase.from('vendas').delete().eq('id', vendaId);
+                    if (transacaoId) await clienteSupabase.from('transacoes').delete().eq('id', transacaoId);
+                    await carregarProdutos(); 
+                }
+
+                for (const prodId of Object.keys(comprasDict)) {
+                    const p = produtos.find(x => x.id === prodId);
+                    if (p.estoque_atual < comprasDict[prodId]) {
+                        return mostrarToast(`Estoque insuficiente para o produto: ${p.nome}`, "error");
+                    }
+                }
+
                 const { data: trData, error: trErr } = await clienteSupabase.from('transacoes').insert({
                     user_id: userAtual.id,
                     tipo: 'Entrada',
@@ -1655,21 +1775,25 @@
                     cliente: document.getElementById('venda_cliente').value,
                     endereco: document.getElementById('venda_endereco').value,
                     total: total,
+                    custo_total: custoTotalVenda,
                     transacao_id: trData.id
                 }).select().single();
                 if (vErr) throw vErr;
 
                 const itensInsert = [];
                 for (const el of itemsDiv) {
-                    const prodId = el.querySelector('.produto-select').value;
+                    const prodSelect = el.querySelector('.produto-select');
+                    const prodId = prodSelect.value;
                     const qtd = parseFloat(el.querySelector('.quantidade-input').value);
                     const vendaVal = parseFloat(el.querySelector('.venda-input').value);
+                    const custoUn = parseFloat(prodSelect.options[prodSelect.selectedIndex].getAttribute('data-custo')) || 0;
                     
                     itensInsert.push({
                         venda_id: vData.id,
                         produto_id: prodId,
                         quantidade: qtd,
-                        valor_venda: vendaVal
+                        valor_venda: vendaVal,
+                        custo_unitario: custoUn
                     });
 
                     const prod = produtos.find(p => p.id === prodId);
@@ -1681,7 +1805,7 @@
                 const { error: itErr } = await clienteSupabase.from('vendas_itens').insert(itensInsert);
                 if (itErr) throw itErr;
 
-                mostrarToast("Venda registrada com sucesso!", "success");
+                mostrarToast(vendaId ? "Venda atualizada!" : "Venda registrada com sucesso!", "success");
                 fecharModal('modalVenda');
                 carregarProdutos();
                 carregarVendas();
@@ -1691,8 +1815,13 @@
             }
         });
 
-        async function excluirVenda(id, transacaoId) {
-            if(!confirm("Deseja realmente excluir esta venda? O estoque será revertido e a transação financeira apagada.")) return;
+        async function excluirVendaModal() {
+            const id = document.getElementById('venda_id').value;
+            const transacaoId = document.getElementById('venda_transacao_id').value;
+            if(!id) return;
+            
+            if(!confirm("Deseja realmente excluir esta venda? O estoque será revertido e a transação apagada.")) return;
+            
             try {
                 const { data: itens, error: iErr } = await clienteSupabase.from('vendas_itens').select('*').eq('venda_id', id);
                 if (iErr) throw iErr;
@@ -1709,6 +1838,7 @@
                 await clienteSupabase.from('vendas').delete().eq('id', id);
 
                 mostrarToast("Venda excluída e revertida!", "success");
+                fecharModal('modalVenda');
                 carregarProdutos();
                 carregarVendas();
                 atualizarTudo();
@@ -1724,7 +1854,6 @@
             if (abaId === 'aba-compras') { carregarProdutos(); carregarCompras(); }
             if (abaId === 'aba-vendas') { carregarProdutos(); carregarVendas(); }
         };
-
     </script>
 </body>
 </html>
