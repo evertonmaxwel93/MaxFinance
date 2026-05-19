@@ -385,6 +385,9 @@
                     document.getElementById('app-section').classList.add('flex');
                     document.getElementById('user-info').textContent = session.user.email;
                     
+                    // Garante a propagação dos cabeçalhos de autenticação do cliente REST (Supabase RLS)
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
                     // O estado padrão no HTML já é "Todos" e "Pendentes"
                     await carregarSubcategoriasBanco();
                     atualizarTudo();
