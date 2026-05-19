@@ -368,19 +368,16 @@
             try {
                 await clienteSupabase.auth.signOut(); 
                 mostrarToast("Sessão encerrada com sucesso!", "info");
-                verificarSessao(); 
             } catch (err) {
                 mostrarToast("Erro ao sair da conta: " + err.message, "error");
             }
         }
 
-        async function verificarSessao() {
+        async function verificarSessao(session) {
             try {
                 // Garante o fechamento total de modais residuais ao carregar/trocar aba (Correção de Bug)
                 document.querySelectorAll('.modal-blur').forEach(el => el.classList.add('hidden'));
 
-                const { data: { session }, error } = await clienteSupabase.auth.getSession();
-                if (error) throw error;
                 if (session) {
                     userAtual = session.user;
                     document.getElementById('login-section').classList.add('hidden');
@@ -398,12 +395,14 @@
                     document.getElementById('app-section').classList.remove('flex');
                 }
             } catch (err) {
-                mostrarToast("Erro ao verificar sessão: " + err.message, "error");
+                mostrarToast("Erro ao processar sessão: " + err.message, "error");
             }
         }
         
-        verificarSessao();
-        clienteSupabase.auth.onAuthStateChange(() => verificarSessao());
+        // Ouve todas as mudanças de autenticação (inclusive a inicialização da sessão) de forma automática
+        clienteSupabase.auth.onAuthStateChange(async (event, session) => {
+            await verificarSessao(session);
+        });
 
         function mudarAba(abaId) {
             // Força fechamento de modais para evitar bugs de foco/z-index
