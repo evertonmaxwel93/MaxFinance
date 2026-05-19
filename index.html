@@ -14,9 +14,36 @@
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .modal-blur { backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
         tr.clickable-row { cursor: pointer; }
+
+        /* Premium Toast Notifications */
+        .toast {
+            animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards, fadeOut 0.3s cubic-bezier(0.16, 1, 0.3, 1) 2.7s forwards;
+            pointer-events: auto;
+            max-width: 350px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px) scale(0.95); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            from { transform: translateY(0) scale(1); opacity: 1; }
+            to { transform: translateY(-20px) scale(0.95); opacity: 0; }
+        }
+
+        /* Modern Button micro-animations */
+        button, label.cursor-pointer, .clickable-row {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        button:active, label.cursor-pointer:active {
+            transform: scale(0.97);
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Premium Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none"></div>
 
     <div id="login-section" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center p-4">
         <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-sm w-full text-center">
@@ -159,14 +186,14 @@
                     <h3 class="font-bold text-slate-800 mb-2"><i class="fas fa-database mr-2 text-blue-500"></i>Backup e Exportação</h3>
                     <p class="text-xs text-slate-500 mb-5">Gere cópias de segurança do seu sistema ou exporte seus lançamentos para uma planilha.</p>
                     <div class="flex flex-wrap gap-3">
-                        <button onclick="exportarBackupJSON()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-lg border border-slate-300 transition text-sm flex items-center shadow-sm">
+                        <button onclick="exportarBackupJSON(event)" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-lg border border-slate-300 transition text-sm flex items-center shadow-sm">
                             <i class="fas fa-file-export mr-2"></i> Exportar (JSON)
                         </button>
                         <label class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 px-4 rounded-lg border border-slate-300 transition text-sm flex items-center cursor-pointer shadow-sm mb-0">
                             <i class="fas fa-file-import mr-2"></i> Restaurar (JSON)
                             <input type="file" accept=".json" onchange="importarBackupJSON(event)" class="hidden">
                         </label>
-                        <button onclick="exportarExcel()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-lg transition text-sm flex items-center shadow-sm md:ml-auto">
+                        <button onclick="exportarExcel(event)" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-4 rounded-lg transition text-sm flex items-center shadow-sm md:ml-auto">
                             <i class="fas fa-file-excel mr-2"></i> Exportar para Excel
                         </button>
                     </div>
@@ -203,7 +230,7 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Valor Previsto (R$)</label>
-                                <input type="number" step="0.01" id="valor" required class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200">
+                                <input type="number" step="0.01" min="0.01" id="valor" required class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200">
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4">
@@ -224,7 +251,7 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-bold text-green-600 uppercase mb-1">Valor Real Pago (R$)</label>
-                                <input type="number" step="0.01" id="valor_realizado" class="w-full bg-white rounded-lg p-2 text-sm font-bold outline-none ring-1 ring-green-200">
+                                <input type="number" step="0.01" min="0.01" id="valor_realizado" class="w-full bg-white rounded-lg p-2 text-sm font-bold outline-none ring-1 ring-green-200">
                             </div>
                         </div>
 
@@ -281,7 +308,7 @@
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Valor Real Pago (R$)</label>
-                    <input type="number" step="0.01" id="baixa_valor" class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200">
+                    <input type="number" step="0.01" min="0.01" id="baixa_valor" class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200">
                 </div>
                 <button onclick="confirmarBaixa()" class="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-3 rounded-xl mt-2">Salvar Pagamento</button>
             </div>
@@ -292,6 +319,39 @@
         const SUPABASE_URL = 'https://rkwoerrsicftcjgaakte.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_ug1NkS3w4DACmOIpiafAAA_yQtSud7-';
         const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function mostrarToast(mensagem, tipo = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast flex items-center gap-3 bg-white border p-4 rounded-xl text-slate-800 font-semibold text-sm transition pointer-events-auto`;
+            
+            let icone = '<i class="fas fa-info-circle text-blue-500 text-lg"></i>';
+            if (tipo === 'success') {
+                icone = '<i class="fas fa-check-circle text-green-500 text-lg"></i>';
+                toast.classList.add('border-green-100');
+            } else if (tipo === 'error') {
+                icone = '<i class="fas fa-exclamation-circle text-red-500 text-lg"></i>';
+                toast.classList.add('border-red-100');
+            } else if (tipo === 'warning') {
+                icone = '<i class="fas fa-exclamation-triangle text-amber-500 text-lg"></i>';
+                toast.classList.add('border-amber-100');
+            } else {
+                toast.classList.add('border-blue-100');
+            }
+
+            toast.innerHTML = `
+                <div class="flex-shrink-0">${icone}</div>
+                <div class="flex-1 text-xs md:text-sm">${mensagem}</div>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
 
         let userAtual = null;
         let subcategoriasGlobais = [];
@@ -305,30 +365,40 @@
         async function loginComGoogle() { await clienteSupabase.auth.signInWithOAuth({ provider: 'google' }); }
         
         async function sair() { 
-            await clienteSupabase.auth.signOut(); 
-            verificarSessao(); 
+            try {
+                await clienteSupabase.auth.signOut(); 
+                mostrarToast("Sessão encerrada com sucesso!", "info");
+                verificarSessao(); 
+            } catch (err) {
+                mostrarToast("Erro ao sair da conta: " + err.message, "error");
+            }
         }
 
         async function verificarSessao() {
-            // Garante o fechamento total de modais residuais ao carregar/trocar aba (Correção de Bug)
-            document.querySelectorAll('.modal-blur').forEach(el => el.classList.add('hidden'));
+            try {
+                // Garante o fechamento total de modais residuais ao carregar/trocar aba (Correção de Bug)
+                document.querySelectorAll('.modal-blur').forEach(el => el.classList.add('hidden'));
 
-            const { data: { session } } = await clienteSupabase.auth.getSession();
-            if (session) {
-                userAtual = session.user;
-                document.getElementById('login-section').classList.add('hidden');
-                document.getElementById('app-section').classList.remove('hidden');
-                document.getElementById('app-section').classList.add('flex');
-                document.getElementById('user-info').textContent = session.user.email;
-                
-                // O estado padrão no HTML já é "Todos" e "Pendentes"
-                await carregarSubcategoriasBanco();
-                atualizarTudo();
-            } else {
-                userAtual = null;
-                document.getElementById('login-section').classList.remove('hidden');
-                document.getElementById('app-section').classList.add('hidden');
-                document.getElementById('app-section').classList.remove('flex');
+                const { data: { session }, error } = await clienteSupabase.auth.getSession();
+                if (error) throw error;
+                if (session) {
+                    userAtual = session.user;
+                    document.getElementById('login-section').classList.add('hidden');
+                    document.getElementById('app-section').classList.remove('hidden');
+                    document.getElementById('app-section').classList.add('flex');
+                    document.getElementById('user-info').textContent = session.user.email;
+                    
+                    // O estado padrão no HTML já é "Todos" e "Pendentes"
+                    await carregarSubcategoriasBanco();
+                    atualizarTudo();
+                } else {
+                    userAtual = null;
+                    document.getElementById('login-section').classList.remove('hidden');
+                    document.getElementById('app-section').classList.add('hidden');
+                    document.getElementById('app-section').classList.remove('flex');
+                }
+            } catch (err) {
+                mostrarToast("Erro ao verificar sessão: " + err.message, "error");
             }
         }
         
@@ -366,66 +436,78 @@
         }
 
         async function calcularSaldoRealTotal() {
-            const { data } = await clienteSupabase.from('transacoes').select('tipo, valor_realizado').eq('status', 'Realizado');
-            let saldo = 0;
-            if(data) data.forEach(t => { saldo += t.tipo === 'Entrada' ? parseFloat(t.valor_realizado) : -parseFloat(t.valor_realizado); });
-            
-            const el = document.getElementById('card-saldo-real');
-            el.textContent = `R$ ${saldo.toFixed(2).replace('.', ',')}`;
-            el.className = saldo < 0 ? "text-2xl font-black text-red-600 mt-1" : "text-2xl font-black text-green-600 mt-1";
+            try {
+                const { data, error } = await clienteSupabase.from('transacoes').select('tipo, valor_realizado').eq('status', 'Realizado');
+                if (error) throw error;
+                let saldo = 0;
+                if(data) data.forEach(t => { saldo += t.tipo === 'Entrada' ? parseFloat(t.valor_realizado) : -parseFloat(t.valor_realizado); });
+                
+                const el = document.getElementById('card-saldo-real');
+                el.textContent = `R$ ${saldo.toFixed(2).replace('.', ',')}`;
+                el.className = saldo < 0 ? "text-2xl font-black text-red-600 mt-1" : "text-2xl font-black text-green-600 mt-1";
+            } catch (err) {
+                mostrarToast("Erro ao calcular saldo real: " + err.message, "error");
+            }
         }
 
         async function carregarDadosFluxo() {
-            const ano = document.getElementById('filtro-ano').value;
-            const mes = document.getElementById('filtro-mes').value;
-            let query = clienteSupabase.from('transacoes').select('*');
-            
-            saldoInicialProjetado = 0;
-
-            if (ano !== "Todos" && mes !== "Todos") {
-                const anoFiltro = parseInt(ano);
-                const mesFiltro = parseInt(mes);
-                const dataInicioMes = `${anoFiltro}-${String(mesFiltro).padStart(2, '0')}-01`;
-                const ultimoDia = new Date(anoFiltro, mesFiltro, 0).getDate();
-                const dataFimMes = `${anoFiltro}-${String(mesFiltro).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`;
+            try {
+                const ano = document.getElementById('filtro-ano').value;
+                const mes = document.getElementById('filtro-mes').value;
+                let query = clienteSupabase.from('transacoes').select('*');
                 
-                query = query.gte('data_vencimento', dataInicioMes).lte('data_vencimento', dataFimMes);
+                saldoInicialProjetado = 0;
 
-                const { data: dataAnt } = await clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado').lt('data_vencimento', dataInicioMes);
-                if(dataAnt) {
-                    dataAnt.forEach(t => {
-                        const v = parseFloat(t.status === 'Realizado' ? t.valor_realizado : t.valor_parcela);
-                        saldoInicialProjetado += t.tipo === 'Entrada' ? v : -v;
-                    });
+                if (ano !== "Todos" && mes !== "Todos") {
+                    const anoFiltro = parseInt(ano);
+                    const mesFiltro = parseInt(mes);
+                    const dataInicioMes = `${anoFiltro}-${String(mesFiltro).padStart(2, '0')}-01`;
+                    const ultimoDia = new Date(anoFiltro, mesFiltro, 0).getDate();
+                    const dataFimMes = `${anoFiltro}-${String(mesFiltro).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`;
+                    
+                    query = query.gte('data_vencimento', dataInicioMes).lte('data_vencimento', dataFimMes);
+
+                    const { data: dataAnt, error: errorAnt } = await clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado').lt('data_vencimento', dataInicioMes);
+                    if (errorAnt) throw errorAnt;
+                    if(dataAnt) {
+                        dataAnt.forEach(t => {
+                            const v = parseFloat(t.status === 'Realizado' ? t.valor_realizado : t.valor_parcela);
+                            saldoInicialProjetado += t.tipo === 'Entrada' ? v : -v;
+                        });
+                    }
+                } else if (ano !== "Todos") {
+                    const dataInicioAno = `${ano}-01-01`;
+                    const dataFimAno = `${ano}-12-31`;
+                    query = query.gte('data_vencimento', dataInicioAno).lte('data_vencimento', dataFimAno);
+                    
+                    const { data: dataAnt, error: errorAnt } = await clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado').lt('data_vencimento', dataInicioAno);
+                    if (errorAnt) throw errorAnt;
+                    if(dataAnt) {
+                        dataAnt.forEach(t => {
+                            const v = parseFloat(t.status === 'Realizado' ? t.valor_realizado : t.valor_parcela);
+                            saldoInicialProjetado += t.tipo === 'Entrada' ? v : -v;
+                        });
+                    }
                 }
-            } else if (ano !== "Todos") {
-                const dataInicioAno = `${ano}-01-01`;
-                const dataFimAno = `${ano}-12-31`;
-                query = query.gte('data_vencimento', dataInicioAno).lte('data_vencimento', dataFimAno);
+
+                const { data, error } = await query.order('data_vencimento', { ascending: true });
+                if (error) throw error;
                 
-                const { data: dataAnt } = await clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado').lt('data_vencimento', dataInicioAno);
-                if(dataAnt) {
-                    dataAnt.forEach(t => {
-                        const v = parseFloat(t.status === 'Realizado' ? t.valor_realizado : t.valor_parcela);
-                        saldoInicialProjetado += t.tipo === 'Entrada' ? v : -v;
+                if (data) {
+                    transacoesMes = data;
+                    let pIn = 0; let pOut = 0;
+                    transacoesMes.forEach(t => {
+                        const v = parseFloat(t.valor_parcela);
+                        if(t.tipo === 'Entrada') pIn += v; else pOut += v;
                     });
+                    document.getElementById('card-entradas-prev').textContent = `R$ ${pIn.toFixed(2).replace('.', ',')}`;
+                    document.getElementById('card-saidas-prev').textContent = `R$ ${pOut.toFixed(2).replace('.', ',')}`;
+                    document.getElementById('card-balanco-prev').textContent = `R$ ${(pIn - pOut).toFixed(2).replace('.', ',')}`;
+
+                    renderizarFluxo();
                 }
-            }
-
-            const { data } = await query.order('data_vencimento', { ascending: true });
-            
-            if (data) {
-                transacoesMes = data;
-                let pIn = 0; let pOut = 0;
-                transacoesMes.forEach(t => {
-                    const v = parseFloat(t.valor_parcela);
-                    if(t.tipo === 'Entrada') pIn += v; else pOut += v;
-                });
-                document.getElementById('card-entradas-prev').textContent = `R$ ${pIn.toFixed(2).replace('.', ',')}`;
-                document.getElementById('card-saidas-prev').textContent = `R$ ${pOut.toFixed(2).replace('.', ',')}`;
-                document.getElementById('card-balanco-prev').textContent = `R$ ${(pIn - pOut).toFixed(2).replace('.', ',')}`;
-
-                renderizarFluxo();
+            } catch (err) {
+                mostrarToast("Erro ao carregar fluxo de caixa: " + err.message, "error");
             }
         }
 
@@ -544,25 +626,45 @@
         }
 
         async function alternarBaixaRapida(id, isRealizado, valorPadrao) {
-            if (isRealizado) {
-                if(confirm("Desfazer a baixa e marcar como pendente?")) {
-                    await clienteSupabase.from('transacoes').update({ status: 'Pendente', data_realizacao: null, valor_realizado: null }).eq('id', id);
-                    atualizarTudo();
+            try {
+                if (isRealizado) {
+                    if(confirm("Desfazer a baixa e marcar como pendente?")) {
+                        const { error } = await clienteSupabase.from('transacoes').update({ status: 'Pendente', data_realizacao: null, valor_realizado: null }).eq('id', id);
+                        if (error) throw error;
+                        mostrarToast("Lançamento alterado para Pendente!", "info");
+                        atualizarTudo();
+                    }
+                } else {
+                    baixaIdAtual = id;
+                    document.getElementById('baixa_valor').value = valorPadrao;
+                    document.getElementById('baixa_data').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('modalOverlayBaixa').classList.remove('hidden');
                 }
-            } else {
-                baixaIdAtual = id;
-                document.getElementById('baixa_valor').value = valorPadrao;
-                document.getElementById('baixa_data').value = new Date().toISOString().split('T')[0];
-                document.getElementById('modalOverlayBaixa').classList.remove('hidden');
+            } catch (err) {
+                mostrarToast("Erro ao alterar status: " + err.message, "error");
             }
         }
 
         async function confirmarBaixa() {
-            const v = parseFloat(document.getElementById('baixa_valor').value);
-            const d = document.getElementById('baixa_data').value;
-            await clienteSupabase.from('transacoes').update({ status: 'Realizado', data_realizacao: d, valor_realizado: v }).eq('id', baixaIdAtual);
-            fecharModal('modalOverlayBaixa');
-            atualizarTudo();
+            try {
+                const v = parseFloat(document.getElementById('baixa_valor').value);
+                const d = document.getElementById('baixa_data').value;
+                if (isNaN(v) || v <= 0) {
+                    mostrarToast("Por favor, insira um valor válido maior que zero.", "warning");
+                    return;
+                }
+                if (!d) {
+                    mostrarToast("Por favor, selecione a data do pagamento.", "warning");
+                    return;
+                }
+                const { error } = await clienteSupabase.from('transacoes').update({ status: 'Realizado', data_realizacao: d, valor_realizado: v }).eq('id', baixaIdAtual);
+                if (error) throw error;
+                mostrarToast("Pagamento confirmado com sucesso!", "success");
+                fecharModal('modalOverlayBaixa');
+                atualizarTudo();
+            } catch (err) {
+                mostrarToast("Erro ao confirmar pagamento: " + err.message, "error");
+            }
         }
 
         function fecharModal(id) { 
@@ -586,64 +688,74 @@
         }
 
         async function abrirModalGestao(id) {
-            const { data } = await clienteSupabase.from('transacoes').select('*').eq('id', id).single();
-            if(data) {
-                editandoId = id;
-                grupoIdAtual = data.grupo_id;
-                
-                document.getElementById('modal-titulo').innerHTML = '<i class="fas fa-edit text-blue-500 mr-2"></i>Gerenciar Lançamento';
-                document.getElementById('tipo').value = data.tipo;
-                carregarSelectSubcategorias();
-                setTimeout(() => document.getElementById('subcategoria').value = data.subcategoria, 50);
-                document.getElementById('descricao').value = data.descricao;
-                document.getElementById('valor').value = data.valor_parcela;
-                document.getElementById('data_vencimento').value = data.data_vencimento;
-                
-                if (data.status === 'Realizado') {
-                    document.getElementById('campos-realizado').classList.remove('hidden');
-                    document.getElementById('data_realizacao').value = data.data_realizacao;
-                    document.getElementById('valor_realizado').value = data.valor_realizado;
-                } else {
-                    document.getElementById('campos-realizado').classList.add('hidden');
+            try {
+                const { data, error } = await clienteSupabase.from('transacoes').select('*').eq('id', id).single();
+                if (error) throw error;
+                if(data) {
+                    editandoId = id;
+                    grupoIdAtual = data.grupo_id;
+                    
+                    document.getElementById('modal-titulo').innerHTML = '<i class="fas fa-edit text-blue-500 mr-2"></i>Gerenciar Lançamento';
+                    document.getElementById('tipo').value = data.tipo;
+                    carregarSelectSubcategorias();
+                    document.getElementById('subcategoria').value = data.subcategoria;
+                    document.getElementById('descricao').value = data.descricao;
+                    document.getElementById('valor').value = data.valor_parcela;
+                    document.getElementById('data_vencimento').value = data.data_vencimento;
+                    
+                    if (data.status === 'Realizado') {
+                        document.getElementById('campos-realizado').classList.remove('hidden');
+                        document.getElementById('data_realizacao').value = data.data_realizacao;
+                        document.getElementById('valor_realizado').value = data.valor_realizado;
+                    } else {
+                        document.getElementById('campos-realizado').classList.add('hidden');
+                    }
+                    
+                    document.getElementById('div-parcelas').classList.add('hidden');
+                    document.getElementById('div-frequencia').classList.add('hidden');
+                    document.getElementById('label-data').textContent = "Data de Vencimento";
+                    
+                    document.getElementById('modal-footer').classList.remove('hidden');
+                    document.getElementById('modalOverlayGestao').classList.remove('hidden');
+                    
+                    await carregarHistoricoGrupo(grupoIdAtual);
                 }
-                
-                document.getElementById('div-parcelas').classList.add('hidden');
-                document.getElementById('div-frequencia').classList.add('hidden');
-                document.getElementById('label-data').textContent = "Data de Vencimento";
-                
-                document.getElementById('modal-footer').classList.remove('hidden');
-                document.getElementById('modalOverlayGestao').classList.remove('hidden');
-                
-                carregarHistoricoGrupo(grupoIdAtual);
+            } catch (err) {
+                mostrarToast("Erro ao carregar detalhes do lançamento: " + err.message, "error");
             }
         }
 
         async function carregarHistoricoGrupo(grupoId) {
-            const { data } = await clienteSupabase.from('transacoes').select('*').eq('grupo_id', grupoId).order('parcela_atual', { ascending: true });
-            if (data && data.length > 1) {
-                document.getElementById('area-historico').classList.remove('hidden');
-                const tbody = document.getElementById('tabela-historico');
-                tbody.innerHTML = '';
-                
-                data.forEach(t => {
-                    const isRealizado = t.status === 'Realizado';
-                    const v = parseFloat(isRealizado ? t.valor_realizado : t.valor_parcela);
-                    const dt = t.data_vencimento.split('-').reverse().join('/');
-                    const isAtual = t.id === editandoId;
+            try {
+                const { data, error } = await clienteSupabase.from('transacoes').select('*').eq('grupo_id', grupoId).order('parcela_atual', { ascending: true });
+                if (error) throw error;
+                if (data && data.length > 1) {
+                    document.getElementById('area-historico').classList.remove('hidden');
+                    const tbody = document.getElementById('tabela-historico');
+                    tbody.innerHTML = '';
                     
-                    tbody.innerHTML += `
-                        <tr onclick="abrirModalGestao('${t.id}')" class="cursor-pointer hover:bg-slate-50 transition ${isAtual ? 'bg-blue-50' : ''}">
-                            <td class="py-2 px-3 font-bold text-slate-500">${t.total_parcelas === 0 ? 'Rec.' : t.parcela_atual}</td>
-                            <td class="py-2 px-3 font-medium ${isRealizado ? 'text-green-600' : 'text-slate-600'}">${dt}</td>
-                            <td class="py-2 px-3 font-bold">R$ ${v.toFixed(2).replace('.',',')}</td>
-                            <td class="py-2 px-3 text-right">
-                                ${isRealizado ? `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[9px] font-bold uppercase"><i class="fas fa-check mr-1"></i>Realizado</span>` : `<span class="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[9px] font-bold uppercase">Pendente</span>`}
-                            </td>
-                        </tr>
-                    `;
-                });
-            } else {
-                document.getElementById('area-historico').classList.add('hidden');
+                    data.forEach(t => {
+                        const isRealizado = t.status === 'Realizado';
+                        const v = parseFloat(isRealizado ? t.valor_realizado : t.valor_parcela);
+                        const dt = t.data_vencimento.split('-').reverse().join('/');
+                        const isAtual = t.id === editandoId;
+                        
+                        tbody.innerHTML += `
+                            <tr onclick="abrirModalGestao('${t.id}')" class="cursor-pointer hover:bg-slate-50 transition ${isAtual ? 'bg-blue-50' : ''}">
+                                <td class="py-2 px-3 font-bold text-slate-500">${t.total_parcelas === 0 ? 'Rec.' : t.parcela_atual}</td>
+                                <td class="py-2 px-3 font-medium ${isRealizado ? 'text-green-600' : 'text-slate-600'}">${dt}</td>
+                                <td class="py-2 px-3 font-bold">R$ ${v.toFixed(2).replace('.',',')}</td>
+                                <td class="py-2 px-3 text-right">
+                                    ${isRealizado ? `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[9px] font-bold uppercase"><i class="fas fa-check mr-1"></i>Realizado</span>` : `<span class="bg-slate-100 text-slate-500 px-2 py-0.5 rounded text-[9px] font-bold uppercase">Pendente</span>`}
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    document.getElementById('area-historico').classList.add('hidden');
+                }
+            } catch (err) {
+                mostrarToast("Erro ao carregar histórico de parcelas: " + err.message, "error");
             }
         }
 
@@ -655,16 +767,21 @@
         }
 
         async function carregarSubcategoriasBanco() {
-            const { data } = await clienteSupabase.from('subcategorias').select('*').order('nome', { ascending: true });
-            if (data) {
-                subcategoriasGlobais = data;
-                const outL = document.getElementById('lista-sub-saidas'); const inL = document.getElementById('lista-sub-entradas');
-                outL.innerHTML = ''; inL.innerHTML = '';
-                subcategoriasGlobais.forEach(s => {
-                    const li = `<li class="flex justify-between items-center bg-slate-50 border border-slate-100 p-3 rounded-lg text-sm font-bold shadow-sm"><span class="text-slate-600">${s.nome}</span> <button onclick="deletarSubcategoria('${s.id}')" class="text-slate-400 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></li>`;
-                    s.tipo === 'Saída' ? outL.innerHTML += li : inL.innerHTML += li;
-                });
-                carregarSelectSubcategorias();
+            try {
+                const { data, error } = await clienteSupabase.from('subcategorias').select('*').order('nome', { ascending: true });
+                if (error) throw error;
+                if (data) {
+                    subcategoriasGlobais = data;
+                    const outL = document.getElementById('lista-sub-saidas'); const inL = document.getElementById('lista-sub-entradas');
+                    outL.innerHTML = ''; inL.innerHTML = '';
+                    subcategoriasGlobais.forEach(s => {
+                        const li = `<li class="flex justify-between items-center bg-slate-50 border border-slate-100 p-3 rounded-lg text-sm font-bold shadow-sm"><span class="text-slate-600">${s.nome}</span> <button onclick="deletarSubcategoria('${s.id}')" class="text-slate-400 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></li>`;
+                        s.tipo === 'Saída' ? outL.innerHTML += li : inL.innerHTML += li;
+                    });
+                    carregarSelectSubcategorias();
+                }
+            } catch (err) {
+                mostrarToast("Erro ao carregar subcategorias: " + err.message, "error");
             }
         }
         
@@ -678,80 +795,146 @@
 
         document.getElementById('form-subcategoria').addEventListener('submit', async (e) => {
             e.preventDefault();
-            await clienteSupabase.from('subcategorias').insert([{ user_id: userAtual.id, tipo: document.getElementById('novo-sub-tipo').value, nome: document.getElementById('novo-sub-nome').value }]);
-            document.getElementById('novo-sub-nome').value = ''; carregarSubcategoriasBanco();
+            try {
+                const nomeInput = document.getElementById('novo-sub-nome').value.trim();
+                if (!nomeInput) {
+                    mostrarToast("Por favor, informe o nome da subcategoria.", "warning");
+                    return;
+                }
+                const tipoInput = document.getElementById('novo-sub-tipo').value;
+                const { error } = await clienteSupabase.from('subcategorias').insert([{ user_id: userAtual.id, tipo: tipoInput, nome: nomeInput }]);
+                if (error) throw error;
+                mostrarToast("Subcategoria adicionada com sucesso!", "success");
+                document.getElementById('novo-sub-nome').value = ''; 
+                await carregarSubcategoriasBanco();
+            } catch (err) {
+                mostrarToast("Erro ao adicionar subcategoria: " + err.message, "error");
+            }
         });
         
         async function deletarSubcategoria(id) { 
-            await clienteSupabase.from('subcategorias').delete().eq('id', id); 
-            carregarSubcategoriasBanco(); 
+            try {
+                if (confirm("Tem certeza que deseja deletar esta subcategoria?")) {
+                    const { error } = await clienteSupabase.from('subcategorias').delete().eq('id', id); 
+                    if (error) throw error;
+                    mostrarToast("Subcategoria excluída com sucesso!", "success");
+                    await carregarSubcategoriasBanco(); 
+                }
+            } catch (err) {
+                mostrarToast("Erro ao excluir subcategoria: " + err.message, "error");
+            }
         }
 
         async function excluirParcelaAtual() {
-            if (confirm("Deseja excluir permanentemente apenas esta parcela?")) {
-                await clienteSupabase.from('transacoes').delete().eq('id', editandoId);
-                fecharModal('modalOverlayGestao');
-                atualizarTudo();
+            try {
+                if (confirm("Deseja excluir permanentemente apenas esta parcela?")) {
+                    const { error } = await clienteSupabase.from('transacoes').delete().eq('id', editandoId);
+                    if (error) throw error;
+                    mostrarToast("Parcela excluída com sucesso!", "success");
+                    fecharModal('modalOverlayGestao');
+                    atualizarTudo();
+                }
+            } catch (err) {
+                mostrarToast("Erro ao excluir parcela: " + err.message, "error");
             }
         }
 
         async function excluirGrupoAtual() {
-            if (confirm("Atenção: Isto apagará o histórico completo e todas as parcelas futuras vinculadas a este lançamento. Deseja continuar?")) {
-                await clienteSupabase.from('transacoes').delete().eq('grupo_id', grupoIdAtual);
-                fecharModal('modalOverlayGestao');
-                atualizarTudo();
+            try {
+                if (confirm("Atenção: Isto apagará o histórico completo e todas as parcelas futuras vinculadas a este lançamento. Deseja continuar?")) {
+                    const { error } = await clienteSupabase.from('transacoes').delete().eq('grupo_id', grupoIdAtual);
+                    if (error) throw error;
+                    mostrarToast("Grupo de parcelas excluído com sucesso!", "success");
+                    fecharModal('modalOverlayGestao');
+                    atualizarTudo();
+                }
+            } catch (err) {
+                mostrarToast("Erro ao excluir grupo de parcelas: " + err.message, "error");
             }
         }
 
         document.getElementById('transacao-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const tipo = document.getElementById('tipo').value; 
-            const subcategoria = document.getElementById('subcategoria').value;
-            const descricao = document.getElementById('descricao').value; 
-            const valor = parseFloat(document.getElementById('valor').value);
-            const dtInput = document.getElementById('data_vencimento').value;
-            
-            if (editandoId) {
-                let updateData = { tipo, subcategoria, descricao, valor_parcela: valor, data_vencimento: dtInput };
-
-                if (!document.getElementById('campos-realizado').classList.contains('hidden')) {
-                    updateData.data_realizacao = document.getElementById('data_realizacao').value;
-                    updateData.valor_realizado = parseFloat(document.getElementById('valor_realizado').value);
+            try {
+                const tipo = document.getElementById('tipo').value; 
+                const subcategoria = document.getElementById('subcategoria').value;
+                if (!subcategoria || subcategoria === "Nenhuma cadastrada") {
+                    mostrarToast("Por favor, selecione ou cadastre uma subcategoria na aba Ajustes.", "warning");
+                    return;
                 }
-
-                await clienteSupabase.from('transacoes').update(updateData).eq('id', editandoId);
-                fecharModal('modalOverlayGestao');
-            } else {
-                const dataBase = new Date(dtInput + 'T12:00:00'); 
-                const pTotal = parseInt(document.getElementById('parcelas').value);
-                const freq = pTotal === 1 ? 'Única' : document.getElementById('frequencia').value;
-                const grupo_id = crypto.randomUUID(); 
-                const iter = pTotal === 0 ? 12 : pTotal; 
-                let ins = [];
+                const descricao = document.getElementById('descricao').value.trim();
+                if (!descricao) {
+                    mostrarToast("Por favor, informe a descrição.", "warning");
+                    return;
+                }
+                const valor = parseFloat(document.getElementById('valor').value);
+                if (isNaN(valor) || valor <= 0) {
+                    mostrarToast("Por favor, insira um valor válido maior que zero.", "warning");
+                    return;
+                }
+                const dtInput = document.getElementById('data_vencimento').value;
+                if (!dtInput) {
+                    mostrarToast("Por favor, selecione uma data de vencimento válida.", "warning");
+                    return;
+                }
                 
-                for (let i = 0; i < iter; i++) {
-                    let dP = new Date(dataBase);
-                    if (freq === 'Mensal') { let d = dP.getDate(); dP.setMonth(dP.getMonth() + i); if(dP.getDate() !== d) dP.setDate(0); }
-                    else if (freq === 'Semanal') dP.setDate(dP.getDate() + (i * 7));
-                    else if (freq === 'Anual') dP.setFullYear(dP.getFullYear() + i);
+                if (editandoId) {
+                    let updateData = { tipo, subcategoria, descricao, valor_parcela: valor, data_vencimento: dtInput };
 
-                    ins.push({ 
-                        user_id: userAtual.id, grupo_id, tipo, subcategoria, descricao, valor_parcela: valor, 
-                        data_vencimento: dP.toISOString().split('T')[0], parcela_atual: i + 1, total_parcelas: pTotal, 
-                        frequencia, status: 'Pendente' 
-                    });
+                    if (!document.getElementById('campos-realizado').classList.contains('hidden')) {
+                        const vRealizado = parseFloat(document.getElementById('valor_realizado').value);
+                        if (isNaN(vRealizado) || vRealizado <= 0) {
+                            mostrarToast("Por favor, informe um valor pago válido maior que zero.", "warning");
+                            return;
+                        }
+                        updateData.data_realizacao = document.getElementById('data_realizacao').value;
+                        updateData.valor_realizado = vRealizado;
+                    }
+
+                    const { error } = await clienteSupabase.from('transacoes').update(updateData).eq('id', editandoId);
+                    if (error) throw error;
+                    mostrarToast("Lançamento atualizado com sucesso!", "success");
+                    fecharModal('modalOverlayGestao');
+                } else {
+                    const dataBase = new Date(dtInput + 'T12:00:00'); 
+                    const pTotal = parseInt(document.getElementById('parcelas').value);
+                    if (isNaN(pTotal) || pTotal < 0) {
+                        mostrarToast("O número de parcelas deve ser 0 ou maior.", "warning");
+                        return;
+                    }
+                    const freq = pTotal === 1 ? 'Única' : document.getElementById('frequencia').value;
+                    const grupo_id = crypto.randomUUID(); 
+                    const iter = pTotal === 0 ? 12 : pTotal; 
+                    let ins = [];
+                    
+                    for (let i = 0; i < iter; i++) {
+                        let dP = new Date(dataBase);
+                        if (freq === 'Mensal') { let d = dP.getDate(); dP.setMonth(dP.getMonth() + i); if(dP.getDate() !== d) dP.setDate(0); }
+                        else if (freq === 'Semanal') dP.setDate(dP.getDate() + (i * 7));
+                        else if (freq === 'Anual') dP.setFullYear(dP.getFullYear() + i);
+
+                        ins.push({ 
+                            user_id: userAtual.id, grupo_id, tipo, subcategoria, descricao, valor_parcela: valor, 
+                            data_vencimento: dP.toISOString().split('T')[0], parcela_atual: i + 1, total_parcelas: pTotal, 
+                            frequencia, status: 'Pendente' 
+                        });
+                    }
+                    const { error } = await clienteSupabase.from('transacoes').insert(ins);
+                    if (error) throw error;
+                    mostrarToast(pTotal === 1 ? "Lançamento adicionado com sucesso!" : "Grupo de parcelas criado com sucesso!", "success");
+                    fecharModal('modalOverlayGestao');
                 }
-                await clienteSupabase.from('transacoes').insert(ins);
-                fecharModal('modalOverlayGestao');
+                atualizarTudo();
+            } catch (err) {
+                mostrarToast("Erro ao salvar lançamento: " + err.message, "error");
             }
-            atualizarTudo();
         });
 
         /* ========================================================
            MÓDULO DE BACKUP E EXPORTAÇÃO (NOVO)
         ======================================================== */
 
-        async function exportarBackupJSON() {
+        async function exportarBackupJSON(event) {
             try {
                 const btn = event.currentTarget;
                 const txt = btn.innerHTML;
@@ -779,8 +962,9 @@
                 
                 btn.innerHTML = txt;
                 btn.disabled = false;
+                mostrarToast("Backup JSON gerado com sucesso!", "success");
             } catch (err) {
-                alert("Erro ao exportar backup: " + err.message);
+                mostrarToast("Erro ao exportar backup: " + err.message, "error");
             }
         }
 
@@ -815,10 +999,10 @@
                         await clienteSupabase.from('transacoes').insert(transClean);
                     }
 
-                    alert("✅ Backup restaurado com sucesso!");
+                    mostrarToast("Backup restaurado com sucesso!", "success");
                     atualizarTudo();
                 } catch (err) {
-                    alert("Erro ao restaurar: " + err.message);
+                    mostrarToast("Erro ao restaurar: " + err.message, "error");
                 } finally {
                     event.target.value = ''; 
                 }
@@ -826,9 +1010,9 @@
             reader.readAsText(file);
         }
 
-        function exportarExcel() {
+        function exportarExcel(event) {
             if (transacoesMes.length === 0) {
-                alert("Não há dados carregados para exportar. Tente alterar os filtros.");
+                mostrarToast("Não há dados carregados para exportar. Tente alterar os filtros.", "warning");
                 return;
             }
 
@@ -859,8 +1043,9 @@
 
                 btn.innerHTML = txt;
                 btn.disabled = false;
+                mostrarToast("Planilha Excel exportada com sucesso!", "success");
             } catch(e) {
-                alert("Erro ao exportar Excel: " + e.message);
+                mostrarToast("Erro ao exportar Excel: " + e.message, "error");
             }
         }
     </script>
