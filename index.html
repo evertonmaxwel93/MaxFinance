@@ -67,6 +67,15 @@
                 <button onclick="mudarAba('aba-fluxo')" id="btn-aba-fluxo" class="px-3 py-2 text-sm font-bold rounded-lg bg-blue-50 text-blue-700 transition flex items-center">
                     <i class="fas fa-chart-pie mr-2"></i> Dashboard
                 </button>
+                <button onclick="mudarAba('aba-compras')" id="btn-aba-compras" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
+                    <i class="fas fa-shopping-cart mr-2"></i> Compras
+                </button>
+                <button onclick="mudarAba('aba-estoque')" id="btn-aba-estoque" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
+                    <i class="fas fa-boxes mr-2"></i> Estoque
+                </button>
+                <button onclick="mudarAba('aba-vendas')" id="btn-aba-vendas" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
+                    <i class="fas fa-cash-register mr-2"></i> Vendas
+                </button>
                 <button onclick="mudarAba('aba-configuracoes')" id="btn-aba-configuracoes" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
                     <i class="fas fa-cog mr-2"></i> Ajustes
                 </button>
@@ -158,6 +167,33 @@
                         </table>
                     </div>
                 </div>
+            </div>
+
+            <!-- Aba Compras -->
+            <div id="aba-compras" class="hidden bg-white border border-slate-200 rounded-xl shadow-sm p-6 text-center py-12">
+                <div class="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 text-blue-600">
+                    <i class="fas fa-shopping-cart text-3xl"></i>
+                </div>
+                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Compras</h2>
+                <p class="text-slate-500 text-sm font-medium">Página em construção</p>
+            </div>
+
+            <!-- Aba Estoque -->
+            <div id="aba-estoque" class="hidden bg-white border border-slate-200 rounded-xl shadow-sm p-6 text-center py-12">
+                <div class="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 text-blue-600">
+                    <i class="fas fa-boxes text-3xl"></i>
+                </div>
+                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Estoque</h2>
+                <p class="text-slate-500 text-sm font-medium">Página em construção</p>
+            </div>
+
+            <!-- Aba Vendas -->
+            <div id="aba-vendas" class="hidden bg-white border border-slate-200 rounded-xl shadow-sm p-6 text-center py-12">
+                <div class="mx-auto w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 text-blue-600">
+                    <i class="fas fa-cash-register text-3xl"></i>
+                </div>
+                <h2 class="text-xl font-extrabold text-slate-800 mb-2">Vendas</h2>
+                <p class="text-slate-500 text-sm font-medium">Página em construção</p>
             </div>
 
             <!-- Aba Ajustes -->
@@ -370,23 +406,31 @@
                 mostrarToast("Sessão encerrada com sucesso!", "info");
             } catch (err) {
                 mostrarToast("Erro ao sair da conta: " + err.message, "error");
+            } finally {
+                userAtual = null;
+                // Limpa o local storage de chaves supabase apenas para garantir que não restaure
+                for (let key in localStorage) {
+                    if (key.startsWith('sb-')) {
+                        localStorage.removeItem(key);
+                    }
+                }
+                window.location.reload(); 
             }
         }
 
-        async function verificarSessao(session) {
+        async function verificarSessao() {
             try {
                 // Garante o fechamento total de modais residuais ao carregar/trocar aba (Correção de Bug)
                 document.querySelectorAll('.modal-blur').forEach(el => el.classList.add('hidden'));
 
+                const { data: { session }, error } = await clienteSupabase.auth.getSession();
+                if (error) throw error;
                 if (session) {
                     userAtual = session.user;
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('app-section').classList.remove('hidden');
                     document.getElementById('app-section').classList.add('flex');
                     document.getElementById('user-info').textContent = session.user.email;
-                    
-                    // Garante a propagação dos cabeçalhos de autenticação do cliente REST (Supabase RLS)
-                    await new Promise(resolve => setTimeout(resolve, 100));
                     
                     // O estado padrão no HTML já é "Todos" e "Pendentes"
                     await carregarSubcategoriasBanco();
@@ -398,13 +442,17 @@
                     document.getElementById('app-section').classList.remove('flex');
                 }
             } catch (err) {
-                mostrarToast("Erro ao processar sessão: " + err.message, "error");
+                mostrarToast("Erro ao verificar sessão: " + err.message, "error");
             }
         }
         
-        // Ouve todas as mudanças de autenticação (inclusive a inicialização da sessão) de forma automática
-        clienteSupabase.auth.onAuthStateChange(async (event, session) => {
-            await verificarSessao(session);
+        verificarSessao();
+        clienteSupabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_OUT') {
+                window.location.reload();
+            } else {
+                verificarSessao();
+            }
         });
 
         function mudarAba(abaId) {
@@ -412,13 +460,20 @@
             fecharModal('modalOverlayGestao');
             fecharModal('modalOverlayBaixa');
 
-            document.getElementById('aba-fluxo').classList.add('hidden');
-            document.getElementById('aba-configuracoes').classList.add('hidden');
-            document.getElementById(abaId).classList.remove('hidden');
+            const abas = ['aba-fluxo', 'aba-compras', 'aba-estoque', 'aba-vendas', 'aba-configuracoes'];
+            abas.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+                
+                const btn = document.getElementById(`btn-${id}`);
+                if (btn) btn.className = "px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center";
+            });
+
+            const elAtiva = document.getElementById(abaId);
+            if (elAtiva) elAtiva.classList.remove('hidden');
             
-            document.getElementById('btn-aba-fluxo').className = "px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center";
-            document.getElementById('btn-aba-configuracoes').className = "px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center";
-            document.getElementById(`btn-${abaId}`).className = "px-3 py-2 text-sm font-bold rounded-lg bg-blue-50 text-blue-700 transition flex items-center";
+            const btnAtivo = document.getElementById(`btn-${abaId}`);
+            if (btnAtivo) btnAtivo.className = "px-3 py-2 text-sm font-bold rounded-lg bg-blue-50 text-blue-700 transition flex items-center";
             
             if(abaId === 'aba-fluxo') atualizarTudo();
         }
