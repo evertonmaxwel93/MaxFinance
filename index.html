@@ -103,17 +103,13 @@
         /* ============ MOBILE HAMBURGER ============ */
         #mobile-menu-btn { display: none; }
         #mobile-drawer-overlay { display: none; }
+        #mobile-drawer { display: none; }
         @media (max-width: 768px) {
             #desktop-nav { display: none !important; }
             #mobile-menu-btn { display: flex !important; }
+            #mobile-drawer { display: flex !important; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+            #mobile-drawer.open { transform: translateX(0); }
             #mobile-drawer-overlay.open { display: block; }
-            #mobile-drawer {
-                transform: translateX(-100%);
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            #mobile-drawer.open {
-                transform: translateX(0);
-            }
         }
     </style>
 </head>
