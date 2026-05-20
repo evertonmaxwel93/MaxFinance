@@ -790,7 +790,9 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fornecedor</label>
-                            <input type="text" id="compra_fornecedor" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                            <select id="compra_fornecedor" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                                <option value="Genérico/Não Cadastrado">Genérico/Não Cadastrado</option>
+                            </select>
                         </div>
                     </div>
                     <div class="border rounded-xl p-4 bg-slate-50 mt-4">
@@ -827,7 +829,9 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cliente</label>
-                            <input type="text" id="venda_cliente" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                            <select id="venda_cliente" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                                <option value="Genérico/Não Cadastrado">Genérico/Não Cadastrado</option>
+                            </select>
                         </div>
                     </div>
                     <div>
@@ -1064,6 +1068,12 @@
                     // O estado padrão no HTML já é "Todos" e "Pendentes"
                     await carregarSubcategoriasBanco();
                     atualizarTudo();
+                    solicitarPermissaoNotificacao();
+                    await carregarClientes();
+                    await carregarFornecedores();
+                    await carregarTransacoesGlobais();
+                    initRelatorios();
+                    setTimeout(verificarNotificacoesPush, 3000);
                 } else {
                     userAtual = null;
                     document.getElementById('login-section').classList.remove('hidden');
@@ -1210,7 +1220,10 @@
                 clientesGlobais = data || [];
                 renderizarClientes();
                 preencherSelectClientes();
-            } catch(e) { console.error("Erro clientes:", e); }
+            } catch(e) { 
+                console.error("Erro clientes:", e); 
+                mostrarToast("Erro ao carregar clientes: " + e.message, "error");
+            }
         }
         function renderizarClientes() {
             const tbody = document.getElementById('lista-clientes');
@@ -1245,7 +1258,16 @@
                 opt.textContent = c.nome;
                 select.appendChild(opt);
             });
-            if (val) select.value = val;
+            if (val) {
+                const options = Array.from(select.options).map(o => o.value);
+                if (!options.includes(val)) {
+                    const opt = document.createElement('option');
+                    opt.value = val;
+                    opt.textContent = val;
+                    select.appendChild(opt);
+                }
+                select.value = val;
+            }
         }
         function abrirModalCliente(cliente = null) {
             const form = document.getElementById('form-cliente');
@@ -1317,7 +1339,10 @@
                 fornecedoresGlobais = data || [];
                 renderizarFornecedores();
                 preencherSelectFornecedores();
-            } catch(e) { console.error("Erro fornecedores:", e); }
+            } catch(e) { 
+                console.error("Erro fornecedores:", e); 
+                mostrarToast("Erro ao carregar fornecedores: " + e.message, "error");
+            }
         }
         function renderizarFornecedores() {
             const tbody = document.getElementById('lista-fornecedores');
@@ -1352,7 +1377,16 @@
                 opt.textContent = c.nome;
                 select.appendChild(opt);
             });
-            if (val) select.value = val;
+            if (val) {
+                const options = Array.from(select.options).map(o => o.value);
+                if (!options.includes(val)) {
+                    const opt = document.createElement('option');
+                    opt.value = val;
+                    opt.textContent = val;
+                    select.appendChild(opt);
+                }
+                select.value = val;
+            }
         }
         function abrirModalFornecedor(fornecedor = null) {
             const form = document.getElementById('form-fornecedor');
@@ -1478,7 +1512,7 @@
             let rankingData = {};
             // Pegar todas as vendas do periodo e seus itens
             vendasGlobais.forEach(v => {
-                if(v.data_venda.startsWith(`${ano}-${mes}`)) {
+                if(v.data.startsWith(`${ano}-${mes}`)) {
                     v.vendas_itens.forEach(it => {
                         const pid = it.produto_id;
                         if(!rankingData[pid]) {
@@ -1739,8 +1773,44 @@
             }
         }
 
+        function abrirModal(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('hidden');
+                if (id === 'modalCliente' || id === 'modalFornecedor') {
+                    el.classList.add('flex');
+                    setTimeout(() => {
+                        el.classList.remove('opacity-0');
+                        el.classList.add('opacity-100');
+                        const child = el.querySelector('.transform');
+                        if (child) {
+                            child.classList.remove('scale-95');
+                            child.classList.add('scale-100');
+                        }
+                    }, 10);
+                }
+            }
+        }
+
         function fecharModal(id) { 
-            document.getElementById(id).classList.add('hidden'); 
+            const el = document.getElementById(id);
+            if (el) {
+                if (id === 'modalCliente' || id === 'modalFornecedor') {
+                    el.classList.remove('opacity-100');
+                    el.classList.add('opacity-0');
+                    const child = el.querySelector('.transform');
+                    if (child) {
+                        child.classList.remove('scale-100');
+                        child.classList.add('scale-95');
+                    }
+                    setTimeout(() => {
+                        el.classList.add('hidden');
+                        el.classList.remove('flex');
+                    }, 150);
+                } else {
+                    el.classList.add('hidden');
+                }
+            }
         }
 
         function abrirModalNovo() {
@@ -2600,10 +2670,22 @@
         let clientesGlobais = [];
         let fornecedoresGlobais = [];
         let vendasGlobais = [];
+        let transacoesGlobais = [];
+
+        async function carregarTransacoesGlobais() {
+            try {
+                const { data, error } = await clienteSupabase.from('transacoes').select('*');
+                if (error) throw error;
+                transacoesGlobais = data || [];
+            } catch(e) {
+                console.error("Erro transacoes globais:", e);
+                mostrarToast("Erro ao carregar transações: " + e.message, "error");
+            }
+        }
 
         async function carregarVendas() {
             try {
-                const { data, error } = await clienteSupabase.from('vendas').select('*').order('data', { ascending: false });
+                const { data, error } = await clienteSupabase.from('vendas').select('*, vendas_itens(*)').order('data', { ascending: false });
                 if (error) throw error;
                 vendasGlobais = data || [];
                 renderizarVendas();
@@ -2940,6 +3022,15 @@
             if (abaId === 'aba-estoque') carregarProdutos();
             if (abaId === 'aba-compras') { carregarProdutos(); carregarCompras(); }
             if (abaId === 'aba-vendas') { carregarProdutos(); carregarVendas(); }
+            if (abaId === 'aba-clientes') carregarClientes();
+            if (abaId === 'aba-fornecedores') carregarFornecedores();
+            if (abaId === 'aba-relatorios') {
+                mostrarLoading();
+                Promise.all([carregarProdutos(), carregarVendas(), carregarTransacoesGlobais()]).then(() => {
+                    initRelatorios();
+                    ocultarLoading();
+                });
+            }
         };
     </script>
 </body>
