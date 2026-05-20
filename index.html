@@ -222,7 +222,6 @@
                         <!-- Filtro Ano -->
                         <select id="filtro-ano" onchange="carregarDadosFluxo()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200">
                             <option value="Todos" selected>Todos Anos</option>
-                            <option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option>
                         </select>
                         
                         <!-- Filtro Mês -->
@@ -288,9 +287,16 @@
             <!-- Aba Compras -->
             <div id="aba-compras" class="hidden space-y-6">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                    <div class="p-4 border-b flex justify-between items-center bg-slate-50">
-                        <h3 class="font-bold text-slate-700">Histórico de Compras</h3>
-                        <button onclick="abrirModalCompra()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition">
+                    <div class="p-4 border-b flex flex-col md:flex-row justify-between items-center bg-slate-50 gap-4">
+                        <div class="flex items-center gap-3 w-full md:w-auto">
+                            <h3 class="font-bold text-slate-700 whitespace-nowrap">Histórico de Compras</h3>
+                            <div class="flex gap-2">
+                                <input type="date" id="filtro-data-inicio-compras" onchange="renderizarCompras()" class="border-none bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200 w-32">
+                                <span class="text-slate-400 self-center">até</span>
+                                <input type="date" id="filtro-data-fim-compras" onchange="renderizarCompras()" class="border-none bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200 w-32">
+                            </div>
+                        </div>
+                        <button onclick="abrirModalCompra()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition whitespace-nowrap ml-auto">
                             <i class="fas fa-plus mr-1"></i> Nova Compra
                         </button>
                     </div>
@@ -304,6 +310,12 @@
                                 </tr>
                             </thead>
                             <tbody id="tabela-compras" class="text-sm divide-y divide-slate-100"></tbody>
+                            <tfoot class="bg-slate-50 border-t hidden" id="rodape-compras">
+                                <tr>
+                                    <td colspan="2" class="py-3 px-4 text-right font-bold text-slate-600">Total no período:</td>
+                                    <td class="py-3 px-4 text-right font-bold text-slate-800" id="total-compras-periodo">R$ 0,00</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -312,9 +324,15 @@
             <!-- Aba Estoque -->
             <div id="aba-estoque" class="hidden space-y-6">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                    <div class="p-4 border-b flex justify-between items-center bg-slate-50">
-                        <h3 class="font-bold text-slate-700">Controle de Estoque</h3>
-                        <button onclick="abrirModalEstoque()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition">
+                    <div class="p-4 border-b flex flex-col md:flex-row justify-between items-center bg-slate-50 gap-4">
+                        <div class="flex items-center gap-3 w-full md:w-auto">
+                            <h3 class="font-bold text-slate-700 whitespace-nowrap">Controle de Estoque</h3>
+                            <div class="relative w-full max-w-[200px]">
+                                <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="input-pesquisa-estoque" onkeyup="renderizarEstoque()" placeholder="Pesquisar..." class="w-full pl-9 pr-3 py-2 border-none bg-white rounded-lg text-sm font-medium outline-none ring-1 ring-slate-200 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <button onclick="abrirModalEstoque()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition whitespace-nowrap ml-auto">
                             <i class="fas fa-plus mr-1"></i> Novo Produto
                         </button>
                     </div>
@@ -340,9 +358,16 @@
             <!-- Aba Vendas -->
             <div id="aba-vendas" class="hidden space-y-6">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                    <div class="p-4 border-b flex justify-between items-center bg-slate-50">
-                        <h3 class="font-bold text-slate-700">Histórico de Vendas</h3>
-                        <button onclick="abrirModalVenda()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition">
+                    <div class="p-4 border-b flex flex-col md:flex-row justify-between items-center bg-slate-50 gap-4">
+                        <div class="flex items-center gap-3 w-full md:w-auto">
+                            <h3 class="font-bold text-slate-700 whitespace-nowrap">Histórico de Vendas</h3>
+                            <div class="flex gap-2">
+                                <input type="date" id="filtro-data-inicio-vendas" onchange="renderizarVendas()" class="border-none bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200 w-32">
+                                <span class="text-slate-400 self-center">até</span>
+                                <input type="date" id="filtro-data-fim-vendas" onchange="renderizarVendas()" class="border-none bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200 w-32">
+                            </div>
+                        </div>
+                        <button onclick="abrirModalVenda()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition whitespace-nowrap ml-auto">
                             <i class="fas fa-plus mr-1"></i> Nova Venda
                         </button>
                     </div>
@@ -358,6 +383,14 @@
                                 </tr>
                             </thead>
                             <tbody id="tabela-vendas" class="text-sm divide-y divide-slate-100"></tbody>
+                            <tfoot class="bg-slate-50 border-t hidden" id="rodape-vendas">
+                                <tr>
+                                    <td colspan="2" class="py-3 px-4 text-right font-bold text-slate-600">Total no período:</td>
+                                    <td class="py-3 px-4 text-right font-bold text-red-600" id="total-custo-vendas">R$ 0,00</td>
+                                    <td class="py-3 px-4 text-right font-bold text-green-600" id="total-venda-vendas">R$ 0,00</td>
+                                    <td class="py-3 px-4 text-right font-bold text-blue-600" id="total-lucro-vendas">R$ 0,00</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -905,6 +938,7 @@
         function atualizarTudo() {
             mostrarLoading();
             Promise.all([
+                carregarAnosFiltro(),
                 calcularSaldoRealTotal(),
                 carregarDadosFluxo()
             ]).then(() => {
@@ -925,6 +959,27 @@
             } catch (err) {
                 mostrarToast("Erro ao calcular saldo real: " + err.message, "error");
             }
+        }
+
+        async function carregarAnosFiltro() {
+            try {
+                const { data, error } = await clienteSupabase.from('transacoes').select('data_vencimento');
+                if (error) throw error;
+                const selectAno = document.getElementById('filtro-ano');
+                const anoAtualVal = selectAno.value;
+                const anos = new Set();
+                if (data) {
+                    data.forEach(t => {
+                        if (t.data_vencimento) anos.add(t.data_vencimento.split('-')[0]);
+                    });
+                }
+                const anosArray = Array.from(anos).sort((a, b) => b - a);
+                selectAno.innerHTML = '<option value="Todos">Todos Anos</option>';
+                anosArray.forEach(ano => {
+                    selectAno.innerHTML += `<option value="${ano}">${ano}</option>`;
+                });
+                if (anosArray.includes(anoAtualVal)) selectAno.value = anoAtualVal;
+            } catch (err) { console.error("Erro carregar anos:", err); }
         }
 
         async function carregarDadosFluxo() {
@@ -1545,12 +1600,15 @@
         function renderizarEstoque() {
             const tbody = document.getElementById('tabela-estoque');
             tbody.innerHTML = '';
-            if (produtos.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhum produto cadastrado.</td></tr>';
+            const termo = (document.getElementById('input-pesquisa-estoque')?.value || '').toLowerCase();
+            const filtrados = produtos.filter(p => p.nome.toLowerCase().includes(termo) || p.categoria.toLowerCase().includes(termo));
+            
+            if (filtrados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhum produto encontrado.</td></tr>';
                 return;
             }
 
-            produtos.forEach(p => {
+            filtrados.forEach(p => {
                 const lucroUn = p.valor_venda - p.custo_unitario;
                 const lucroTot = lucroUn * p.estoque_atual;
                 tbody.innerHTML += `
@@ -1635,27 +1693,50 @@
         }
 
         // ================= COMPRAS =================
+        let comprasGlobais = [];
         async function carregarCompras() {
             try {
                 const { data, error } = await clienteSupabase.from('compras').select('*').order('data', { ascending: false });
                 if (error) throw error;
-                const tbody = document.getElementById('tabela-compras');
-                tbody.innerHTML = '';
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhuma compra registrada.</td></tr>';
-                    return;
-                }
-                data.forEach(c => {
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="abrirModalCompraEdicao('${c.id}')">
-                            <td class="py-3 px-4 font-bold text-slate-800 text-sm">${c.data.split('-').reverse().join('/')}</td>
-                            <td class="py-3 px-4 text-slate-600 font-medium">${c.fornecedor}</td>
-                            <td class="py-3 px-4 text-right font-black text-red-600">R$ ${parseFloat(c.total).toFixed(2).replace('.', ',')}</td>
-                        </tr>
-                    `;
-                });
+                comprasGlobais = data || [];
+                renderizarCompras();
             } catch (err) {
                 mostrarToast("Erro ao carregar compras", "error");
+            }
+        }
+
+        function renderizarCompras() {
+            const tbody = document.getElementById('tabela-compras');
+            const dataIn = document.getElementById('filtro-data-inicio-compras')?.value;
+            const dataFim = document.getElementById('filtro-data-fim-compras')?.value;
+            tbody.innerHTML = '';
+            
+            let filtrados = comprasGlobais;
+            if (dataIn) filtrados = filtrados.filter(c => c.data >= dataIn);
+            if (dataFim) filtrados = filtrados.filter(c => c.data <= dataFim);
+
+            const tfoot = document.getElementById('rodape-compras');
+            if (filtrados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhuma compra registrada.</td></tr>';
+                if(tfoot) tfoot.classList.add('hidden');
+                return;
+            }
+
+            let totalPeriodo = 0;
+            filtrados.forEach(c => {
+                totalPeriodo += parseFloat(c.total);
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="abrirModalCompraEdicao('${c.id}')">
+                        <td class="py-3 px-4 font-bold text-slate-800 text-sm">${c.data.split('-').reverse().join('/')}</td>
+                        <td class="py-3 px-4 text-slate-600 font-medium">${c.fornecedor}</td>
+                        <td class="py-3 px-4 text-right font-black text-red-600">R$ ${parseFloat(c.total).toFixed(2).replace('.', ',')}</td>
+                    </tr>
+                `;
+            });
+            
+            if(tfoot) {
+                tfoot.classList.remove('hidden');
+                document.getElementById('total-compras-periodo').textContent = `R$ ${totalPeriodo.toFixed(2).replace('.', ',')}`;
             }
         }
 
@@ -1990,8 +2071,14 @@
                 const prodSelect = el.querySelector('.produto-select');
                 const prodId = prodSelect.value;
                 const qtd = parseFloat(el.querySelector('.quantidade-input').value);
+                const valorVendaInput = parseFloat(el.querySelector('.venda-input').value);
                 const custoUn = parseFloat(prodSelect.options[prodSelect.selectedIndex].getAttribute('data-custo')) || 0;
                 
+                if (valorVendaInput < custoUn) {
+                    const msg = `Um dos itens está sendo vendido ABAIXO DO CUSTO.\nCusto: R$ ${custoUn.toFixed(2).replace('.', ',')} | Venda: R$ ${valorVendaInput.toFixed(2).replace('.', ',')}\n\nDeseja continuar mesmo assim?`;
+                    if (!confirm(msg)) return;
+                }
+
                 custoTotalVenda += (qtd * custoUn);
 
                 if (!comprasDict[prodId]) comprasDict[prodId] = 0;
