@@ -471,6 +471,24 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Zona de Perigo -->
+                <div class="mt-8 pt-6 border-t border-red-200">
+                    <h3 class="font-bold text-red-600 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>Zona de Perigo</h3>
+                    <p class="text-xs text-slate-500 mb-4">Ações destrutivas que afetam permanentemente sua conta e dados.</p>
+                    <div class="flex items-center justify-between bg-red-50 p-4 rounded-xl border border-red-200">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-trash-alt text-red-500 text-lg flex-shrink-0"></i>
+                            <div>
+                                <p class="font-bold text-sm text-red-700">Limpar Todos os Dados</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Exclui permanentemente transações, subcategorias personalizadas, estoque, compras e vendas.</p>
+                            </div>
+                        </div>
+                        <button onclick="resetarTodosOsDados()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm transition flex-shrink-0">
+                            Resetar Conta
+                        </button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -1357,6 +1375,73 @@
             }
         }
 
+        async function resetarTodosOsDados() {
+            if (!confirm("⚠️ ATENÇÃO: Esta é uma ação destrutiva irreversível! Isso irá apagar de forma definitiva todas as suas transações, subcategorias personalizadas, estoque, histórico de compras, vendas, fornecedores e clientes.\n\nTem certeza absoluta de que deseja continuar?")) {
+                return;
+            }
+            if (!confirm("⚠️ ÚLTIMO AVISO: Todos os seus registros serão excluídos permanentemente de nossos servidores. Para confirmar a exclusão e redefinir sua conta, clique em OK.")) {
+                return;
+            }
+
+            mostrarLoading();
+            try {
+                // 1. Obter os IDs de todas as vendas e compras do usuário logado
+                const { data: userVendas, error: vSelErr } = await clienteSupabase.from('vendas').select('id').eq('user_id', userAtual.id);
+                if (vSelErr) throw vSelErr;
+
+                const { data: userCompras, error: cSelErr } = await clienteSupabase.from('compras').select('id').eq('user_id', userAtual.id);
+                if (cSelErr) throw cSelErr;
+
+                const vendaIds = userVendas?.map(v => v.id) || [];
+                const compraIds = userCompras?.map(c => c.id) || [];
+
+                // 2. Deletar os itens das vendas e compras primeiro (tabelas de relacionamento sem user_id direto)
+                if (vendaIds.length > 0) {
+                    const { error: viDelErr } = await clienteSupabase.from('vendas_itens').delete().in('venda_id', vendaIds);
+                    if (viDelErr) throw viDelErr;
+                }
+
+                if (compraIds.length > 0) {
+                    const { error: ciDelErr } = await clienteSupabase.from('compras_itens').delete().in('compra_id', compraIds);
+                    if (ciDelErr) throw ciDelErr;
+                }
+
+                // 3. Deletar as tabelas principais do usuário em ordem de dependência para contornar chaves estrangeiras (FK)
+                const { error: vDelErr } = await clienteSupabase.from('vendas').delete().eq('user_id', userAtual.id);
+                if (vDelErr) throw vDelErr;
+
+                const { error: cDelErr } = await clienteSupabase.from('compras').delete().eq('user_id', userAtual.id);
+                if (cDelErr) throw cDelErr;
+
+                const { error: pDelErr } = await clienteSupabase.from('produtos').delete().eq('user_id', userAtual.id);
+                if (pDelErr) throw pDelErr;
+
+                const { error: tDelErr } = await clienteSupabase.from('transacoes').delete().eq('user_id', userAtual.id);
+                if (tDelErr) throw tDelErr;
+
+                const { error: sDelErr } = await clienteSupabase.from('subcategorias').delete().eq('user_id', userAtual.id);
+                if (sDelErr) throw sDelErr;
+                
+                try {
+                    await clienteSupabase.from('clientes').delete().eq('user_id', userAtual.id);
+                } catch(e) {}
+                try {
+                    await clienteSupabase.from('fornecedores').delete().eq('user_id', userAtual.id);
+                } catch(e) {}
+
+                mostrarToast("Todos os seus dados foram apagados e resetados!", "success");
+                
+                // Recarregar a página para limpar o estado na memória local
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } catch (err) {
+                mostrarToast("Erro ao resetar dados: " + err.message, "error");
+            } finally {
+                ocultarLoading();
+            }
+        }
+
         async function excluirParcelaAtual() {
             try {
                 if (confirm("Deseja excluir permanentemente apenas esta parcela?")) {
@@ -1798,7 +1883,7 @@
                 <select class="produto-select flex-1 min-w-[150px] bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required>
                     ${options}
                 </select>
-                <input type="number" step="0.01" min="0.01" value="${quantidade}" placeholder="Qtd" class="quantidade-input w-24 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalCompra()">
+                <input type="number" step="1" min="1" value="${quantidade}" placeholder="Qtd" class="quantidade-input w-24 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalCompra()">
                 <input type="number" step="0.01" min="0.01" value="${custo}" placeholder="Custo Un." class="custo-input w-28 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalCompra()">
                 <button type="button" onclick="this.parentElement.remove(); calcularTotalCompra()" class="text-red-500 p-2 ml-auto"><i class="fas fa-times"></i></button>
             `;
@@ -1808,7 +1893,7 @@
         function calcularTotalCompra() {
             let total = 0;
             document.querySelectorAll('.item-compra').forEach(el => {
-                const q = parseFloat(el.querySelector('.quantidade-input').value) || 0;
+                const q = parseInt(el.querySelector('.quantidade-input').value, 10) || 0;
                 const c = parseFloat(el.querySelector('.custo-input').value) || 0;
                 total += (q * c);
             });
@@ -1824,21 +1909,38 @@
             const compraId = document.getElementById('compra_id').value;
             const transacaoId = document.getElementById('compra_transacao_id').value;
 
+            const itemsDiv = document.querySelectorAll('.item-compra');
+            for (const el of itemsDiv) {
+                const qtdVal = el.querySelector('.quantidade-input').value;
+                const qtd = parseInt(qtdVal, 10);
+                if (isNaN(qtd) || !Number.isInteger(parseFloat(qtdVal)) || qtd <= 0) {
+                    return mostrarToast("A quantidade comprada deve ser um número inteiro maior que zero.", "warning");
+                }
+            }
+
             try {
-                // Se for edição, exclui a antiga primeiro para reverter estoque
+                // Se for edição, exclui a antiga primeiro para reverter estoque de forma segura
                 if (compraId) {
-                    const { data: itensAntigos } = await clienteSupabase.from('compras_itens').select('*').eq('compra_id', compraId);
+                    const { data: itensAntigos, error: errAnt } = await clienteSupabase.from('compras_itens').select('*').eq('compra_id', compraId);
+                    if (errAnt) throw errAnt;
+
+                    const { data: latestProds, error: pErr } = await clienteSupabase.from('produtos').select('*');
+                    if (pErr) throw pErr;
+
                     for (const it of itensAntigos) {
-                        const p = produtos.find(x => x.id === it.produto_id);
+                        const p = latestProds.find(x => x.id === it.produto_id);
                         if (p) {
-                            const novoEstoque = p.estoque_atual - it.quantidade;
+                            const novoEstoque = parseFloat(p.estoque_atual) - parseFloat(it.quantidade);
                             if (novoEstoque < 0) return mostrarToast(`A reversão deixaria o estoque de ${p.nome} negativo.`, "error");
-                            await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                            const { error: upErr } = await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                            if (upErr) throw upErr;
+                        } else {
+                            throw new Error(`Produto ID ${it.produto_id} não encontrado no estoque para reversão.`);
                         }
                     }
                     await clienteSupabase.from('compras').delete().eq('id', compraId);
                     if (transacaoId) await clienteSupabase.from('transacoes').delete().eq('id', transacaoId);
-                    // Atualiza a lista local de produtos antes da nova inserção
+                    // Atualiza a lista local de produtos
                     await carregarProdutos();
                 }
 
@@ -1870,11 +1972,13 @@
                 if (cErr) throw cErr;
 
                 // 3. Inserir Itens e Atualizar Estoque
-                const itemsDiv = document.querySelectorAll('.item-compra');
+                const { data: latestProds, error: pErr } = await clienteSupabase.from('produtos').select('*');
+                if (pErr) throw pErr;
+
                 const itensInsert = [];
                 for (const el of itemsDiv) {
                     const prodId = el.querySelector('.produto-select').value;
-                    const qtd = parseFloat(el.querySelector('.quantidade-input').value);
+                    const qtd = parseInt(el.querySelector('.quantidade-input').value, 10);
                     const custo = parseFloat(el.querySelector('.custo-input').value);
                     
                     itensInsert.push({
@@ -1884,11 +1988,17 @@
                         custo_unitario: custo
                     });
 
-                    const prod = produtos.find(p => p.id === prodId);
-                    await clienteSupabase.from('produtos').update({
-                        estoque_atual: prod.estoque_atual + qtd,
-                        custo_unitario: custo
-                    }).eq('id', prodId);
+                    const prod = latestProds.find(p => p.id === prodId);
+                    if (prod) {
+                        const novoEstoque = parseFloat(prod.estoque_atual) + qtd;
+                        const { error: upErr } = await clienteSupabase.from('produtos').update({
+                            estoque_atual: novoEstoque,
+                            custo_unitario: custo
+                        }).eq('id', prodId);
+                        if (upErr) throw upErr;
+                    } else {
+                        throw new Error(`Produto ID ${prodId} não encontrado.`);
+                    }
                 }
 
                 const { error: itErr } = await clienteSupabase.from('compras_itens').insert(itensInsert);
@@ -1915,15 +2025,21 @@
                 const { data: itens, error: iErr } = await clienteSupabase.from('compras_itens').select('*').eq('compra_id', id);
                 if (iErr) throw iErr;
 
+                const { data: latestProds, error: pErr } = await clienteSupabase.from('produtos').select('*');
+                if (pErr) throw pErr;
+
                 for (const it of itens) {
-                    const p = produtos.find(x => x.id === it.produto_id);
+                    const p = latestProds.find(x => x.id === it.produto_id);
                     if (p) {
-                        const novoEstoque = p.estoque_atual - it.quantidade;
+                        const novoEstoque = parseFloat(p.estoque_atual) - parseFloat(it.quantidade);
                         if (novoEstoque < 0) {
                             mostrarToast(`A exclusão deixaria o estoque de ${p.nome} negativo.`, "error");
                             return;
                         }
-                        await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                        const { error: upErr } = await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                        if (upErr) throw upErr;
+                    } else {
+                        throw new Error(`Produto ID ${it.produto_id} não encontrado no estoque.`);
                     }
                 }
 
@@ -1941,32 +2057,65 @@
         }
 
         // ================= VENDAS =================
+        let vendasGlobais = [];
+
         async function carregarVendas() {
             try {
                 const { data, error } = await clienteSupabase.from('vendas').select('*').order('data', { ascending: false });
                 if (error) throw error;
-                const tbody = document.getElementById('tabela-vendas');
-                tbody.innerHTML = '';
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhuma venda registrada.</td></tr>';
-                    return;
-                }
-                data.forEach(v => {
-                    const custo = v.custo_total || 0;
-                    const venda = v.total || 0;
-                    const lucro = venda - custo;
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="abrirModalVendaEdicao('${v.id}')">
-                            <td class="py-3 px-4 font-bold text-slate-800 text-sm">${v.data.split('-').reverse().join('/')}</td>
-                            <td class="py-3 px-4 text-slate-600 font-medium">${v.cliente}</td>
-                            <td class="py-3 px-4 text-right font-bold text-red-500">R$ ${parseFloat(custo).toFixed(2).replace('.', ',')}</td>
-                            <td class="py-3 px-4 text-right font-black text-green-600">R$ ${parseFloat(venda).toFixed(2).replace('.', ',')}</td>
-                            <td class="py-3 px-4 text-right font-black text-blue-600">R$ ${parseFloat(lucro).toFixed(2).replace('.', ',')}</td>
-                        </tr>
-                    `;
-                });
+                vendasGlobais = data || [];
+                renderizarVendas();
             } catch (err) {
                 mostrarToast("Erro ao carregar vendas", "error");
+            }
+        }
+
+        function renderizarVendas() {
+            const tbody = document.getElementById('tabela-vendas');
+            const dataIn = document.getElementById('filtro-data-inicio-vendas')?.value;
+            const dataFim = document.getElementById('filtro-data-fim-vendas')?.value;
+            tbody.innerHTML = '';
+            
+            let filtrados = vendasGlobais;
+            if (dataIn) filtrados = filtrados.filter(v => v.data >= dataIn);
+            if (dataFim) filtrados = filtrados.filter(v => v.data <= dataFim);
+
+            const tfoot = document.getElementById('rodape-vendas');
+            if (filtrados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhuma venda registrada.</td></tr>';
+                if(tfoot) tfoot.classList.add('hidden');
+                return;
+            }
+
+            let totalCusto = 0;
+            let totalVenda = 0;
+            let totalLucro = 0;
+
+            filtrados.forEach(v => {
+                const custo = parseFloat(v.custo_total || 0);
+                const venda = parseFloat(v.total || 0);
+                const lucro = venda - custo;
+                
+                totalCusto += custo;
+                totalVenda += venda;
+                totalLucro += lucro;
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="abrirModalVendaEdicao('${v.id}')">
+                        <td class="py-3 px-4 font-bold text-slate-800 text-sm">${v.data.split('-').reverse().join('/')}</td>
+                        <td class="py-3 px-4 text-slate-600 font-medium">${v.cliente}</td>
+                        <td class="py-3 px-4 text-right font-bold text-red-500">R$ ${custo.toFixed(2).replace('.', ',')}</td>
+                        <td class="py-3 px-4 text-right font-black text-green-600">R$ ${venda.toFixed(2).replace('.', ',')}</td>
+                        <td class="py-3 px-4 text-right font-black text-blue-600">R$ ${lucro.toFixed(2).replace('.', ',')}</td>
+                    </tr>
+                `;
+            });
+            
+            if(tfoot) {
+                tfoot.classList.remove('hidden');
+                document.getElementById('total-custo-vendas').textContent = `R$ ${totalCusto.toFixed(2).replace('.', ',')}`;
+                document.getElementById('total-venda-vendas').textContent = `R$ ${totalVenda.toFixed(2).replace('.', ',')}`;
+                document.getElementById('total-lucro-vendas').textContent = `R$ ${totalLucro.toFixed(2).replace('.', ',')}`;
             }
         }
 
@@ -2029,7 +2178,7 @@
                 <select class="produto-select flex-1 min-w-[150px] bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required onchange="atualizarPrecoVenda(this)">
                     ${options}
                 </select>
-                <input type="number" step="0.01" min="0.01" value="${quantidade}" placeholder="Qtd" class="quantidade-input w-24 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalVenda()">
+                <input type="number" step="1" min="1" value="${quantidade}" placeholder="Qtd" class="quantidade-input w-24 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalVenda()">
                 <input type="number" step="0.01" min="0.01" value="${valorVenda}" placeholder="Venda Un." class="venda-input w-28 bg-white rounded-lg p-2 text-sm outline-none ring-1 ring-slate-200" required oninput="calcularTotalVenda()">
                 <button type="button" onclick="this.parentElement.remove(); calcularTotalVenda()" class="text-red-500 p-2 ml-auto"><i class="fas fa-times"></i></button>
             `;
@@ -2047,7 +2196,7 @@
         function calcularTotalVenda() {
             let total = 0;
             document.querySelectorAll('.item-venda').forEach(el => {
-                const q = parseFloat(el.querySelector('.quantidade-input').value) || 0;
+                const q = parseInt(el.querySelector('.quantidade-input').value, 10) || 0;
                 const v = parseFloat(el.querySelector('.venda-input').value) || 0;
                 total += (q * v);
             });
@@ -2070,10 +2219,15 @@
             for (const el of itemsDiv) {
                 const prodSelect = el.querySelector('.produto-select');
                 const prodId = prodSelect.value;
-                const qtd = parseFloat(el.querySelector('.quantidade-input').value);
+                const qtdVal = el.querySelector('.quantidade-input').value;
+                const qtd = parseInt(qtdVal, 10);
                 const valorVendaInput = parseFloat(el.querySelector('.venda-input').value);
                 const custoUn = parseFloat(prodSelect.options[prodSelect.selectedIndex].getAttribute('data-custo')) || 0;
                 
+                if (isNaN(qtd) || !Number.isInteger(parseFloat(qtdVal)) || qtd <= 0) {
+                    return mostrarToast("A quantidade vendida deve ser um número inteiro maior que zero.", "warning");
+                }
+
                 if (valorVendaInput < custoUn) {
                     const msg = `Um dos itens está sendo vendido ABAIXO DO CUSTO.\nCusto: R$ ${custoUn.toFixed(2).replace('.', ',')} | Venda: R$ ${valorVendaInput.toFixed(2).replace('.', ',')}\n\nDeseja continuar mesmo assim?`;
                     if (!confirm(msg)) return;
@@ -2087,12 +2241,20 @@
             
             try {
                 if (vendaId) {
-                    const { data: itensAntigos } = await clienteSupabase.from('vendas_itens').select('*').eq('venda_id', vendaId);
+                    const { data: itensAntigos, error: errAnt } = await clienteSupabase.from('vendas_itens').select('*').eq('venda_id', vendaId);
+                    if (errAnt) throw errAnt;
+
+                    const { data: latestProds, error: pErr } = await clienteSupabase.from('produtos').select('*');
+                    if (pErr) throw pErr;
+
                     for (const it of itensAntigos) {
-                        const p = produtos.find(x => x.id === it.produto_id);
+                        const p = latestProds.find(x => x.id === it.produto_id);
                         if (p) {
-                            const novoEstoque = p.estoque_atual + it.quantidade;
-                            await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                            const novoEstoque = parseFloat(p.estoque_atual) + parseFloat(it.quantidade);
+                            const { error: upErr } = await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                            if (upErr) throw upErr;
+                        } else {
+                            throw new Error(`Produto ID ${it.produto_id} não encontrado no estoque para reversão.`);
                         }
                     }
                     await clienteSupabase.from('vendas').delete().eq('id', vendaId);
@@ -2134,11 +2296,14 @@
                 }).select().single();
                 if (vErr) throw vErr;
 
+                const { data: latestProds, error: pErr } = await clienteSupabase.from('produtos').select('*');
+                if (pErr) throw pErr;
+
                 const itensInsert = [];
                 for (const el of itemsDiv) {
                     const prodSelect = el.querySelector('.produto-select');
                     const prodId = prodSelect.value;
-                    const qtd = parseFloat(el.querySelector('.quantidade-input').value);
+                    const qtd = parseInt(el.querySelector('.quantidade-input').value, 10);
                     const vendaVal = parseFloat(el.querySelector('.venda-input').value);
                     const custoUn = parseFloat(prodSelect.options[prodSelect.selectedIndex].getAttribute('data-custo')) || 0;
                     
@@ -2150,10 +2315,16 @@
                         custo_unitario: custoUn
                     });
 
-                    const prod = produtos.find(p => p.id === prodId);
-                    await clienteSupabase.from('produtos').update({
-                        estoque_atual: prod.estoque_atual - qtd
-                    }).eq('id', prodId);
+                    const prod = latestProds.find(p => p.id === prodId);
+                    if (prod) {
+                        const novoEstoque = parseFloat(prod.estoque_atual) - qtd;
+                        const { error: upErr } = await clienteSupabase.from('produtos').update({
+                            estoque_atual: novoEstoque
+                        }).eq('id', prodId);
+                        if (upErr) throw upErr;
+                    } else {
+                        throw new Error(`Produto ID ${prodId} não encontrado.`);
+                    }
                 }
 
                 const { error: itErr } = await clienteSupabase.from('vendas_itens').insert(itensInsert);
@@ -2180,11 +2351,17 @@
                 const { data: itens, error: iErr } = await clienteSupabase.from('vendas_itens').select('*').eq('venda_id', id);
                 if (iErr) throw iErr;
 
+                const { data: latestProds, error: pErr } = await clienteSupabase.from('produtos').select('*');
+                if (pErr) throw pErr;
+
                 for (const it of itens) {
-                    const p = produtos.find(x => x.id === it.produto_id);
+                    const p = latestProds.find(x => x.id === it.produto_id);
                     if (p) {
-                        const novoEstoque = p.estoque_atual + it.quantidade;
-                        await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                        const novoEstoque = parseFloat(p.estoque_atual) + parseFloat(it.quantidade);
+                        const { error: upErr } = await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
+                        if (upErr) throw upErr;
+                    } else {
+                        throw new Error(`Produto ID ${it.produto_id} não encontrado no estoque.`);
                     }
                 }
 
