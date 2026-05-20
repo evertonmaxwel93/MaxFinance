@@ -147,6 +147,15 @@
             <button onclick="mudarAbaMobile('aba-vendas')" class="mobile-nav-btn px-4 py-3 text-sm font-bold rounded-lg text-left flex items-center gap-3 hover:bg-slate-100 transition">
                 <i class="fas fa-cash-register text-blue-500 w-5"></i> Vendas
             </button>
+            <button onclick="mudarAbaMobile('aba-clientes')" class="mobile-nav-btn px-4 py-3 text-sm font-bold rounded-lg text-left flex items-center gap-3 hover:bg-slate-100 transition">
+                <i class="fas fa-users text-blue-500 w-5"></i> Clientes
+            </button>
+            <button onclick="mudarAbaMobile('aba-fornecedores')" class="mobile-nav-btn px-4 py-3 text-sm font-bold rounded-lg text-left flex items-center gap-3 hover:bg-slate-100 transition">
+                <i class="fas fa-truck text-blue-500 w-5"></i> Fornecedores
+            </button>
+            <button onclick="mudarAbaMobile('aba-relatorios')" class="mobile-nav-btn px-4 py-3 text-sm font-bold rounded-lg text-left flex items-center gap-3 hover:bg-slate-100 transition">
+                <i class="fas fa-chart-line text-blue-500 w-5"></i> Relatórios
+            </button>
             <button onclick="mudarAbaMobile('aba-configuracoes')" class="mobile-nav-btn px-4 py-3 text-sm font-bold rounded-lg text-left flex items-center gap-3 hover:bg-slate-100 transition">
                 <i class="fas fa-cog text-blue-500 w-5"></i> Ajustes
             </button>
@@ -191,6 +200,15 @@
                 </button>
                 <button onclick="mudarAba('aba-vendas')" id="btn-aba-vendas" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
                     <i class="fas fa-cash-register mr-2"></i> Vendas
+                </button>
+                <button onclick="mudarAba('aba-clientes')" id="btn-aba-clientes" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
+                    <i class="fas fa-users mr-2"></i> Clientes
+                </button>
+                <button onclick="mudarAba('aba-fornecedores')" id="btn-aba-fornecedores" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
+                    <i class="fas fa-truck mr-2"></i> Fornecedores
+                </button>
+                <button onclick="mudarAba('aba-relatorios')" id="btn-aba-relatorios" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
+                    <i class="fas fa-chart-line mr-2"></i> Relatórios
                 </button>
                 <button onclick="mudarAba('aba-configuracoes')" id="btn-aba-configuracoes" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
                     <i class="fas fa-cog mr-2"></i> Ajustes
@@ -397,7 +415,104 @@
             </div>
 
             <!-- Aba Ajustes -->
-            <div id="aba-configuracoes" class="hidden bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+            
+            <!-- ABA CLIENTES -->
+            <div id="aba-clientes" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-800"><i class="fas fa-users mr-2 text-blue-600"></i>Clientes</h2>
+                    <button onclick="abrirModalCliente()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold shadow transition flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Novo Cliente
+                    </button>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                                    <th class="p-3 font-bold">Nome</th>
+                                    <th class="p-3 font-bold">Telefone</th>
+                                    <th class="p-3 font-bold">Documento</th>
+                                    <th class="p-3 font-bold text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-clientes" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA FORNECEDORES -->
+            <div id="aba-fornecedores" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-800"><i class="fas fa-truck mr-2 text-blue-600"></i>Fornecedores</h2>
+                    <button onclick="abrirModalFornecedor()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold shadow transition flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Novo Fornecedor
+                    </button>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                                    <th class="p-3 font-bold">Nome</th>
+                                    <th class="p-3 font-bold">Telefone</th>
+                                    <th class="p-3 font-bold">Documento</th>
+                                    <th class="p-3 font-bold text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-fornecedores" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA RELATORIOS -->
+            <div id="aba-relatorios" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-bold text-slate-800"><i class="fas fa-chart-line mr-2 text-blue-600"></i>Relatórios e Analytics</h2>
+                    <div class="flex gap-2">
+                        <select id="relatorio-mes" onchange="renderizarRelatorios()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200">
+                            <option value="01">Jan</option><option value="02">Fev</option><option value="03">Mar</option>
+                            <option value="04">Abr</option><option value="05">Mai</option><option value="06">Jun</option>
+                            <option value="07">Jul</option><option value="08">Ago</option><option value="09">Set</option>
+                            <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+                        </select>
+                        <select id="relatorio-ano" onchange="renderizarRelatorios()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200"></select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Resumo Mensal -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Resumo Mensal por Categoria</h3>
+                        <div id="relatorio-resumo-mensal" class="space-y-4"></div>
+                    </div>
+                    
+                    <!-- Ranking de Produtos -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h3 class="text-lg font-bold text-slate-800">Ranking de Produtos</h3>
+                            <select id="relatorio-ranking-tipo" onchange="renderizarRelatorios()" class="text-xs font-bold border-none bg-slate-50 rounded-lg p-1 outline-none ring-1 ring-slate-200">
+                                <option value="qtd">Por Qtd Vendida</option>
+                                <option value="faturamento">Por Faturamento</option>
+                                <option value="lucro">Por Lucro</option>
+                            </select>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                                        <th class="p-2 font-bold">Produto</th>
+                                        <th class="p-2 font-bold text-right">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="relatorio-ranking-lista" class="divide-y divide-slate-100 text-sm"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+<div id="aba-configuracoes" class="hidden bg-white border border-slate-200 rounded-xl shadow-sm p-6">
                 <h2 class="text-xl font-bold mb-4 text-slate-800"><i class="fas fa-tags mr-2 text-blue-500"></i>Gerenciar Subcategorias</h2>
                 <form id="form-subcategoria" class="flex flex-col md:flex-row gap-3 mb-8">
                     <select id="novo-sub-tipo" class="border-none bg-slate-50 rounded-lg p-3 font-bold text-sm outline-none ring-1 ring-slate-200">
@@ -494,7 +609,55 @@
     </div>
 
     <!-- Modal Unificado de Gestão -->
-    <div id="modalOverlayGestao" class="fixed inset-0 bg-black/60 hidden z-[50] flex items-center justify-center p-4 modal-blur">
+    
+    <!-- Modal Cliente -->
+    <div id="modalCliente" class="fixed inset-0 bg-slate-900 bg-opacity-50 hidden items-center justify-center z-50 p-4 transition-opacity opacity-0">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh] transform scale-95 transition-transform">
+            <div class="flex justify-between items-center p-4 md:p-6 border-b border-slate-100">
+                <h3 id="modalClienteTitulo" class="text-xl font-bold text-slate-800">Novo Cliente</h3>
+                <button onclick="fecharModal('modalCliente')" class="text-slate-400 hover:text-slate-600 transition p-2"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-4 md:p-6 overflow-y-auto flex-1 custom-scrollbar">
+                <form id="form-cliente" class="space-y-4">
+                    <input type="hidden" id="cliente_id">
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Nome *</label><input type="text" id="cliente_nome" required class="w-full border-none bg-slate-50 rounded-xl p-3 text-slate-800 font-medium outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white transition"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Telefone</label><input type="text" id="cliente_telefone" class="w-full border-none bg-slate-50 rounded-xl p-3 text-slate-800 font-medium outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white transition"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Email</label><input type="email" id="cliente_email" class="w-full border-none bg-slate-50 rounded-xl p-3 text-slate-800 font-medium outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white transition"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Documento (CPF/CNPJ)</label><input type="text" id="cliente_documento" class="w-full border-none bg-slate-50 rounded-xl p-3 text-slate-800 font-medium outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white transition"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Endereço</label><input type="text" id="cliente_endereco" class="w-full border-none bg-slate-50 rounded-xl p-3 text-slate-800 font-medium outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white transition"></div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" id="btn_excluir_cliente" onclick="excluirClienteModal()" class="hidden flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-bold py-3 rounded-xl transition"><i class="fas fa-trash-alt mr-2"></i>Excluir</button>
+                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 transition"><i class="fas fa-save mr-2"></i>Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Fornecedor -->
+    <div id="modalFornecedor" class="fixed inset-0 bg-slate-900 bg-opacity-50 hidden items-center justify-center z-50 p-4 transition-opacity opacity-0">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh] transform scale-95 transition-transform">
+            <div class="flex justify-between items-center p-4 md:p-6 border-b border-slate-100">
+                <h3 id="modalFornecedorTitulo" class="text-xl font-bold text-slate-800">Novo Fornecedor</h3>
+                <button onclick="fecharModal('modalFornecedor')" class="text-slate-400 hover:text-slate-600 transition p-2"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-4 md:p-6 overflow-y-auto flex-1 custom-scrollbar">
+                <form id="form-fornecedor" class="space-y-4">
+                    <input type="hidden" id="fornecedor_id">
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Nome *</label><input type="text" id="fornecedor_nome" required class="w-full border-none bg-slate-50 rounded-xl p-3 text-slate-800 font-medium outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white transition"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Telefone</label><input type="text" id="fornecedor_telefone" class="w-full border-none bg-slate-50 rounded-xl p-3 text-slate-800 font-medium outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white transition"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Email</label><input type="email" id="fornecedor_email" class="w-full border-none bg-slate-50 rounded-xl p-3 text-slate-800 font-medium outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white transition"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Documento (CPF/CNPJ)</label><input type="text" id="fornecedor_documento" class="w-full border-none bg-slate-50 rounded-xl p-3 text-slate-800 font-medium outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white transition"></div>
+                    <div><label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">Endereço</label><input type="text" id="fornecedor_endereco" class="w-full border-none bg-slate-50 rounded-xl p-3 text-slate-800 font-medium outline-none ring-1 ring-slate-200 focus:ring-2 focus:ring-blue-500 focus:bg-white transition"></div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" id="btn_excluir_fornecedor" onclick="excluirFornecedorModal()" class="hidden flex-1 bg-red-100 hover:bg-red-200 text-red-600 font-bold py-3 rounded-xl transition"><i class="fas fa-trash-alt mr-2"></i>Excluir</button>
+                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 transition"><i class="fas fa-save mr-2"></i>Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<div id="modalOverlayGestao" class="fixed inset-0 bg-black/60 hidden z-[50] flex items-center justify-center p-4 modal-blur">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col relative">
             <button onclick="fecharModal('modalOverlayGestao')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition z-10"><i class="fas fa-times"></i></button>
             
@@ -1000,6 +1163,365 @@
             } catch (err) { console.error("Erro carregar anos:", err); }
         }
 
+        
+        // ==========================================
+        // NOTIFICAÇÕES PUSH (PWA)
+        // ==========================================
+        function solicitarPermissaoNotificacao() {
+            if ("Notification" in window) {
+                if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+                    Notification.requestPermission();
+                }
+            }
+        }
+        function verificarNotificacoesPush() {
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+            const hoje = new Date();
+            const strHoje = hoje.toISOString().split('T')[0];
+            const amanha = new Date(hoje);
+            amanha.setDate(amanha.getDate() + 1);
+            const strAmanha = amanha.toISOString().split('T')[0];
+            const ontem = new Date(hoje);
+            ontem.setDate(ontem.getDate() - 1);
+            const strOntem = ontem.toISOString().split('T')[0];
+
+            let countHoje = 0, countAmanha = 0, countAtrasada = 0;
+
+            transacoesGlobais.forEach(t => {
+                if (t.status === 'Pendente') {
+                    if (t.data_vencimento === strHoje) countHoje++;
+                    else if (t.data_vencimento === strAmanha) countAmanha++;
+                    else if (t.data_vencimento === strOntem) countAtrasada++;
+                }
+            });
+
+            if (countHoje > 0) new Notification("MaxFinance", { body: `Você tem ${countHoje} conta(s) vencendo HOJE.` });
+            if (countAmanha > 0) new Notification("MaxFinance", { body: `Você tem ${countAmanha} conta(s) vencendo AMANHÃ.` });
+            if (countAtrasada > 0) new Notification("MaxFinance", { body: `Atenção: Você tem ${countAtrasada} conta(s) que venceu(ram) ONTEM e continua(m) pendente(s).` });
+        }
+
+        // ==========================================
+        // CLIENTES E FORNECEDORES
+        // ==========================================
+        async function carregarClientes() {
+            try {
+                const { data, error } = await clienteSupabase.from('clientes').select('*').order('nome');
+                if (error) throw error;
+                clientesGlobais = data || [];
+                renderizarClientes();
+                preencherSelectClientes();
+            } catch(e) { console.error("Erro clientes:", e); }
+        }
+        function renderizarClientes() {
+            const tbody = document.getElementById('lista-clientes');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if (clientesGlobais.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>';
+                return;
+            }
+            clientesGlobais.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-slate-800">${c.nome}</td>
+                    <td class="p-3 text-slate-600">${c.telefone || '-'}</td>
+                    <td class="p-3 text-slate-600">${c.documento || '-'}</td>
+                    <td class="p-3 text-center">
+                        <button onclick='abrirModalCliente(${JSON.stringify(c).replace(/'/g, "&apos;")})' class="text-blue-500 hover:bg-blue-50 p-2 rounded-lg transition" title="Editar"><i class="fas fa-edit"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        function preencherSelectClientes() {
+            const select = document.getElementById('venda_cliente');
+            if (!select) return;
+            const val = select.value;
+            select.innerHTML = '<option value="Genérico/Não Cadastrado">Genérico/Não Cadastrado</option>';
+            clientesGlobais.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.nome;
+                opt.textContent = c.nome;
+                select.appendChild(opt);
+            });
+            if (val) select.value = val;
+        }
+        function abrirModalCliente(cliente = null) {
+            const form = document.getElementById('form-cliente');
+            form.reset();
+            document.getElementById('cliente_id').value = '';
+            document.getElementById('modalClienteTitulo').textContent = 'Novo Cliente';
+            document.getElementById('btn_excluir_cliente').classList.add('hidden');
+            
+            if (cliente) {
+                document.getElementById('modalClienteTitulo').textContent = 'Editar Cliente';
+                document.getElementById('cliente_id').value = cliente.id;
+                document.getElementById('cliente_nome').value = cliente.nome;
+                document.getElementById('cliente_telefone').value = cliente.telefone || '';
+                document.getElementById('cliente_email').value = cliente.email || '';
+                document.getElementById('cliente_documento').value = cliente.documento || '';
+                document.getElementById('cliente_endereco').value = cliente.endereco || '';
+                document.getElementById('btn_excluir_cliente').classList.remove('hidden');
+                document.getElementById('btn_excluir_cliente').classList.add('flex-1');
+            }
+            abrirModal('modalCliente');
+        }
+        document.getElementById('form-cliente').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            try {
+                const id = document.getElementById('cliente_id').value;
+                const dados = {
+                    user_id: userAtual.id,
+                    nome: document.getElementById('cliente_nome').value,
+                    telefone: document.getElementById('cliente_telefone').value,
+                    email: document.getElementById('cliente_email').value,
+                    documento: document.getElementById('cliente_documento').value,
+                    endereco: document.getElementById('cliente_endereco').value
+                };
+                if (id) {
+                    const { error } = await clienteSupabase.from('clientes').update(dados).eq('id', id);
+                    if(error) throw error;
+                    mostrarToast("Cliente atualizado!", "success");
+                } else {
+                    const { error } = await clienteSupabase.from('clientes').insert([dados]);
+                    if(error) throw error;
+                    mostrarToast("Cliente cadastrado!", "success");
+                }
+                fecharModal('modalCliente');
+                carregarClientes();
+            } catch(err) {
+                mostrarToast("Erro: " + err.message, "error");
+            } finally {
+                btn.disabled = false;
+            }
+        });
+        async function excluirClienteModal() {
+            const id = document.getElementById('cliente_id').value;
+            if(!id || !confirm("Deseja excluir este cliente?")) return;
+            try {
+                const { error } = await clienteSupabase.from('clientes').delete().eq('id', id);
+                if(error) throw error;
+                mostrarToast("Excluído com sucesso", "success");
+                fecharModal('modalCliente');
+                carregarClientes();
+            } catch(err) { mostrarToast("Erro: "+err.message, "error"); }
+        }
+
+        async function carregarFornecedores() {
+            try {
+                const { data, error } = await clienteSupabase.from('fornecedores').select('*').order('nome');
+                if (error) throw error;
+                fornecedoresGlobais = data || [];
+                renderizarFornecedores();
+                preencherSelectFornecedores();
+            } catch(e) { console.error("Erro fornecedores:", e); }
+        }
+        function renderizarFornecedores() {
+            const tbody = document.getElementById('lista-fornecedores');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            if (fornecedoresGlobais.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">Nenhum fornecedor cadastrado.</td></tr>';
+                return;
+            }
+            fornecedoresGlobais.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition";
+                tr.innerHTML = `
+                    <td class="p-3 font-bold text-slate-800">${c.nome}</td>
+                    <td class="p-3 text-slate-600">${c.telefone || '-'}</td>
+                    <td class="p-3 text-slate-600">${c.documento || '-'}</td>
+                    <td class="p-3 text-center">
+                        <button onclick='abrirModalFornecedor(${JSON.stringify(c).replace(/'/g, "&apos;")})' class="text-blue-500 hover:bg-blue-50 p-2 rounded-lg transition" title="Editar"><i class="fas fa-edit"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+        function preencherSelectFornecedores() {
+            const select = document.getElementById('compra_fornecedor');
+            if (!select) return;
+            const val = select.value;
+            select.innerHTML = '<option value="Genérico/Não Cadastrado">Genérico/Não Cadastrado</option>';
+            fornecedoresGlobais.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.nome;
+                opt.textContent = c.nome;
+                select.appendChild(opt);
+            });
+            if (val) select.value = val;
+        }
+        function abrirModalFornecedor(fornecedor = null) {
+            const form = document.getElementById('form-fornecedor');
+            form.reset();
+            document.getElementById('fornecedor_id').value = '';
+            document.getElementById('modalFornecedorTitulo').textContent = 'Novo Fornecedor';
+            document.getElementById('btn_excluir_fornecedor').classList.add('hidden');
+            
+            if (fornecedor) {
+                document.getElementById('modalFornecedorTitulo').textContent = 'Editar Fornecedor';
+                document.getElementById('fornecedor_id').value = fornecedor.id;
+                document.getElementById('fornecedor_nome').value = fornecedor.nome;
+                document.getElementById('fornecedor_telefone').value = fornecedor.telefone || '';
+                document.getElementById('fornecedor_email').value = fornecedor.email || '';
+                document.getElementById('fornecedor_documento').value = fornecedor.documento || '';
+                document.getElementById('fornecedor_endereco').value = fornecedor.endereco || '';
+                document.getElementById('btn_excluir_fornecedor').classList.remove('hidden');
+                document.getElementById('btn_excluir_fornecedor').classList.add('flex-1');
+            }
+            abrirModal('modalFornecedor');
+        }
+        document.getElementById('form-fornecedor').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            try {
+                const id = document.getElementById('fornecedor_id').value;
+                const dados = {
+                    user_id: userAtual.id,
+                    nome: document.getElementById('fornecedor_nome').value,
+                    telefone: document.getElementById('fornecedor_telefone').value,
+                    email: document.getElementById('fornecedor_email').value,
+                    documento: document.getElementById('fornecedor_documento').value,
+                    endereco: document.getElementById('fornecedor_endereco').value
+                };
+                if (id) {
+                    const { error } = await clienteSupabase.from('fornecedores').update(dados).eq('id', id);
+                    if(error) throw error;
+                    mostrarToast("Fornecedor atualizado!", "success");
+                } else {
+                    const { error } = await clienteSupabase.from('fornecedores').insert([dados]);
+                    if(error) throw error;
+                    mostrarToast("Fornecedor cadastrado!", "success");
+                }
+                fecharModal('modalFornecedor');
+                carregarFornecedores();
+            } catch(err) {
+                mostrarToast("Erro: " + err.message, "error");
+            } finally {
+                btn.disabled = false;
+            }
+        });
+        async function excluirFornecedorModal() {
+            const id = document.getElementById('fornecedor_id').value;
+            if(!id || !confirm("Deseja excluir este fornecedor?")) return;
+            try {
+                const { error } = await clienteSupabase.from('fornecedores').delete().eq('id', id);
+                if(error) throw error;
+                mostrarToast("Excluído com sucesso", "success");
+                fecharModal('modalFornecedor');
+                carregarFornecedores();
+            } catch(err) { mostrarToast("Erro: "+err.message, "error"); }
+        }
+
+        // ==========================================
+        // RELATÓRIOS E ANALYTICS
+        // ==========================================
+        function initRelatorios() {
+            const selectAno = document.getElementById('relatorio-ano');
+            const selectMes = document.getElementById('relatorio-mes');
+            
+            const anos = [...new Set(transacoesGlobais.map(t => t.data_vencimento.split('-')[0]))].sort((a,b)=>b-a);
+            selectAno.innerHTML = '';
+            anos.forEach(ano => {
+                const opt = document.createElement('option');
+                opt.value = ano; opt.textContent = ano;
+                selectAno.appendChild(opt);
+            });
+            if(anos.length === 0) selectAno.innerHTML = '<option value="">Sem dados</option>';
+            else {
+                const hoje = new Date();
+                selectAno.value = hoje.getFullYear().toString();
+                selectMes.value = String(hoje.getMonth() + 1).padStart(2, '0');
+            }
+            renderizarRelatorios();
+        }
+
+        function renderizarRelatorios() {
+            const ano = document.getElementById('relatorio-ano').value;
+            const mes = document.getElementById('relatorio-mes').value;
+            if(!ano) return;
+
+            // 1. Resumo Mensal (Transacoes)
+            const transMes = transacoesGlobais.filter(t => t.data_vencimento.startsWith(`${ano}-${mes}`));
+            let resumo = {};
+            transMes.forEach(t => {
+                if(!resumo[t.subcategoria]) resumo[t.subcategoria] = { entrada: 0, saida: 0 };
+                if(t.tipo === 'Entrada') resumo[t.subcategoria].entrada += t.valor_parcela;
+                else resumo[t.subcategoria].saida += t.valor_parcela;
+            });
+
+            const resumoDiv = document.getElementById('relatorio-resumo-mensal');
+            resumoDiv.innerHTML = '';
+            if(Object.keys(resumo).length === 0) {
+                resumoDiv.innerHTML = '<p class="text-sm text-slate-400">Nenhum dado no período.</p>';
+            } else {
+                for (let sub in resumo) {
+                    const r = resumo[sub];
+                    if (r.entrada === 0 && r.saida === 0) continue;
+                    const valHtml = r.entrada > 0 ? `<span class="text-emerald-600 font-bold">+ R$ ${r.entrada.toFixed(2).replace('.', ',')}</span>` : `<span class="text-red-600 font-bold">- R$ ${r.saida.toFixed(2).replace('.', ',')}</span>`;
+                    resumoDiv.innerHTML += `
+                        <div class="flex justify-between items-center text-sm border-b border-slate-50 pb-2">
+                            <span class="text-slate-600 font-medium">${sub}</span>
+                            ${valHtml}
+                        </div>
+                    `;
+                }
+            }
+
+            // 2. Ranking de Produtos
+            const tipoRanking = document.getElementById('relatorio-ranking-tipo').value;
+            
+            let rankingData = {};
+            // Pegar todas as vendas do periodo e seus itens
+            vendasGlobais.forEach(v => {
+                if(v.data_venda.startsWith(`${ano}-${mes}`)) {
+                    v.vendas_itens.forEach(it => {
+                        const pid = it.produto_id;
+                        if(!rankingData[pid]) {
+                            const p = produtos.find(x => x.id === pid);
+                            rankingData[pid] = {
+                                nome: p ? p.nome : 'Produto Deletado',
+                                qtd: 0,
+                                faturamento: 0,
+                                lucro: 0
+                            };
+                        }
+                        rankingData[pid].qtd += it.quantidade;
+                        rankingData[pid].faturamento += (it.valor_venda * it.quantidade);
+                        rankingData[pid].lucro += ((it.valor_venda - it.custo_unitario) * it.quantidade);
+                    });
+                }
+            });
+
+            let rankingArray = Object.values(rankingData);
+            if(tipoRanking === 'qtd') rankingArray.sort((a,b) => b.qtd - a.qtd);
+            else if(tipoRanking === 'faturamento') rankingArray.sort((a,b) => b.faturamento - a.faturamento);
+            else rankingArray.sort((a,b) => b.lucro - a.lucro);
+
+            const tbody = document.getElementById('relatorio-ranking-lista');
+            tbody.innerHTML = '';
+            if(rankingArray.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" class="p-2 text-center text-slate-400 text-sm">Nenhuma venda no período.</td></tr>';
+            } else {
+                rankingArray.slice(0,10).forEach(r => {
+                    let valDisplay = '';
+                    if(tipoRanking === 'qtd') valDisplay = `${r.qtd} un`;
+                    else if(tipoRanking === 'faturamento') valDisplay = `R$ ${r.faturamento.toFixed(2).replace('.', ',')}`;
+                    else valDisplay = `R$ ${r.lucro.toFixed(2).replace('.', ',')}`;
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-2 font-medium text-slate-800">${r.nome}</td>
+                            <td class="p-2 text-right text-slate-600 font-bold">${valDisplay}</td>
+                        </tr>
+                    `;
+                });
+            }
+        }
         async function carregarDadosFluxo() {
             try {
                 const ano = document.getElementById('filtro-ano').value;
@@ -1470,8 +1992,11 @@
             }
         }
 
+        let isSubmittingTransacao = false;
         document.getElementById('transacao-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (isSubmittingTransacao) return;
+            isSubmittingTransacao = true;
             try {
                 const tipo = document.getElementById('tipo').value; 
                 const subcategoria = document.getElementById('subcategoria').value;
@@ -1544,6 +2069,8 @@
                 atualizarTudo();
             } catch (err) {
                 mostrarToast("Erro ao salvar lançamento: " + err.message, "error");
+            } finally {
+                isSubmittingTransacao = false;
             }
         });
 
@@ -1901,10 +2428,17 @@
             return total;
         }
 
+        let isSubmittingCompra = false;
         document.getElementById('form-compra').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (isSubmittingCompra) return;
+            isSubmittingCompra = true;
+
             const total = calcularTotalCompra();
-            if (total <= 0) return mostrarToast("Adicione itens válidos à compra.", "warning");
+            if (total <= 0) {
+                isSubmittingCompra = false;
+                return mostrarToast("Adicione itens válidos à compra.", "warning");
+            }
             
             const compraId = document.getElementById('compra_id').value;
             const transacaoId = document.getElementById('compra_transacao_id').value;
@@ -1914,6 +2448,7 @@
                 const qtdVal = el.querySelector('.quantidade-input').value;
                 const qtd = parseInt(qtdVal, 10);
                 if (isNaN(qtd) || !Number.isInteger(parseFloat(qtdVal)) || qtd <= 0) {
+                    isSubmittingCompra = false;
                     return mostrarToast("A quantidade comprada deve ser um número inteiro maior que zero.", "warning");
                 }
             }
@@ -1931,7 +2466,10 @@
                         const p = latestProds.find(x => x.id === it.produto_id);
                         if (p) {
                             const novoEstoque = parseFloat(p.estoque_atual) - parseFloat(it.quantidade);
-                            if (novoEstoque < 0) return mostrarToast(`A reversão deixaria o estoque de ${p.nome} negativo.`, "error");
+                            if (novoEstoque < 0) {
+                                isSubmittingCompra = false;
+                                return mostrarToast(`A reversão deixaria o estoque de ${p.nome} negativo.`, "error");
+                            }
                             const { error: upErr } = await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
                             if (upErr) throw upErr;
                         } else {
@@ -2011,6 +2549,8 @@
                 atualizarTudo();
             } catch (err) {
                 mostrarToast("Erro ao registrar compra: " + err.message, "error");
+            } finally {
+                isSubmittingCompra = false;
             }
         });
 
@@ -2057,6 +2597,8 @@
         }
 
         // ================= VENDAS =================
+        let clientesGlobais = [];
+        let fornecedoresGlobais = [];
         let vendasGlobais = [];
 
         async function carregarVendas() {
@@ -2204,10 +2746,17 @@
             return total;
         }
 
+        let isSubmittingVenda = false;
         document.getElementById('form-venda').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (isSubmittingVenda) return;
+            isSubmittingVenda = true;
+            
             const total = calcularTotalVenda();
-            if (total <= 0) return mostrarToast("Adicione itens válidos à venda.", "warning");
+            if (total <= 0) {
+                isSubmittingVenda = false;
+                return mostrarToast("Adicione itens válidos à venda.", "warning");
+            }
 
             const vendaId = document.getElementById('venda_id').value;
             const transacaoId = document.getElementById('venda_transacao_id').value;
@@ -2225,12 +2774,16 @@
                 const custoUn = parseFloat(prodSelect.options[prodSelect.selectedIndex].getAttribute('data-custo')) || 0;
                 
                 if (isNaN(qtd) || !Number.isInteger(parseFloat(qtdVal)) || qtd <= 0) {
+                    isSubmittingVenda = false;
                     return mostrarToast("A quantidade vendida deve ser um número inteiro maior que zero.", "warning");
                 }
 
                 if (valorVendaInput < custoUn) {
                     const msg = `Um dos itens está sendo vendido ABAIXO DO CUSTO.\nCusto: R$ ${custoUn.toFixed(2).replace('.', ',')} | Venda: R$ ${valorVendaInput.toFixed(2).replace('.', ',')}\n\nDeseja continuar mesmo assim?`;
-                    if (!confirm(msg)) return;
+                    if (!confirm(msg)) {
+                        isSubmittingVenda = false;
+                        return;
+                    }
                 }
 
                 custoTotalVenda += (qtd * custoUn);
@@ -2265,6 +2818,7 @@
                 for (const prodId of Object.keys(comprasDict)) {
                     const p = produtos.find(x => x.id === prodId);
                     if (p.estoque_atual < comprasDict[prodId]) {
+                        isSubmittingVenda = false;
                         return mostrarToast(`Estoque insuficiente para o produto: ${p.nome}`, "error");
                     }
                 }
@@ -2337,6 +2891,8 @@
                 atualizarTudo();
             } catch (err) {
                 mostrarToast("Erro ao registrar venda: " + err.message, "error");
+            } finally {
+                isSubmittingVenda = false;
             }
         });
 
