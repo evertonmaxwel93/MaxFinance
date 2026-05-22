@@ -147,12 +147,7 @@
             <button onclick="mudarAbaMobile('aba-vendas')" class="mobile-nav-btn px-4 py-3 text-sm font-bold rounded-lg text-left flex items-center gap-3 hover:bg-slate-100 transition">
                 <i class="fas fa-cash-register text-blue-500 w-5"></i> Vendas
             </button>
-            <button onclick="mudarAbaMobile('aba-clientes')" class="mobile-nav-btn px-4 py-3 text-sm font-bold rounded-lg text-left flex items-center gap-3 hover:bg-slate-100 transition">
-                <i class="fas fa-users text-blue-500 w-5"></i> Clientes
-            </button>
-            <button onclick="mudarAbaMobile('aba-fornecedores')" class="mobile-nav-btn px-4 py-3 text-sm font-bold rounded-lg text-left flex items-center gap-3 hover:bg-slate-100 transition">
-                <i class="fas fa-truck text-blue-500 w-5"></i> Fornecedores
-            </button>
+
             <button onclick="mudarAbaMobile('aba-relatorios')" class="mobile-nav-btn px-4 py-3 text-sm font-bold rounded-lg text-left flex items-center gap-3 hover:bg-slate-100 transition">
                 <i class="fas fa-chart-line text-blue-500 w-5"></i> Relatórios
             </button>
@@ -201,12 +196,7 @@
                 <button onclick="mudarAba('aba-vendas')" id="btn-aba-vendas" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
                     <i class="fas fa-cash-register mr-2"></i> Vendas
                 </button>
-                <button onclick="mudarAba('aba-clientes')" id="btn-aba-clientes" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
-                    <i class="fas fa-users mr-2"></i> Clientes
-                </button>
-                <button onclick="mudarAba('aba-fornecedores')" id="btn-aba-fornecedores" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
-                    <i class="fas fa-truck mr-2"></i> Fornecedores
-                </button>
+
                 <button onclick="mudarAba('aba-relatorios')" id="btn-aba-relatorios" class="px-3 py-2 text-sm font-bold rounded-lg text-slate-500 hover:bg-slate-100 transition flex items-center">
                     <i class="fas fa-chart-line mr-2"></i> Relatórios
                 </button>
@@ -416,55 +406,7 @@
 
             <!-- Aba Ajustes -->
             
-            <!-- ABA CLIENTES -->
-            <div id="aba-clientes" class="hidden space-y-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                    <h2 class="text-xl font-bold text-slate-800"><i class="fas fa-users mr-2 text-blue-600"></i>Clientes</h2>
-                    <button onclick="abrirModalCliente()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold shadow transition flex items-center gap-2">
-                        <i class="fas fa-plus"></i> Novo Cliente
-                    </button>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                                    <th class="p-3 font-bold">Nome</th>
-                                    <th class="p-3 font-bold">Telefone</th>
-                                    <th class="p-3 font-bold">Documento</th>
-                                    <th class="p-3 font-bold text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lista-clientes" class="divide-y divide-slate-100 text-sm"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
 
-            <!-- ABA FORNECEDORES -->
-            <div id="aba-fornecedores" class="hidden space-y-6">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                    <h2 class="text-xl font-bold text-slate-800"><i class="fas fa-truck mr-2 text-blue-600"></i>Fornecedores</h2>
-                    <button onclick="abrirModalFornecedor()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold shadow transition flex items-center gap-2">
-                        <i class="fas fa-plus"></i> Novo Fornecedor
-                    </button>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                                    <th class="p-3 font-bold">Nome</th>
-                                    <th class="p-3 font-bold">Telefone</th>
-                                    <th class="p-3 font-bold">Documento</th>
-                                    <th class="p-3 font-bold text-center">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="lista-fornecedores" class="divide-y divide-slate-100 text-sm"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
 
             <!-- ABA RELATORIOS -->
             <div id="aba-relatorios" class="hidden space-y-6">
@@ -513,6 +455,19 @@
                 </div>
             </div>
 <div id="aba-configuracoes" class="hidden bg-white border border-slate-200 rounded-xl shadow-sm p-6">
+                <!-- Gestao de Clientes e Fornecedores -->
+                <div class="mb-8 pb-8 border-b border-slate-200">
+                    <h2 class="text-xl font-bold mb-4 text-slate-800"><i class="fas fa-address-book mr-2 text-blue-500"></i>Gestao de Contatos</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button onclick="abrirModalListaClientes()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl font-bold shadow transition flex items-center justify-center gap-2 h-full">
+                            <i class="fas fa-users"></i> Gerenciar Clientes
+                        </button>
+                        <button onclick="abrirModalListaFornecedores()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-4 rounded-xl font-bold shadow transition flex items-center justify-center gap-2 h-full">
+                            <i class="fas fa-truck"></i> Gerenciar Fornecedores
+                        </button>
+                    </div>
+                </div>
+
                 <h2 class="text-xl font-bold mb-4 text-slate-800"><i class="fas fa-tags mr-2 text-blue-500"></i>Gerenciar Subcategorias</h2>
                 <form id="form-subcategoria" class="flex flex-col md:flex-row gap-3 mb-8">
                     <select id="novo-sub-tipo" class="border-none bg-slate-50 rounded-lg p-3 font-bold text-sm outline-none ring-1 ring-slate-200">
@@ -610,6 +565,68 @@
 
     <!-- Modal Unificado de Gestão -->
     
+    <!-- Modal Lista de Clientes -->
+    <div id="modalListaClientes" class="fixed inset-0 bg-black/60 hidden z-[50] flex items-center justify-center p-4 modal-blur">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col relative">
+            <button onclick="fecharModal('modalListaClientes')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition z-10"><i class="fas fa-times"></i></button>
+            <div class="p-6 overflow-y-auto flex-1">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-extrabold"><i class="fas fa-users text-blue-500 mr-2"></i>Gerenciar Clientes</h2>
+                    <button onclick="abrirModalCliente()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold shadow transition flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Novo
+                    </button>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                                    <th class="p-3 font-bold">Nome</th>
+                                    <th class="p-3 font-bold">Telefone</th>
+                                    <th class="p-3 font-bold">Email</th>
+                                    <th class="p-3 font-bold">Documento</th>
+                                    <th class="p-3 font-bold text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-clientes" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Lista de Fornecedores -->
+    <div id="modalListaFornecedores" class="fixed inset-0 bg-black/60 hidden z-[50] flex items-center justify-center p-4 modal-blur">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col relative">
+            <button onclick="fecharModal('modalListaFornecedores')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition z-10"><i class="fas fa-times"></i></button>
+            <div class="p-6 overflow-y-auto flex-1">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-extrabold"><i class="fas fa-truck text-blue-500 mr-2"></i>Gerenciar Fornecedores</h2>
+                    <button onclick="abrirModalFornecedor()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold shadow transition flex items-center gap-2">
+                        <i class="fas fa-plus"></i> Novo
+                    </button>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                                    <th class="p-3 font-bold">Nome</th>
+                                    <th class="p-3 font-bold">Telefone</th>
+                                    <th class="p-3 font-bold">Email</th>
+                                    <th class="p-3 font-bold">Documento</th>
+                                    <th class="p-3 font-bold text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lista-fornecedores" class="divide-y divide-slate-100 text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Cliente -->
     <div id="modalCliente" class="fixed inset-0 bg-slate-900 bg-opacity-50 hidden items-center justify-center z-50 p-4 transition-opacity opacity-0">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl flex flex-col max-h-[90vh] transform scale-95 transition-transform">
@@ -790,9 +807,14 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fornecedor</label>
-                            <select id="compra_fornecedor" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
-                                <option value="Genérico/Não Cadastrado">Genérico/Não Cadastrado</option>
-                            </select>
+                            <div class="flex gap-2">
+                                <select id="compra_fornecedor" required class="flex-1 bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                                    <option value="Genérico/Não Cadastrado">Genérico/Não Cadastrado</option>
+                                </select>
+                                <button type="button" onclick="abrirModalFornecedorRapido()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 rounded-xl font-bold transition" title="Adicionar novo fornecedor">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="border rounded-xl p-4 bg-slate-50 mt-4">
@@ -829,9 +851,14 @@
                         </div>
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Cliente</label>
-                            <select id="venda_cliente" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
-                                <option value="Genérico/Não Cadastrado">Genérico/Não Cadastrado</option>
-                            </select>
+                            <div class="flex gap-2">
+                                <select id="venda_cliente" required class="flex-1 bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                                    <option value="Genérico/Não Cadastrado">Genérico/Não Cadastrado</option>
+                                </select>
+                                <button type="button" onclick="abrirModalClienteRapido()" class="bg-green-600 hover:bg-green-700 text-white px-3 rounded-xl font-bold transition" title="Adicionar novo cliente">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -1099,7 +1126,7 @@
             fecharModal('modalOverlayGestao');
             fecharModal('modalOverlayBaixa');
 
-            const abas = ['aba-fluxo', 'aba-compras', 'aba-estoque', 'aba-vendas', 'aba-configuracoes', 'aba-clientes', 'aba-fornecedores', 'aba-relatorios'];
+            const abas = ['aba-fluxo', 'aba-compras', 'aba-estoque', 'aba-vendas', 'aba-configuracoes', 'aba-relatorios'];
             abas.forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('hidden');
@@ -1450,6 +1477,116 @@
                 carregarFornecedores();
             } catch(err) { mostrarToast("Erro: "+err.message, "error"); }
         }
+
+        // Modais de Lista (para Ajustes)
+        function abrirModalListaClientes() {
+            abrirModal('modalListaClientes');
+        }
+        function abrirModalListaFornecedores() {
+            abrirModal('modalListaFornecedores');
+        }
+
+        // Cadastro Rápido (para Compras/Vendas)
+        function abrirModalClienteRapido() {
+            const form = document.getElementById('form-cliente');
+            form.reset();
+            document.getElementById('cliente_id').value = '';
+            document.getElementById('modalClienteTitulo').textContent = 'Novo Cliente';
+            document.getElementById('btn_excluir_cliente').classList.add('hidden');
+            document.getElementById('modalCliente').dataset.rapido = 'true';
+            abrirModal('modalCliente');
+        }
+        function abrirModalFornecedorRapido() {
+            const form = document.getElementById('form-fornecedor');
+            form.reset();
+            document.getElementById('fornecedor_id').value = '';
+            document.getElementById('modalFornecedorTitulo').textContent = 'Novo Fornecedor';
+            document.getElementById('btn_excluir_fornecedor').classList.add('hidden');
+            document.getElementById('modalFornecedor').dataset.rapido = 'true';
+            abrirModal('modalFornecedor');
+        }
+
+        // Interceptar o submit do formulário de cliente para selecionar automaticamente
+        const formClienteOriginal = document.getElementById('form-cliente').addEventListener('submit', async (e) => {
+            if (e.target.id === 'form-cliente') {
+                const isRapido = document.getElementById('modalCliente').dataset.rapido === 'true';
+                if (isRapido) {
+                    e.preventDefault();
+                    const btn = e.target.querySelector('button[type="submit"]');
+                    btn.disabled = true;
+                    try {
+                        const id = document.getElementById('cliente_id').value;
+                        const nome = document.getElementById('cliente_nome').value;
+                        const dados = {
+                            user_id: userAtual.id,
+                            nome: nome,
+                            telefone: document.getElementById('cliente_telefone').value,
+                            email: document.getElementById('cliente_email').value,
+                            documento: document.getElementById('cliente_documento').value,
+                            endereco: document.getElementById('cliente_endereco').value
+                        };
+                        if (id) {
+                            const { error } = await clienteSupabase.from('clientes').update(dados).eq('id', id);
+                            if(error) throw error;
+                            mostrarToast("Cliente atualizado!", "success");
+                        } else {
+                            const { error } = await clienteSupabase.from('clientes').insert([dados]);
+                            if(error) throw error;
+                            mostrarToast("Cliente cadastrado!", "success");
+                        }
+                        await carregarClientes();
+                        document.getElementById('venda_cliente').value = nome;
+                        fecharModal('modalCliente');
+                        document.getElementById('modalCliente').dataset.rapido = 'false';
+                    } catch(err) {
+                        mostrarToast("Erro: " + err.message, "error");
+                    } finally {
+                        btn.disabled = false;
+                    }
+                }
+            }
+        }, true);
+
+        // Interceptar o submit do formulário de fornecedor para selecionar automaticamente
+        const formFornecedorOriginal = document.getElementById('form-fornecedor').addEventListener('submit', async (e) => {
+            if (e.target.id === 'form-fornecedor') {
+                const isRapido = document.getElementById('modalFornecedor').dataset.rapido === 'true';
+                if (isRapido) {
+                    e.preventDefault();
+                    const btn = e.target.querySelector('button[type="submit"]');
+                    btn.disabled = true;
+                    try {
+                        const id = document.getElementById('fornecedor_id').value;
+                        const nome = document.getElementById('fornecedor_nome').value;
+                        const dados = {
+                            user_id: userAtual.id,
+                            nome: nome,
+                            telefone: document.getElementById('fornecedor_telefone').value,
+                            email: document.getElementById('fornecedor_email').value,
+                            documento: document.getElementById('fornecedor_documento').value,
+                            endereco: document.getElementById('fornecedor_endereco').value
+                        };
+                        if (id) {
+                            const { error } = await clienteSupabase.from('fornecedores').update(dados).eq('id', id);
+                            if(error) throw error;
+                            mostrarToast("Fornecedor atualizado!", "success");
+                        } else {
+                            const { error } = await clienteSupabase.from('fornecedores').insert([dados]);
+                            if(error) throw error;
+                            mostrarToast("Fornecedor cadastrado!", "success");
+                        }
+                        await carregarFornecedores();
+                        document.getElementById('compra_fornecedor').value = nome;
+                        fecharModal('modalFornecedor');
+                        document.getElementById('modalFornecedor').dataset.rapido = 'false';
+                    } catch(err) {
+                        mostrarToast("Erro: " + err.message, "error");
+                    } finally {
+                        btn.disabled = false;
+                    }
+                }
+            }
+        }, true);
 
         // ==========================================
         // RELATÓRIOS E ANALYTICS
@@ -3022,8 +3159,6 @@
             if (abaId === 'aba-estoque') carregarProdutos();
             if (abaId === 'aba-compras') { carregarProdutos(); carregarCompras(); }
             if (abaId === 'aba-vendas') { carregarProdutos(); carregarVendas(); }
-            if (abaId === 'aba-clientes') carregarClientes();
-            if (abaId === 'aba-fornecedores') carregarFornecedores();
             if (abaId === 'aba-relatorios') {
                 mostrarLoading();
                 Promise.all([carregarProdutos(), carregarVendas(), carregarTransacoesGlobais()]).then(() => {
