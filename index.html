@@ -216,65 +216,65 @@
             
             <div id="aba-fluxo" class="space-y-6">
                 <!-- Filtros e Cards -->
-                <!-- Filtros e Cards -->
-<div class="flex flex-col gap-2">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    
+                    <!-- BARRA DE FILTROS COMPACTA E PESQUISA -->
+                    <div class="col-span-1 md:col-span-4 flex flex-wrap items-center gap-3 bg-white p-3 rounded-xl shadow-sm border border-slate-200">
+                        
+                        <!-- Pesquisa Rápida -->
+                        <div class="relative flex-1 min-w-[150px]">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="input-pesquisa" onkeyup="renderizarFluxo()" placeholder="Pesquisar (Descrição ou Categoria)..." class="w-full pl-9 pr-3 py-2 border-none bg-slate-50 rounded-lg text-sm font-medium outline-none ring-1 ring-slate-200 focus:ring-blue-500">
+                        </div>
+                        
+                        <!-- Filtro Ano -->
+                        <select id="filtro-ano" onchange="carregarDadosFluxo()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200">
+                            <option value="Todos" selected>Todos Anos</option>
+                        </select>
+                        
+                        <!-- Filtro Mês -->
+                        <select id="filtro-mes" onchange="carregarDadosFluxo()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200">
+                            <option value="Todos" selected>Todos Meses</option>
+                            <option value="01">Jan</option><option value="02">Fev</option><option value="03">Mar</option>
+                            <option value="04">Abr</option><option value="05">Mai</option><option value="06">Jun</option>
+                            <option value="07">Jul</option><option value="08">Ago</option><option value="09">Set</option>
+                            <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
+                        </select>
 
-    <!-- BARRA DE FILTROS COMPACTA -->
-    <div class="flex flex-wrap items-center gap-2 bg-white px-3 py-2 rounded-xl shadow-sm border border-slate-200">
-        
-        <!-- Pesquisa Rápida -->
-        <div class="relative flex-1 min-w-[140px]">
-            <i class="fas fa-search absolute left-2.5 top-1/2 transform -translate-y-1/2 text-slate-400 text-xs"></i>
-            <input type="text" id="input-pesquisa" onkeyup="renderizarFluxo()" placeholder="Pesquisar..." class="w-full pl-7 pr-2 py-1.5 border-none bg-slate-50 rounded-lg text-xs font-medium outline-none ring-1 ring-slate-200 focus:ring-blue-500">
-        </div>
-        
-        <!-- Filtro Ano -->
-        <select id="filtro-ano" onchange="carregarDadosFluxo()" class="border-none bg-slate-50 rounded-lg px-2 py-1.5 font-bold text-xs outline-none ring-1 ring-slate-200">
-            <option value="Todos" selected>Todos Anos</option>
-        </select>
-        
-        <!-- Filtro Mês -->
-        <select id="filtro-mes" onchange="carregarDadosFluxo()" class="border-none bg-slate-50 rounded-lg px-2 py-1.5 font-bold text-xs outline-none ring-1 ring-slate-200">
-            <option value="Todos" selected>Todos Meses</option>
-            <option value="01">Jan</option><option value="02">Fev</option><option value="03">Mar</option>
-            <option value="04">Abr</option><option value="05">Mai</option><option value="06">Jun</option>
-            <option value="07">Jul</option><option value="08">Ago</option><option value="09">Set</option>
-            <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
-        </select>
+                        <!-- Agrupamento de Fluxo -->
+                        <select id="agrupamento" onchange="renderizarFluxo()" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200">
+                            <option value="dia" selected>Por Dia</option>
+                            <option value="semana">Por Semana</option>
+                            <option value="mes">Por Mês</option>
+                        </select>
 
-        <!-- Agrupamento -->
-        <select id="agrupamento" onchange="renderizarFluxo()" class="border-none bg-slate-50 rounded-lg px-2 py-1.5 font-bold text-xs outline-none ring-1 ring-slate-200">
-            <option value="dia" selected>Por Dia</option>
-            <option value="semana">Por Semana</option>
-            <option value="mes">Por Mês</option>
-        </select>
+                        <!-- Filtro Status -->
+                        <div class="flex border rounded-lg overflow-hidden md:ml-auto">
+                            <button id="btn-filtro-Pendente" onclick="mudarFiltroStatus('Pendente')" class="px-3 py-2 text-xs font-bold bg-blue-600 text-white border-r">Pendentes</button>
+                            <button id="btn-filtro-Realizado" onclick="mudarFiltroStatus('Realizado')" class="px-3 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 border-r">Realizados</button>
+                            <button id="btn-filtro-Todos" onclick="mudarFiltroStatus('Todos')" class="px-3 py-2 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100">Todos</button>
+                        </div>
+                    </div>
 
-        <!-- Filtro Status -->
-        <div class="flex border rounded-lg overflow-hidden ml-auto">
-            <button id="btn-filtro-Pendente" onclick="mudarFiltroStatus('Pendente')" class="px-2.5 py-1.5 text-xs font-bold bg-blue-600 text-white border-r">Pendentes</button>
-            <button id="btn-filtro-Realizado" onclick="mudarFiltroStatus('Realizado')" class="px-2.5 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100 border-r">Realizados</button>
-            <button id="btn-filtro-Todos" onclick="mudarFiltroStatus('Todos')" class="px-2.5 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 hover:bg-slate-100">Todos</button>
-        </div>
-    </div>
+                    <!-- Cards -->
+                    <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Saldo Real Atual</p>
+                        <p id="card-saldo-real" class="text-2xl font-black text-slate-800 mt-1">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Prev. Entradas (Filtro)</p>
+                        <p id="card-entradas-prev" class="text-xl font-bold text-green-600 mt-1">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Prev. Saídas (Filtro)</p>
+                        <p id="card-saidas-prev" class="text-xl font-bold text-red-600 mt-1">R$ 0,00</p>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-5 rounded-xl shadow-sm relative">
+                        <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Balanço (Filtro)</p>
+                        <p id="card-balanco-prev" class="text-xl font-bold text-blue-600 mt-1">R$ 0,00</p>
+                    </div>
+                </div>
 
-    <!-- CARDS COMPACTOS — linha única -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-        <div class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm flex items-center justify-between gap-3">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Saldo Real</p>
-            <p id="card-saldo-real" class="text-base font-black text-slate-800 whitespace-nowrap">R$ 0,00</p>
-        </div>
-        <div class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm flex items-center justify-between gap-3">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Entradas</p>
-            <p id="card-entradas-prev" class="text-base font-bold text-green-600 whitespace-nowrap">R$ 0,00</p>
-        </div>
-        <div class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm flex items-center justify-between gap-3">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Saídas</p>
-            <p id="card-saidas-prev" class="text-base font-bold text-red-600 whitespace-nowrap">R$ 0,00</p>
-        </div>
-        <div class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm flex items-center justify-between gap-3">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Balanço</p>
-            <p id="card-balanco-prev" class="text-base font-bold text-blue-600 whitespace-nowrap">R$ 0,00</p>
-        </div>
                 <!-- Tabela -->
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                     <div class="p-4 border-b flex justify-between items-center bg-slate-50">
@@ -291,7 +291,6 @@
                     </div>
                 </div>
             </div>
-</div>
 
             <!-- Aba Compras -->
             <div id="aba-compras" class="hidden space-y-6">
