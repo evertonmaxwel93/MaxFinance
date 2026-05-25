@@ -1094,7 +1094,8 @@
                     document.getElementById('app-section').classList.remove('hidden');
                     document.getElementById('app-section').classList.add('flex');
                     document.getElementById('user-info').textContent = session.user.email;
-                    document.getElementById('mobile-user-info').textContent = session.user.email;
+                    const mobileUserInfo = document.getElementById('mobile-user-info');
+                    if (mobileUserInfo) mobileUserInfo.textContent = session.user.email;
                     atualizarStatusNotificacao();
                     
                     // O estado padrão no HTML já é "Todos" e "Pendentes"
