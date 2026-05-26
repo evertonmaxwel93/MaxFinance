@@ -274,7 +274,7 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
         <div class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm flex items-center justify-between gap-3">
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Saldo Real</p>
-            <p id="card-saldo-real" class="text-base font-black text-slate-600 whitespace-nowrap">R$ 0,00</p>
+            <p id="card-saldo-real" class="text-base font-bold text-slate-600 whitespace-nowrap">R$ 0,00</p>
         </div>
         <div class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm flex items-center justify-between gap-3">
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-tight">Entradas</p>
@@ -1195,7 +1195,7 @@
                 
                 const el = document.getElementById('card-saldo-real');
                 el.textContent = `R$ ${saldo.toFixed(2).replace('.', ',')}`;
-                el.className = saldo < 0 ? "text-2xl font-black text-red-600 mt-1" : "text-2xl font-black text-green-600 mt-1";
+                el.className = saldo < 0 ? "text-base font-bold text-red-600 whitespace-nowrap" : "text-base font-bold text-green-600 whitespace-nowrap";
             } catch (err) {
                 mostrarToast("Erro ao calcular saldo real: " + err.message, "error");
             }
