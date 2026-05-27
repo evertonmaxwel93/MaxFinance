@@ -20,9 +20,9 @@ if (!supabaseUrl || !supabaseServiceKey || !geminiApiKey) {
 // 2. Inicializar os clientes
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 const genAI = new GoogleGenerativeAI(geminiApiKey);
-// Usando o Gemini 1.5 Flash, que é extremamente rápido e barato
+// Usando o Gemini 2.5 Flash, que é extremamente rápido e robusto
 const model = genAI.getGenerativeModel({ 
-    model: 'gemini-1.5-flash',
+    model: 'gemini-2.5-flash',
     generationConfig: { responseMimeType: "application/json" } // Força o Gemini a responder estritamente em JSON
 });
 
