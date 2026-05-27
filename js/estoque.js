@@ -63,6 +63,7 @@ async function carregarHistoricoEstoque(produtoId) {
         if (comprasItens) {
             comprasItens.forEach(it => {
                 movimentos.push({
+                    id: it.compra_id,
                     tipo: 'Entrada',
                     data: it.compras?.data || '',
                     contato: it.compras?.fornecedor || 'Genérico/Não Cadastrado',
@@ -75,6 +76,7 @@ async function carregarHistoricoEstoque(produtoId) {
         if (vendasItens) {
             vendasItens.forEach(it => {
                 movimentos.push({
+                    id: it.venda_id,
                     tipo: 'Saída',
                     data: it.vendas?.data || '',
                     contato: it.vendas?.cliente || 'Genérico/Não Cadastrado',
@@ -101,19 +103,29 @@ async function carregarHistoricoEstoque(produtoId) {
                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
                 : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
             
-            tbody.innerHTML += `
-                <tr class="hover:bg-slate-100 transition">
-                    <td class="p-3">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${pillClass}">
-                            ${m.tipo}
-                        </span>
-                    </td>
-                    <td class="p-3 font-bold text-slate-700">${dateStr}</td>
-                    <td class="p-3 text-slate-600 font-medium">${m.contato}</td>
-                    <td class="p-3 text-center font-bold text-slate-800">${m.quantidade}</td>
-                    <td class="p-3 text-right font-black ${isEntrada ? 'text-green-600' : 'text-red-500'}">R$ ${valStr}</td>
-                </tr>
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-100 transition cursor-pointer";
+            tr.onclick = () => {
+                fecharModal('modalEstoque');
+                if (isEntrada) {
+                    abrirModalCompraEdicao(m.id);
+                } else {
+                    abrirModalVendaEdicao(m.id);
+                }
+            };
+            
+            tr.innerHTML = `
+                <td class="p-3">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${pillClass}">
+                        ${m.tipo}
+                    </span>
+                </td>
+                <td class="p-3 font-bold text-slate-700">${dateStr}</td>
+                <td class="p-3 text-slate-600 font-medium">${m.contato}</td>
+                <td class="p-3 text-center font-bold text-slate-800">${m.quantidade}</td>
+                <td class="p-3 text-right font-black ${isEntrada ? 'text-green-600' : 'text-red-500'}">R$ ${valStr}</td>
             `;
+            tbody.appendChild(tr);
         });
     } catch (err) {
         console.error("Erro histórico estoque:", err);

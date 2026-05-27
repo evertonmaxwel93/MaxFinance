@@ -31,12 +31,18 @@ async function carregarHistoricoCliente(nome) {
             return;
         }
         data.forEach(v => {
-            tbody.innerHTML += `
-                <tr class="hover:bg-slate-100 transition">
-                    <td class="p-3 font-bold text-slate-700">${v.data.split('-').reverse().join('/')}</td>
-                    <td class="p-3 text-right font-black text-green-600">R$ ${parseFloat(v.total).toFixed(2).replace('.', ',')}</td>
-                </tr>
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-100 transition cursor-pointer";
+            tr.onclick = () => {
+                fecharModal('modalCliente');
+                fecharModal('modalListaClientes');
+                abrirModalVendaEdicao(v.id);
+            };
+            tr.innerHTML = `
+                <td class="p-3 font-bold text-slate-700">${v.data.split('-').reverse().join('/')}</td>
+                <td class="p-3 text-right font-black text-green-600">R$ ${parseFloat(v.total).toFixed(2).replace('.', ',')}</td>
             `;
+            tbody.appendChild(tr);
         });
     } catch (err) {
         console.error("Erro histórico cliente:", err);
@@ -61,12 +67,18 @@ async function carregarHistoricoFornecedor(nome) {
             return;
         }
         data.forEach(c => {
-            tbody.innerHTML += `
-                <tr class="hover:bg-slate-100 transition">
-                    <td class="p-3 font-bold text-slate-700">${c.data.split('-').reverse().join('/')}</td>
-                    <td class="p-3 text-right font-black text-red-600">R$ ${parseFloat(c.total).toFixed(2).replace('.', ',')}</td>
-                </tr>
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-100 transition cursor-pointer";
+            tr.onclick = () => {
+                fecharModal('modalFornecedor');
+                fecharModal('modalListaFornecedores');
+                abrirModalCompraEdicao(c.id);
+            };
+            tr.innerHTML = `
+                <td class="p-3 font-bold text-slate-700">${c.data.split('-').reverse().join('/')}</td>
+                <td class="p-3 text-right font-black text-red-600">R$ ${parseFloat(c.total).toFixed(2).replace('.', ',')}</td>
             `;
+            tbody.appendChild(tr);
         });
     } catch (err) {
         console.error("Erro histórico fornecedor:", err);
