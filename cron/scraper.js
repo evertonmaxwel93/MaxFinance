@@ -107,22 +107,27 @@ async function rodarMonitoramento() {
             
             console.log(`📄 DOM simplificado gerado. Tamanho: ${domSimplificado.length} caracteres.`);
             
-            // Prompt estratégico para extração de preços estruturados com o Gemini 1.5 Flash
+            // Prompt estratégico para extração de preços estruturados do BoaDica com o Gemini 2.5 Flash
             const prompt = `
-            Você é um robô parser de e-commerce e inteligência de mercado altamente preciso.
-            Sua missão é extrair os preços dos produtos a partir do código HTML simplificado fornecido.
+            Você é um analisador sintático de e-commerce e inteligência de mercado altamente preciso especializado no agregador de preços BoaDica.
+            Sua missão é extrair todos os preços do produto e os dados das respectivas lojas físicas a partir do código HTML simplificado fornecido.
             
-            Plataforma cadastrada: ${link.plataforma}
             URL do produto: ${link.url}
             
-            REGRAS DE EXTRAÇÃO:
-            1. Se for uma loja direta (Kabum, Pichau, Mercado Livre), extraia o preço de venda atual (menor preço à vista encontrado para o produto). O nome da loja física deve ser igual à Plataforma (ex: "Kabum" ou "Pichau").
-            2. Se for um site agregador de preços (como BoaDica), ele lista o produto em diversas lojas físicas diferentes. Extraia TODOS os preços listados, associando o preço ao nome de cada loja física específica.
-            3. Ignore preços de frete, garantia estendida, seguro ou banners de publicidade de outros produtos recomendados.
-            4. Retorne stritamente um objeto JSON válido, sem cercas de markdown (\`\`\`json) ou textos explicativos, contendo o seguinte formato:
+            REGRAS DE EXTRAÇÃO DO BOADICA:
+            1. O BoaDica lista o produto de diversas lojas físicas diferentes com seus respectivos bairros e cidades.
+            2. Extraia TODOS os preços de venda válidos listados no HTML.
+            3. Para cada preço, identifique:
+               - O Nome da Loja física.
+               - O Bairro onde a loja está localizada.
+               - A Cidade onde a loja está localizada.
+            4. No campo 'loja_nome', formate as informações obrigatoriamente no seguinte padrão: "Nome da Loja (Bairro - Cidade)".
+               Exemplo: se a loja for "InfoBox", o bairro for "Centro" e a cidade for "Rio de Janeiro", formate como "InfoBox (Centro - Rio de Janeiro)".
+            5. Ignore preços de outros produtos, fretes ou anúncios patrocinados.
+            6. Retorne estritamente um objeto JSON válido, sem cercas de markdown (\`\`\`json) ou textos explicativos, no seguinte formato:
             {
               "precos": [
-                { "loja_nome": "Nome da Loja", "preco": 1499.90 }
+                { "loja_nome": "Nome da Loja (Bairro - Cidade)", "preco": 1499.90 }
               ]
             }
             

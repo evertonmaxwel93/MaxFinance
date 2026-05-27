@@ -258,7 +258,7 @@ function alternarAbaEstoque(aba) {
 async function carregarLinksProduto(produtoId) {
     const tbody = document.getElementById('lista-links-corpo');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-medium">Carregando links...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-slate-400 font-medium">Carregando links...</td></tr>';
     
     try {
         const { data: links, error } = await clienteSupabase
@@ -270,15 +270,14 @@ async function carregarLinksProduto(produtoId) {
         
         tbody.innerHTML = '';
         if (!links || links.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-medium">Nenhum link cadastrado para este produto.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-slate-400 font-medium">Nenhum link do BoaDica cadastrado para este produto.</td></tr>';
             return;
         }
         
         links.forEach(l => {
-            const urlLimpa = l.url.length > 50 ? l.url.substring(0, 47) + '...' : l.url;
+            const urlLimpa = l.url.length > 70 ? l.url.substring(0, 67) + '...' : l.url;
             tbody.innerHTML += `
                 <tr class="hover:bg-slate-50 transition">
-                    <td class="py-3 px-4 font-bold text-slate-700">${l.plataforma}</td>
                     <td class="py-3 px-4">
                         <a href="${l.url}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1">
                             ${urlLimpa} <i class="fas fa-external-link-alt text-[10px]"></i>
@@ -294,7 +293,7 @@ async function carregarLinksProduto(produtoId) {
         });
     } catch (err) {
         console.error("Erro ao carregar links:", err);
-        tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-500 font-medium">Erro ao carregar links.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-red-500 font-medium">Erro ao carregar links.</td></tr>';
     }
 }
 
@@ -421,7 +420,7 @@ async function carregarPrecosEHistorico(produtoId) {
                 
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 font-bold text-slate-700">${pa.plataforma} ${pa.loja !== pa.plataforma ? `— <span class="font-normal text-slate-500">${pa.loja}</span>` : ''}</td>
+                        <td class="p-3 font-bold text-slate-700">${pa.loja}</td>
                         <td class="p-3 text-right font-black ${isMelhorPreco ? 'text-green-600 text-sm' : 'text-slate-800'}">R$ ${formattedPreco}${badge}</td>
                         <td class="p-3 text-center text-slate-500 font-medium">${dateStr}</td>
                     </tr>

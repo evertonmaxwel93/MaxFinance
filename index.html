@@ -834,16 +834,9 @@
                     <p class="text-xs text-slate-500 mb-4">Adicione links do mesmo produto em outras lojas para que o sistema possa coletar os preços diariamente.</p>
                     
                     <form id="form-link-estoque" class="flex flex-col sm:flex-row gap-3">
-                        <select id="link_plataforma" required class="border-none bg-slate-50 rounded-xl p-3 font-bold text-sm outline-none ring-1 ring-slate-200 w-full sm:w-48">
-                            <option value="" disabled selected>Plataforma</option>
-                            <option value="Kabum">Kabum</option>
-                            <option value="Pichau">Pichau</option>
-                            <option value="Mercado Livre">Mercado Livre</option>
-                            <option value="BoaDica">BoaDica</option>
-                            <option value="Outro">Outro</option>
-                        </select>
-                        <input type="url" id="link_url" placeholder="Cole aqui a URL completa do produto (ex: https://...)" required class="flex-1 border-none bg-slate-50 rounded-xl p-3 text-sm font-medium outline-none ring-1 ring-slate-200">
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow transition whitespace-nowrap">Adicionar Link</button>
+                        <input type="hidden" id="link_plataforma" value="BoaDica">
+                        <input type="url" id="link_url" placeholder="Cole aqui a URL completa do produto no BoaDica (ex: https://www.boadica.com.br/...)" required class="flex-1 border-none bg-slate-50 rounded-xl p-3 text-sm font-medium outline-none ring-1 ring-slate-200">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow transition whitespace-nowrap">Adicionar Link BoaDica</button>
                     </form>
                     
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mt-4">
@@ -851,14 +844,13 @@
                             <table class="w-full text-left border-collapse whitespace-nowrap">
                                 <thead class="bg-slate-50 border-b">
                                     <tr class="text-[10px] font-bold text-slate-400 uppercase">
-                                        <th class="py-3 px-4">Plataforma</th>
-                                        <th class="py-3 px-4">URL</th>
+                                        <th class="py-3 px-4">URL do BoaDica</th>
                                         <th class="py-3 px-4 text-center">Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody id="lista-links-corpo" class="text-sm divide-y divide-slate-100">
                                     <tr>
-                                        <td colspan="3" class="p-4 text-center text-slate-400 font-medium">Nenhum link cadastrado para este produto.</td>
+                                        <td colspan="2" class="p-4 text-center text-slate-400 font-medium">Nenhum link do BoaDica cadastrado para este produto.</td>
                                     </tr>
                                 </tbody>
                             </table>
