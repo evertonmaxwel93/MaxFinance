@@ -345,6 +345,22 @@ async function carregarPrecosEHistorico(produtoId) {
     tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-medium">Carregando dados...</td></tr>';
     
     try {
+// Variáveis de controle globais de filtro para Bairros/Cidades
+window.filtrosBairrosSelecionados = window.filtrosBairrosSelecionados || new Set();
+window.dadosPrecosCache = null;
+
+async function carregarPrecosEHistorico(produtoId) {
+    const tbody = document.getElementById('lista-precos-atuais-corpo');
+    const canvas = document.getElementById('graficoPrecosHistorico');
+    const filterContainer = document.getElementById('filtro-localidades-container');
+    const filterList = document.getElementById('lista-pills-localidades');
+    
+    if (!tbody || !canvas) return;
+    
+    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-medium">Carregando dados...</td></tr>';
+    if (filterContainer) filterContainer.classList.add('hidden');
+    
+    try {
         // 1. Carregar links do produto
         const { data: links, error: lErr } = await clienteSupabase
             .from('produto_links')
@@ -380,74 +396,159 @@ async function carregarPrecosEHistorico(produtoId) {
             return;
         }
         
-        // 3. Compilar Preços Atuais (Mais recentes por loja para cada link)
-        const precosAtuais = [];
-        links.forEach(lnk => {
-            const histLnk = historico.filter(h => h.link_id === lnk.id);
-            const lojasMap = {};
-            histLnk.forEach(h => {
-                const dataAtual = new Date(h.data_coleta);
-                if (!lojasMap[h.loja_nome] || new Date(lojasMap[h.loja_nome].data_coleta) < dataAtual) {
-                    lojasMap[h.loja_nome] = h;
-                }
-            });
-            
-            Object.values(lojasMap).forEach(item => {
-                precosAtuais.push({
-                    plataforma: lnk.plataforma,
-                    loja: item.loja_nome,
-                    preco: parseFloat(item.preco),
-                    data: item.data_coleta
-                });
-            });
-        });
+        // Guardar dados no cache local para filtragem instantânea sem novas requisições
+        window.dadosPrecosCache = {
+            links: links,
+            historico: historico
+        };
         
-        // Ordenar do menor para o maior preço
-        precosAtuais.sort((a, b) => a.preco - b.preco);
+        // Limpar filtros anteriores ao abrir outro produto
+        window.filtrosBairrosSelecionados.clear();
         
-        tbody.innerHTML = '';
-        if (precosAtuais.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-medium">Nenhum preço coletado pelo robô de monitoramento ainda.</td></tr>';
-        } else {
-            precosAtuais.forEach((pa, idx) => {
-                const isMelhorPreco = idx === 0;
-                const formattedPreco = pa.preco.toFixed(2).replace('.', ',');
-                const dateStr = pa.data ? new Date(pa.data).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-';
-                
-                const badge = isMelhorPreco 
-                    ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Melhor Preço</span>`
-                    : '';
-                
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="p-3 font-bold text-slate-700">${pa.loja}</td>
-                        <td class="p-3 text-right font-black ${isMelhorPreco ? 'text-green-600 text-sm' : 'text-slate-800'}">R$ ${formattedPreco}${badge}</td>
-                        <td class="p-3 text-center text-slate-500 font-medium">${dateStr}</td>
-                    </tr>
-                `;
-            });
-        }
+        // Renderizar a visualização completa
+        renderizarPrecosFiltrados();
         
-        // 4. Compilar Histórico por Dia (Menor preço de cada dia)
-        const historicoPorDia = {};
-        historico.forEach(h => {
-            const dia = h.data_coleta.split('T')[0];
-            const precoNum = parseFloat(h.preco);
-            if (!historicoPorDia[dia] || historicoPorDia[dia] > precoNum) {
-                historicoPorDia[dia] = precoNum;
-            }
-        });
-        
-        const diasOrdenados = Object.keys(historicoPorDia).sort();
-        const valoresOrdenados = diasOrdenados.map(d => historicoPorDia[d]);
-        const labelsDatas = diasOrdenados.map(d => d.split('-').reverse().slice(0, 2).join('/')); // DD/MM
-        
-        // Desenhar o gráfico
-        desenharGraficoHistorico(labelsDatas, valoresOrdenados);
     } catch (err) {
         console.error("Erro ao carregar preços:", err);
         tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-red-500 font-medium">Erro ao compilar preços.</td></tr>';
     }
+}
+
+function renderizarPrecosFiltrados() {
+    if (!window.dadosPrecosCache) return;
+    
+    const { links, historico } = window.dadosPrecosCache;
+    const tbody = document.getElementById('lista-precos-atuais-corpo');
+    const filterContainer = document.getElementById('filtro-localidades-container');
+    const filterList = document.getElementById('lista-pills-localidades');
+    
+    // 1. Mapear e extrair todas as Localidades (Bairro - Cidade) únicas a partir de loja_nome
+    const localidadesSet = new Set();
+    const regexLocalidade = /^(.*?)\s*\((.*?)\s*-\s*(.*?)\)$/;
+    
+    historico.forEach(h => {
+        const match = h.loja_nome.match(regexLocalidade);
+        if (match) {
+            const bairro = match[2].trim();
+            const cidade = match[3].trim();
+            localidadesSet.add(`${bairro} - ${cidade}`);
+        } else {
+            localidadesSet.add("Geral");
+        }
+    });
+    
+    const listaLocalidades = Array.from(localidadesSet).sort();
+    
+    // Exibir/ocultar contêiner de filtros
+    if (listaLocalidades.length > 1 && filterContainer && filterList) {
+        filterContainer.classList.remove('hidden');
+        filterList.innerHTML = '';
+        
+        listaLocalidades.forEach(loc => {
+            const ativo = window.filtrosBairrosSelecionados.has(loc);
+            const badgeClass = ativo
+                ? "bg-blue-600 text-white font-bold px-3 py-1.5 rounded-full text-[10px] cursor-pointer select-none transition shadow-sm border border-blue-600"
+                : "bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-3 py-1.5 rounded-full text-[10px] cursor-pointer select-none transition border border-slate-200";
+            
+            const pill = document.createElement('span');
+            pill.className = badgeClass;
+            pill.innerHTML = `${loc} ${ativo ? '✓' : ''}`;
+            pill.onclick = () => toggleFiltroLocalidade(loc);
+            filterList.appendChild(pill);
+        });
+    } else if (filterContainer) {
+        filterContainer.classList.add('hidden');
+    }
+    
+    // 2. Filtrar histórico com base nos filtros selecionados
+    const temFiltroAtivo = window.filtrosBairrosSelecionados.size > 0;
+    
+    const historicoFiltrado = historico.filter(h => {
+        if (!temFiltroAtivo) return true;
+        
+        const match = h.loja_nome.match(regexLocalidade);
+        if (match) {
+            const loc = `${match[2].trim()} - ${match[3].trim()}`;
+            return window.filtrosBairrosSelecionados.has(loc);
+        } else {
+            return window.filtrosBairrosSelecionados.has("Geral");
+        }
+    });
+    
+    // 3. Compilar Preços Atuais Filtrados
+    const precosAtuais = [];
+    links.forEach(lnk => {
+        const histLnk = historicoFiltrado.filter(h => h.link_id === lnk.id);
+        const lojasMap = {};
+        histLnk.forEach(h => {
+            const dataAtual = new Date(h.data_coleta);
+            if (!lojasMap[h.loja_nome] || new Date(lojasMap[h.loja_nome].data_coleta) < dataAtual) {
+                lojasMap[h.loja_nome] = h;
+            }
+        });
+        
+        Object.values(lojasMap).forEach(item => {
+            precosAtuais.push({
+                plataforma: lnk.plataforma,
+                loja: item.loja_nome,
+                preco: parseFloat(item.preco),
+                data: item.data_coleta
+            });
+        });
+    });
+    
+    // Ordenar do menor para o maior preço
+    precosAtuais.sort((a, b) => a.preco - b.preco);
+    
+    tbody.innerHTML = '';
+    if (precosAtuais.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-medium">Nenhum preço corresponde aos filtros selecionados.</td></tr>';
+    } else {
+        precosAtuais.forEach((pa, idx) => {
+            const isMelhorPreco = idx === 0;
+            const formattedPreco = pa.preco.toFixed(2).replace('.', ',');
+            const dateStr = pa.data ? new Date(pa.data).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-';
+            
+            const badge = isMelhorPreco 
+                ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">Melhor Preço</span>`
+                : '';
+            
+            tbody.innerHTML += `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="p-3 font-bold text-slate-700">${pa.loja}</td>
+                    <td class="p-3 text-right font-black ${isMelhorPreco ? 'text-green-600 text-sm' : 'text-slate-800'}">R$ ${formattedPreco}${badge}</td>
+                    <td class="p-3 text-center text-slate-500 font-medium">${dateStr}</td>
+                </tr>
+            `;
+        });
+    }
+    
+    // 4. Compilar Histórico por Dia Filtrado (Menor preço de cada dia)
+    const historicoPorDia = {};
+    historicoFiltrado.forEach(h => {
+        const dia = h.data_coleta.split('T')[0];
+        const precoNum = parseFloat(h.preco);
+        if (!historicoPorDia[dia] || historicoPorDia[dia] > precoNum) {
+            historicoPorDia[dia] = precoNum;
+        }
+    });
+    
+    const diasOrdenados = Object.keys(historicoPorDia).sort();
+    const valoresOrdenados = diasOrdenados.map(d => historicoPorDia[d]);
+    const labelsDatas = diasOrdenados.map(d => d.split('-').reverse().slice(0, 2).join('/')); // DD/MM
+    
+    // Desenhar o gráfico atualizado
+    desenharGraficoHistorico(labelsDatas, valoresOrdenados);
+}
+
+function toggleFiltroLocalidade(localidade) {
+    if (window.filtrosBairrosSelecionados.has(localidade)) {
+        window.filtrosBairrosSelecionados.delete(localidade);
+    } else {
+        window.filtrosBairrosSelecionados.add(localidade);
+    }
+    // Re-renderiza instantaneamente com os filtros aplicados
+    renderizarPrecosFiltrados();
 }
 
 function desenharGraficoHistorico(labels, valores) {

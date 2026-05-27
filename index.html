@@ -860,6 +860,12 @@
 
                 <!-- Aba Preços: Valores coletados e Gráfico evolutivo -->
                 <div id="content-estoque-precos" class="hidden space-y-6">
+                    <!-- Filtro de Localidades (Bairro - Cidade) -->
+                    <div id="filtro-localidades-container" class="bg-slate-50/60 p-4 rounded-xl border border-slate-100 hidden">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fas fa-filter text-blue-500 mr-1.5"></i> Filtrar por Bairro / Cidade:</span>
+                        <div id="lista-pills-localidades" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto hide-scrollbar"></div>
+                    </div>
+                    
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Tabela de Preços Atuais -->
                         <div class="flex flex-col">
