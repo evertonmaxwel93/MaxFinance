@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MaxFinance — Sistema completo de gestão financeira e de negócios. Controle fluxo de caixa, estoque, compras, vendas e relatórios em uma única plataforma.">
+    <meta name="theme-color" content="#0f172a">
+    <title>MaxFinance — Gestão Financeira Inteligente</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="icon" href="icons/icon-192.png" type="image/png">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ===== BASE ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #0a0e1a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        /* ===== ANIMATED GRADIENT BACKGROUND ===== */
+        .hero-gradient {
+            background: linear-gradient(135deg, #0a0e1a 0%, #0f172a 25%, #1a1f3a 50%, #0f172a 75%, #0a0e1a 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* ===== PARTICLE FIELD ===== */
+        .particles {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 50%;
+            animation: particleFloat linear infinite;
+            box-shadow: 0 0 6px rgba(59, 130, 246, 0.3);
+        }
+        @keyframes particleFloat {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        /* ===== ORB GLOW ===== */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: orbPulse 8s ease-in-out infinite alternate;
+        }
+        .orb-1 {
+            width: 500px; height: 500px;
+            background: #3b82f6;
+            top: -100px; left: -100px;
+            animation-delay: 0s;
+        }
+        .orb-2 {
+            width: 400px; height: 400px;
+            background: #6366f1;
+            bottom: -80px; right: -80px;
+            animation-delay: 4s;
+        }
+        .orb-3 {
+            width: 300px; height: 300px;
+            background: #2563eb;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: 2s;
+        }
+        @keyframes orbPulse {
+            0% { opacity: 0.08; transform: scale(1); }
+            100% { opacity: 0.2; transform: scale(1.2); }
+        }
+
+        /* ===== GLOW CARD ===== */
+        .glow-card {
+            position: relative;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.1);
+            backdrop-filter: blur(20px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glow-card::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0), rgba(59, 130, 246, 0));
+            z-index: -1;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glow-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px -10px rgba(59, 130, 246, 0.15),
+                        0 0 30px -5px rgba(59, 130, 246, 0.1);
+        }
+        .glow-card:hover::before {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.05));
+        }
+
+        /* ===== ICON CONTAINER ===== */
+        .icon-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            transition: all 0.3s ease;
+        }
+        .glow-card:hover .icon-container {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(99, 102, 241, 0.15));
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        /* ===== STEP CARD ===== */
+        .step-card {
+            position: relative;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(59, 130, 246, 0.08);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .step-card:hover {
+            border-color: rgba(59, 130, 246, 0.2);
+            background: rgba(15, 23, 42, 0.6);
+        }
+        .step-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            font-weight: 900;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);
+        }
+
+        /* ===== TECH BADGE ===== */
+        .tech-badge {
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(59, 130, 246, 0.15);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .tech-badge:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(59, 130, 246, 0.1);
+        }
+
+        /* ===== CTA BUTTON ===== */
+        .cta-primary {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.3);
+        }
+        .cta-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .cta-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(37, 99, 235, 0.4);
+        }
+        .cta-primary:hover::after {
+            opacity: 1;
+        }
+        .cta-secondary {
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            background: rgba(59, 130, 246, 0.05);
+            transition: all 0.3s ease;
+        }
+        .cta-secondary:hover {
+            border-color: rgba(59, 130, 246, 0.6);
+            background: rgba(59, 130, 246, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* ===== SCROLL REVEAL ===== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+        .reveal-delay-5 { transition-delay: 0.5s; }
+        .reveal-delay-6 { transition-delay: 0.6s; }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            background: rgba(10, 14, 26, 0.7);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.08);
+            transition: all 0.3s ease;
+        }
+        .navbar.scrolled {
+            background: rgba(10, 14, 26, 0.95);
+            border-bottom-color: rgba(59, 130, 246, 0.15);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+        .nav-link {
+            position: relative;
+            color: #94a3b8;
+            transition: color 0.3s ease;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: #3b82f6;
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+            border-radius: 1px;
+        }
+        .nav-link:hover {
+            color: #e2e8f0;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* ===== CONNECTOR LINE ===== */
+        .connector-line {
+            position: absolute;
+            left: 24px;
+            top: 72px;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, rgba(59, 130, 246, 0.3), rgba(59, 130, 246, 0.05));
+        }
+
+        /* ===== SECTION DIVIDER ===== */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.2), transparent);
+        }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0e1a; }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(59, 130, 246, 0.5); }
+
+        /* ===== MOBILE MENU ===== */
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+        .mobile-menu-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .mobile-menu-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* ===== GRADIENT TEXT ===== */
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ===== FLOATING BADGE ===== */
+        .floating-badge {
+            animation: floatBadge 6s ease-in-out infinite;
+        }
+        @keyframes floatBadge {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== NAVBAR ==================== -->
+    <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 md:h-20">
+                <!-- Logo -->
+                <a href="#hero" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:shadow-blue-500/40 transition-shadow">
+                        <i class="fas fa-wallet text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-extrabold text-white tracking-tight">Max<span class="gradient-text">Finance</span></span>
+                </a>
+
+                <!-- Desktop Nav Links -->
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="#funcionalidades" class="nav-link text-sm font-semibold">Funcionalidades</a>
+                    <a href="#como-funciona" class="nav-link text-sm font-semibold">Como Funciona</a>
+                    <a href="#tecnologias" class="nav-link text-sm font-semibold">Tecnologias</a>
+                    <a href="https://github.com/evertonmaxwel93/MaxFinance" target="_blank" rel="noopener" class="nav-link text-sm font-semibold">
+                        <i class="fab fa-github mr-1"></i> GitHub
+                    </a>
+                </div>
+
+                <!-- CTA + Mobile Toggle -->
+                <div class="flex items-center gap-3">
+                    <a href="index.html" class="hidden sm:inline-flex cta-primary text-white font-bold text-sm px-5 py-2.5 rounded-xl">
+                        <i class="fas fa-sign-in-alt mr-2"></i> Entrar
+                    </a>
+                    <button id="mobile-toggle" class="md:hidden w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-overlay" class="mobile-menu-overlay fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"></div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu fixed top-0 right-0 bottom-0 w-72 z-50 bg-slate-900/95 backdrop-blur-xl border-l border-slate-800">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-8">
+                <span class="text-lg font-bold text-white">Menu</span>
+                <button id="mobile-close" class="w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            <div class="flex flex-col gap-2">
+                <a href="#funcionalidades" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 font-semibold transition">
+                    <i class="fas fa-th-large text-blue-400 w-5 text-center"></i> Funcionalidades
+                </a>
+                <a href="#como-funciona" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 font-semibold transition">
+                    <i class="fas fa-route text-blue-400 w-5 text-center"></i> Como Funciona
+                </a>
+                <a href="#tecnologias" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 font-semibold transition">
+                    <i class="fas fa-code text-blue-400 w-5 text-center"></i> Tecnologias
+                </a>
+                <a href="https://github.com/evertonmaxwel93/MaxFinance" target="_blank" rel="noopener" class="mobile-nav-link flex items-center gap-3 px-4 py-3 rounded-xl text-slate-300 hover:text-white hover:bg-white/5 font-semibold transition">
+                    <i class="fab fa-github text-blue-400 w-5 text-center"></i> GitHub
+                </a>
+                <div class="section-divider my-4"></div>
+                <a href="index.html" class="cta-primary text-white font-bold text-sm px-5 py-3 rounded-xl text-center">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Entrar no App
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==================== HERO ==================== -->
+    <section id="hero" class="hero-gradient relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+        <!-- Particle field -->
+        <div class="particles" id="particles"></div>
+
+        <!-- Orbs -->
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+
+        <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 text-center">
+            <!-- Badge -->
+            <div class="reveal floating-badge inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-1.5 mb-8">
+                <span class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></span>
+                <span class="text-xs font-semibold text-blue-300 tracking-wide uppercase">Open Source • Gratuito</span>
+            </div>
+
+            <!-- Title -->
+            <h1 class="reveal reveal-delay-1 text-4xl sm:text-5xl md:text-7xl font-black text-white leading-tight tracking-tight mb-6">
+                Sua gestão financeira<br>
+                <span class="gradient-text">simplificada.</span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="reveal reveal-delay-2 text-base sm:text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                Controle fluxo de caixa, estoque, compras e vendas em uma única plataforma.
+                Projetado para ser rápido, seguro e acessível de qualquer dispositivo.
+            </p>
+
+            <!-- CTAs -->
+            <div class="reveal reveal-delay-3 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="index.html" class="cta-primary text-white font-bold text-base px-8 py-4 rounded-2xl flex items-center gap-2 w-full sm:w-auto justify-center">
+                    <i class="fas fa-rocket"></i> Começar Agora
+                </a>
+                <a href="https://github.com/evertonmaxwel93/MaxFinance" target="_blank" rel="noopener" class="cta-secondary text-slate-300 font-bold text-base px-8 py-4 rounded-2xl flex items-center gap-2 w-full sm:w-auto justify-center">
+                    <i class="fab fa-github"></i> Ver no GitHub
+                </a>
+            </div>
+
+            <!-- Stats -->
+            <div class="reveal reveal-delay-4 flex flex-wrap items-center justify-center gap-8 mt-14 pt-10 border-t border-slate-800/50">
+                <div class="text-center">
+                    <p class="text-2xl sm:text-3xl font-black text-white">6+</p>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Módulos</p>
+                </div>
+                <div class="w-px h-10 bg-slate-800 hidden sm:block"></div>
+                <div class="text-center">
+                    <p class="text-2xl sm:text-3xl font-black text-white">PWA</p>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Mobile Ready</p>
+                </div>
+                <div class="w-px h-10 bg-slate-800 hidden sm:block"></div>
+                <div class="text-center">
+                    <p class="text-2xl sm:text-3xl font-black text-white">100%</p>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Gratuito</p>
+                </div>
+                <div class="w-px h-10 bg-slate-800 hidden sm:block"></div>
+                <div class="text-center">
+                    <p class="text-2xl sm:text-3xl font-black text-white"><i class="fas fa-lock text-blue-400"></i></p>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mt-1">Seguro (RLS)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 text-slate-600 animate-bounce">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </section>
+
+
+    <!-- ==================== FUNCIONALIDADES ==================== -->
+    <section id="funcionalidades" class="relative py-24 md:py-32">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="text-center mb-16 md:mb-20">
+                <p class="reveal text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">Tudo que você precisa</p>
+                <h2 class="reveal reveal-delay-1 text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+                    Funcionalidades <span class="gradient-text">Poderosas</span>
+                </h2>
+                <p class="reveal reveal-delay-2 text-slate-400 text-base md:text-lg max-w-xl mx-auto">
+                    Cada módulo foi projetado para resolver um problema real do seu negócio, de forma integrada e intuitiva.
+                </p>
+            </div>
+
+            <!-- Feature Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Financeiro -->
+                <div class="reveal reveal-delay-1 glow-card rounded-2xl p-6">
+                    <div class="icon-container mb-5">
+                        <i class="fas fa-chart-pie text-blue-400 text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Dashboard Financeiro</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Acompanhe saldo, entradas e saídas em tempo real. Filtros por ano, mês, semana e dia. Controle de parcelamentos e balanço automático.
+                    </p>
+                </div>
+
+                <!-- Estoque -->
+                <div class="reveal reveal-delay-2 glow-card rounded-2xl p-6">
+                    <div class="icon-container mb-5">
+                        <i class="fas fa-boxes text-emerald-400 text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Gestão de Estoque</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Cadastre produtos com custo e preço de venda. Alertas visuais de estoque baixo e cálculo automático de lucro potencial.
+                    </p>
+                </div>
+
+                <!-- Compras -->
+                <div class="reveal reveal-delay-3 glow-card rounded-2xl p-6">
+                    <div class="icon-container mb-5">
+                        <i class="fas fa-shopping-cart text-amber-400 text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Controle de Compras</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Registre aquisições vinculadas a fornecedores cadastrados. Atualização automática do estoque e lançamento financeiro integrado.
+                    </p>
+                </div>
+
+                <!-- Vendas -->
+                <div class="reveal reveal-delay-4 glow-card rounded-2xl p-6">
+                    <div class="icon-container mb-5">
+                        <i class="fas fa-cash-register text-rose-400 text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Gestão de Vendas</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Registre vendas com dedução automática do estoque. Seleção dinâmica de clientes e trava para impedir estoque negativo.
+                    </p>
+                </div>
+
+                <!-- Relatórios -->
+                <div class="reveal reveal-delay-5 glow-card rounded-2xl p-6">
+                    <div class="icon-container mb-5">
+                        <i class="fas fa-chart-line text-violet-400 text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Relatórios & Analytics</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Visão mensal de categorias e ranking dos top 10 produtos. Filtre por quantidade, faturamento ou margem de lucro.
+                    </p>
+                </div>
+
+                <!-- Notificações -->
+                <div class="reveal reveal-delay-6 glow-card rounded-2xl p-6">
+                    <div class="icon-container mb-5">
+                        <i class="fas fa-bell text-cyan-400 text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Notificações Push</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Alertas nativos sobre contas pendentes, vencendo hoje, amanhã ou atrasadas. Funciona como PWA no seu dispositivo.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider max-w-4xl mx-auto"></div>
+
+
+    <!-- ==================== COMO FUNCIONA ==================== -->
+    <section id="como-funciona" class="relative py-24 md:py-32">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="text-center mb-16 md:mb-20">
+                <p class="reveal text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">Simples e direto</p>
+                <h2 class="reveal reveal-delay-1 text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+                    Como <span class="gradient-text">Funciona</span>
+                </h2>
+                <p class="reveal reveal-delay-2 text-slate-400 text-base md:text-lg max-w-xl mx-auto">
+                    Em 4 passos simples, você tem controle total do seu negócio.
+                </p>
+            </div>
+
+            <!-- Steps -->
+            <div class="relative space-y-6">
+                <!-- Connector line (desktop) -->
+                <div class="connector-line hidden md:block" style="top: 24px; bottom: 24px;"></div>
+
+                <!-- Step 1 -->
+                <div class="reveal reveal-delay-1 step-card rounded-2xl p-6 flex items-start gap-5 md:ml-16">
+                    <div class="step-number">1</div>
+                    <div>
+                        <h3 class="text-base font-bold text-white mb-1">Cadastre seus Contatos</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            Registre clientes e fornecedores com dados completos. Eles serão usados automaticamente nas compras e vendas.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="reveal reveal-delay-2 step-card rounded-2xl p-6 flex items-start gap-5 md:ml-16">
+                    <div class="step-number">2</div>
+                    <div>
+                        <h3 class="text-base font-bold text-white mb-1">Monte seu Estoque</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            Cadastre produtos com custo de aquisição e preço de venda. O sistema calcula o lucro potencial automaticamente.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="reveal reveal-delay-3 step-card rounded-2xl p-6 flex items-start gap-5 md:ml-16">
+                    <div class="step-number">3</div>
+                    <div>
+                        <h3 class="text-base font-bold text-white mb-1">Registre Compras</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            Ao receber mercadorias, registre a compra. O estoque é atualizado e o lançamento financeiro é criado instantaneamente.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="reveal reveal-delay-4 step-card rounded-2xl p-6 flex items-start gap-5 md:ml-16">
+                    <div class="step-number">4</div>
+                    <div>
+                        <h3 class="text-base font-bold text-white mb-1">Faça Vendas</h3>
+                        <p class="text-sm text-slate-400 leading-relaxed">
+                            Registre vendas, dê baixa no estoque e veja a entrada no fluxo de caixa — tudo de forma automática e integrada.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider max-w-4xl mx-auto"></div>
+
+
+    <!-- ==================== TECNOLOGIAS ==================== -->
+    <section id="tecnologias" class="relative py-24 md:py-32">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Section Header -->
+            <div class="text-center mb-16 md:mb-20">
+                <p class="reveal text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">Stack moderno</p>
+                <h2 class="reveal reveal-delay-1 text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+                    Construído com <span class="gradient-text">Tecnologia</span>
+                </h2>
+                <p class="reveal reveal-delay-2 text-slate-400 text-base md:text-lg max-w-xl mx-auto">
+                    Ferramentas modernas e confiáveis para garantir performance, segurança e experiência premium.
+                </p>
+            </div>
+
+            <!-- Tech Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div class="reveal reveal-delay-1 tech-badge rounded-2xl p-5 text-center">
+                    <div class="text-3xl mb-3 text-orange-400"><i class="fab fa-html5"></i></div>
+                    <p class="text-sm font-bold text-white">HTML5</p>
+                    <p class="text-xs text-slate-500 mt-1">Estrutura</p>
+                </div>
+                <div class="reveal reveal-delay-2 tech-badge rounded-2xl p-5 text-center">
+                    <div class="text-3xl mb-3 text-cyan-400"><i class="fab fa-css3-alt"></i></div>
+                    <p class="text-sm font-bold text-white">TailwindCSS</p>
+                    <p class="text-xs text-slate-500 mt-1">Estilização</p>
+                </div>
+                <div class="reveal reveal-delay-3 tech-badge rounded-2xl p-5 text-center">
+                    <div class="text-3xl mb-3 text-yellow-400"><i class="fab fa-js-square"></i></div>
+                    <p class="text-sm font-bold text-white">JavaScript</p>
+                    <p class="text-xs text-slate-500 mt-1">Lógica</p>
+                </div>
+                <div class="reveal reveal-delay-4 tech-badge rounded-2xl p-5 text-center">
+                    <div class="text-3xl mb-3 text-green-400"><i class="fas fa-database"></i></div>
+                    <p class="text-sm font-bold text-white">Supabase</p>
+                    <p class="text-xs text-slate-500 mt-1">Backend & Auth</p>
+                </div>
+                <div class="reveal reveal-delay-5 tech-badge rounded-2xl p-5 text-center col-span-2 sm:col-span-1">
+                    <div class="text-3xl mb-3 text-emerald-400"><i class="fas fa-file-excel"></i></div>
+                    <p class="text-sm font-bold text-white">SheetJS</p>
+                    <p class="text-xs text-slate-500 mt-1">Exportação</p>
+                </div>
+            </div>
+
+            <!-- Extra features -->
+            <div class="reveal mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="tech-badge rounded-2xl p-5 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-mobile-alt text-blue-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-white">PWA</p>
+                        <p class="text-xs text-slate-500">Instale como app nativo</p>
+                    </div>
+                </div>
+                <div class="tech-badge rounded-2xl p-5 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-shield-alt text-blue-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-white">Row Level Security</p>
+                        <p class="text-xs text-slate-500">Dados isolados por usuário</p>
+                    </div>
+                </div>
+                <div class="tech-badge rounded-2xl p-5 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-cloud-download-alt text-blue-400"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-white">Backup JSON</p>
+                        <p class="text-xs text-slate-500">Exporte e restaure seus dados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ==================== CTA FINAL ==================== -->
+    <section class="relative py-20 md:py-28 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-blue-900/20 via-blue-800/10 to-indigo-900/20"></div>
+        <div class="orb orb-1" style="width:300px;height:300px;top:50%;left:-100px;transform:translateY(-50%);"></div>
+        <div class="orb orb-2" style="width:250px;height:250px;top:50%;right:-80px;transform:translateY(-50%);"></div>
+
+        <div class="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 text-center">
+            <h2 class="reveal text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight mb-5">
+                Pronto para simplificar<br>sua <span class="gradient-text">gestão?</span>
+            </h2>
+            <p class="reveal reveal-delay-1 text-slate-400 text-base md:text-lg max-w-lg mx-auto mb-8">
+                Comece agora gratuitamente. Sem cartão de crédito, sem limites.
+            </p>
+            <div class="reveal reveal-delay-2 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="index.html" class="cta-primary text-white font-bold text-base px-8 py-4 rounded-2xl flex items-center gap-2 w-full sm:w-auto justify-center">
+                    <i class="fas fa-rocket"></i> Criar Conta Grátis
+                </a>
+                <a href="https://github.com/evertonmaxwel93/MaxFinance" target="_blank" rel="noopener" class="cta-secondary text-slate-300 font-bold text-base px-8 py-4 rounded-2xl flex items-center gap-2 w-full sm:w-auto justify-center">
+                    <i class="fab fa-github"></i> Contribuir no GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="border-t border-slate-800/50 bg-slate-950/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <!-- Logo & tagline -->
+                <div class="flex flex-col items-center md:items-start gap-2">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
+                            <i class="fas fa-wallet text-white text-sm"></i>
+                        </div>
+                        <span class="text-base font-extrabold text-white">Max<span class="gradient-text">Finance</span></span>
+                    </div>
+                    <p class="text-xs text-slate-500">Simplificando a sua gestão.</p>
+                </div>
+
+                <!-- Links -->
+                <div class="flex items-center gap-6">
+                    <a href="#funcionalidades" class="text-xs text-slate-500 hover:text-slate-300 transition font-medium">Funcionalidades</a>
+                    <a href="#como-funciona" class="text-xs text-slate-500 hover:text-slate-300 transition font-medium">Como Funciona</a>
+                    <a href="#tecnologias" class="text-xs text-slate-500 hover:text-slate-300 transition font-medium">Tecnologias</a>
+                </div>
+
+                <!-- Social / GitHub -->
+                <div class="flex items-center gap-4">
+                    <a href="https://github.com/evertonmaxwel93/MaxFinance" target="_blank" rel="noopener" class="w-10 h-10 rounded-xl bg-slate-800/50 border border-slate-700/50 hover:border-blue-500/30 flex items-center justify-center text-slate-400 hover:text-white transition">
+                        <i class="fab fa-github text-lg"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bottom bar -->
+            <div class="section-divider mt-8 mb-6"></div>
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <p class="text-xs text-slate-600">&copy; 2026 MaxFinance. Todos os direitos reservados.</p>
+                <p class="text-xs text-slate-600">Criado por Everton Maxwel</p>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- ==================== SCRIPTS ==================== -->
+    <script>
+        // ===== PARTICLE GENERATOR =====
+        (function generateParticles() {
+            const container = document.getElementById('particles');
+            const count = window.innerWidth < 768 ? 20 : 40;
+            for (let i = 0; i < count; i++) {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = (Math.random() * 10 + 8) + 's';
+                p.style.animationDelay = (Math.random() * 10) + 's';
+                p.style.width = p.style.height = (Math.random() * 3 + 1) + 'px';
+                container.appendChild(p);
+            }
+        })();
+
+        // ===== SCROLL REVEAL =====
+        const reveals = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        reveals.forEach(el => revealObserver.observe(el));
+
+        // ===== NAVBAR SCROLL =====
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 50);
+        }, { passive: true });
+
+        // ===== MOBILE MENU =====
+        const mobileToggle = document.getElementById('mobile-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileOverlay = document.getElementById('mobile-overlay');
+        const mobileClose = document.getElementById('mobile-close');
+
+        function openMenu() {
+            mobileMenu.classList.add('open');
+            mobileOverlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeMenu() {
+            mobileMenu.classList.remove('open');
+            mobileOverlay.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        mobileToggle.addEventListener('click', openMenu);
+        mobileClose.addEventListener('click', closeMenu);
+        mobileOverlay.addEventListener('click', closeMenu);
+
+        // Close mobile menu on link click
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', closeMenu);
+        });
+
+        // ===== SMOOTH SCROLL for anchor links =====
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    e.preventDefault();
+                    const offset = navbar.offsetHeight;
+                    const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                    window.scrollTo({ top, behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
