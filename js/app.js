@@ -159,7 +159,6 @@ if ('serviceWorker' in navigator) {
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Inicializar Sessão
-    verificarSessao();
     clienteSupabase.auth.onAuthStateChange((event) => {
         if (event === 'SIGNED_OUT') {
             window.location.reload();

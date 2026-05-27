@@ -745,3 +745,15 @@ function exportarExcel(event) {
         mostrarToast("Erro ao exportar Excel: " + e.message, "error");
     }
 }
+
+async function carregarTransacoesGlobais() {
+    try {
+        const { data, error } = await clienteSupabase.from('transacoes').select('*');
+        if (error) throw error;
+        transacoesGlobais = data || [];
+    } catch(e) {
+        console.error("Erro transacoes globais:", e);
+        mostrarToast("Erro ao carregar transações: " + e.message, "error");
+    }
+}
+
