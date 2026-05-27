@@ -364,6 +364,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnExcluirFornecedor) {
         btnExcluirFornecedor.addEventListener('click', excluirFornecedorModal);
     }
+    const btnExcluirProduto = document.getElementById('btn_excluir_produto');
+    if (btnExcluirProduto) {
+        btnExcluirProduto.addEventListener('click', () => {
+            const id = document.getElementById('estoque_id').value;
+            if (id && typeof excluirEstoque === 'function') excluirEstoque(id);
+        });
+    }
     const btnExcluirParcela = document.getElementById('btn-excluir-parcela');
     if (btnExcluirParcela) {
         btnExcluirParcela.addEventListener('click', excluirParcelaAtual);

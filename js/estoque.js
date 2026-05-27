@@ -38,10 +38,98 @@ function renderizarEstoque() {
     });
 }
 
+async function carregarHistoricoEstoque(produtoId) {
+    const tbody = document.getElementById('historico-estoque-corpo');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 font-medium">Carregando histórico...</td></tr>';
+    try {
+        // Buscar compras (Entradas)
+        const { data: comprasItens, error: cErr } = await clienteSupabase
+            .from('compras_itens')
+            .select('*, compras(data, fornecedor)')
+            .eq('produto_id', produtoId);
+        if (cErr) throw cErr;
+
+        // Buscar vendas (Saídas)
+        const { data: vendasItens, error: vErr } = await clienteSupabase
+            .from('vendas_itens')
+            .select('*, vendas(data, cliente)')
+            .eq('produto_id', produtoId);
+        if (vErr) throw vErr;
+
+        // Compilar histórico unificado
+        const movimentos = [];
+        
+        if (comprasItens) {
+            comprasItens.forEach(it => {
+                movimentos.push({
+                    tipo: 'Entrada',
+                    data: it.compras?.data || '',
+                    contato: it.compras?.fornecedor || 'Genérico/Não Cadastrado',
+                    quantidade: it.quantidade,
+                    valor_unitario: it.custo_unitario
+                });
+            });
+        }
+
+        if (vendasItens) {
+            vendasItens.forEach(it => {
+                movimentos.push({
+                    tipo: 'Saída',
+                    data: it.vendas?.data || '',
+                    contato: it.vendas?.cliente || 'Genérico/Não Cadastrado',
+                    quantidade: it.quantidade,
+                    valor_unitario: it.valor_venda
+                });
+            });
+        }
+
+        // Ordenar movimentos por data decrescente
+        movimentos.sort((a, b) => b.data.localeCompare(a.data));
+
+        tbody.innerHTML = '';
+        if (movimentos.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 font-medium">Nenhuma movimentação registrada.</td></tr>';
+            return;
+        }
+
+        movimentos.forEach(m => {
+            const dateStr = m.data ? m.data.split('-').reverse().join('/') : '-';
+            const valStr = parseFloat(m.valor_unitario).toFixed(2).replace('.', ',');
+            const isEntrada = m.tipo === 'Entrada';
+            const pillClass = isEntrada 
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+            
+            tbody.innerHTML += `
+                <tr class="hover:bg-slate-100 transition">
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${pillClass}">
+                            ${m.tipo}
+                        </span>
+                    </td>
+                    <td class="p-3 font-bold text-slate-700">${dateStr}</td>
+                    <td class="p-3 text-slate-600 font-medium">${m.contato}</td>
+                    <td class="p-3 text-center font-bold text-slate-800">${m.quantidade}</td>
+                    <td class="p-3 text-right font-black ${isEntrada ? 'text-green-600' : 'text-red-500'}">R$ ${valStr}</td>
+                </tr>
+            `;
+        });
+    } catch (err) {
+        console.error("Erro histórico estoque:", err);
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-red-500 font-medium">Erro ao carregar movimentação.</td></tr>';
+    }
+}
+
 function abrirModalEstoque() {
     document.getElementById('form-estoque').reset();
     document.getElementById('estoque_id').value = '';
     document.getElementById('modal-estoque-titulo').innerHTML = '<i class="fas fa-box text-blue-500 mr-2"></i>Novo Produto';
+    document.getElementById('btn_excluir_produto').classList.add('hidden');
+    
+    const tbody = document.getElementById('historico-estoque-corpo');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 font-medium">Nenhuma movimentação registrada.</td></tr>';
+    
     document.getElementById('modalEstoque').classList.remove('hidden');
 }
 
@@ -54,6 +142,10 @@ function editarEstoque(id) {
     document.getElementById('estoque_nome').value = p.nome;
     document.getElementById('estoque_valor_venda').value = p.valor_venda;
     document.getElementById('modal-estoque-titulo').innerHTML = '<i class="fas fa-edit text-blue-500 mr-2"></i>Editar Produto';
+    document.getElementById('btn_excluir_produto').classList.remove('hidden');
+    
+    carregarHistoricoEstoque(p.id);
+    
     document.getElementById('modalEstoque').classList.remove('hidden');
 }
 

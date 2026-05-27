@@ -762,25 +762,61 @@
 
     <!-- Modal Estoque -->
     <div id="modalEstoque" class="fixed inset-0 bg-black/60 hidden z-[50] flex items-center justify-center p-4 modal-blur">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm relative p-6">
-            <button type="button" id="close-estoque" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition"><i class="fas fa-times"></i></button>
-            <h2 id="modal-estoque-titulo" class="text-lg font-extrabold mb-4 border-b pb-3"><i class="fas fa-box text-blue-500 mr-2"></i>Novo Produto</h2>
-            <form id="form-estoque" class="space-y-4">
-                <input type="hidden" id="estoque_id">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col relative">
+            <button type="button" id="close-estoque" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition z-10"><i class="fas fa-times"></i></button>
+            <div class="flex justify-between items-center p-4 md:p-6 border-b border-slate-100">
+                <h3 id="modal-estoque-titulo" class="text-xl font-bold text-slate-800"><i class="fas fa-box text-blue-500 mr-2"></i>Novo Produto</h3>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 md:p-6 overflow-y-auto max-h-[75vh]">
+                <!-- Painel de Dados do Produto -->
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Categoria</label>
-                    <input type="text" id="estoque_categoria" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                    <form id="form-estoque" class="space-y-4">
+                        <input type="hidden" id="estoque_id">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Categoria</label>
+                            <input type="text" id="estoque_categoria" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome do Produto</label>
+                            <input type="text" id="estoque_nome" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Valor de Venda (R$)</label>
+                            <input type="number" step="0.01" min="0" id="estoque_valor_venda" required class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200">
+                        </div>
+                        <div class="flex gap-3 pt-2">
+                            <button type="submit" class="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl shadow transition">Salvar Produto</button>
+                            <button type="button" id="btn_excluir_produto" class="hidden bg-red-100 hover:bg-red-200 text-red-600 font-bold py-3 rounded-xl transition px-4"><i class="fas fa-trash-alt mr-2"></i>Excluir</button>
+                        </div>
+                    </form>
                 </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome do Produto</label>
-                    <input type="text" id="estoque_nome" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200">
+
+                <!-- Painel de Histórico de Movimentação -->
+                <div class="flex flex-col">
+                    <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2 border-b pb-2">
+                        <i class="fas fa-exchange-alt text-blue-500"></i> Histórico de Movimentação
+                    </h4>
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-slate-50 flex-1 min-h-[250px] max-h-[50vh]">
+                        <table class="w-full text-left border-collapse text-xs whitespace-nowrap">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-500 font-bold uppercase border-b text-[9px] tracking-wider">
+                                    <th class="p-3">Tipo</th>
+                                    <th class="p-3">Data</th>
+                                    <th class="p-3">Contato</th>
+                                    <th class="p-3 text-center">Qtd</th>
+                                    <th class="p-3 text-right">Valor Un.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historico-estoque-corpo" class="divide-y divide-slate-200">
+                                <tr>
+                                    <td colspan="5" class="p-4 text-center text-slate-400 font-medium">Nenhuma movimentação registrada.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Valor de Venda (R$)</label>
-                    <input type="number" step="0.01" min="0" id="estoque_valor_venda" required class="w-full bg-slate-50 rounded-xl p-3 text-sm font-bold outline-none ring-1 ring-slate-200">
-                </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl mt-2">Salvar Produto</button>
-            </form>
+            </div>
         </div>
     </div>
 
