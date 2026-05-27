@@ -1,6 +1,6 @@
 /**
- * MaxFinance - Robô de Monitoramento Diário de Preços de Concorrentes
- * Tecnologias: Node.js + Playwright + Gemini 1.5 Flash + Supabase (Service Role)
+ * MaxFinance - Robô de Monitoramento Diário de Preços de Concorrentes (Focado 100% no BoaDica)
+ * Tecnologias: Node.js + Playwright + Gemini 2.5 Flash + Supabase (Service Role)
  */
 
 const { createClient } = require('@supabase/supabase-js');
@@ -26,35 +26,36 @@ const model = genAI.getGenerativeModel({
     generationConfig: { responseMimeType: "application/json" } // Força o Gemini a responder estritamente em JSON
 });
 
+// Limite de concorrência recomendado (para evitar estourar limites de memória do Actions e de quota do Gemini)
+const LIMITE_CONCORRENCIA = 3;
+
 /**
- * Simplifica o HTML para reduzir drasticamente o consumo de tokens na API do Gemini.
- * Remove scripts, CSS inline, Tailwind CSS classes, svgs, cabeçalhos de navegação e rodapés.
+ * Função utilitária para rodar promessas em paralelo com concorrência limitada.
+ * Evita picos de memória e estouro de limites de requisição por minuto (RPM) do Gemini.
  */
-function simplificarHtml(html) {
-    return html
-        // Remove tags de Script e seus conteúdos
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-        // Remove tags de Style e seus conteúdos
-        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
-        // Remove imagens SVG
-        .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
-        // Remove Rodapés
-        .replace(/<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>/gi, '')
-        // Remove Navegação/Menus
-        .replace(/<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>/gi, '')
-        // Remove comentários HTML
-        .replace(/<!--[\s\S]*?-->/g, '')
-        // Remove classes do Tailwind/CSS inline para compactar o DOM
-        .replace(/\sclass="[^"]*"/gi, '')
-        .replace(/\sstyle="[^"]*"/gi, '')
-        .replace(/\sid="[^"]*"/gi, '')
-        // Substitui múltiplos espaços e quebras de linha por um espaço simples
-        .replace(/\s+/g, ' ')
-        .trim();
+async function executarEmLote(itens, limite, fn) {
+    const resultados = [];
+    const promessasAtivas = new Set();
+    
+    for (const item of itens) {
+        if (promessasAtivas.size >= limite) {
+            await Promise.race(promessasAtivas);
+        }
+        
+        const p = fn(item).then(res => {
+            resultados.push(res);
+            promessasAtivas.delete(p);
+        });
+        
+        promessasAtivas.add(p);
+    }
+    
+    await Promise.all(promessasAtivas);
+    return resultados;
 }
 
 async function rodarMonitoramento() {
-    console.log('🚀 Iniciando processamento de links do MaxFinance...');
+    console.log('🚀 Iniciando processamento de links do MaxFinance (Otimizado para o BoaDica)...');
     
     // 3. Buscar todos os links cadastrados no banco
     const { data: links, error: errLinks } = await supabase
@@ -75,10 +76,10 @@ async function rodarMonitoramento() {
 
     // 4. Iniciar Playwright
     const browser = await chromium.launch({ headless: true });
-    
-    for (const link of links) {
-        console.log(`\n--------------------------------------------------`);
-        console.log(`🔍 Plataforma: ${link.plataforma} | URL: ${link.url}`);
+
+    // Função de processamento individual para cada link
+    const processarLink = async (link) => {
+        console.log(`\n🔍 Processando link do BoaDica: ${link.url}`);
         
         const context = await browser.newContext({
             userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -98,32 +99,36 @@ async function rodarMonitoramento() {
             // Ir para a página do produto (timeout de 45 segundos)
             await page.goto(link.url, { waitUntil: 'domcontentloaded', timeout: 45000 });
             
-            // Aguardar 4 segundos para garantir renderização de scripts client-side
+            // Aguardar 4 segundos para garantir renderização completa dos scripts client-side
             await page.waitForTimeout(4000);
             
-            // Capturar o HTML renderizado e simplificar
-            const rawHtml = await page.content();
-            const domSimplificado = simplificarHtml(rawHtml);
+            // 💡 EXTRAÇÃO SUPER OTIMIZADA: Captura apenas o texto renderizado visível, eliminando todas as tags HTML!
+            // Reduz o uso de tokens na API do Gemini em até 95% e acelera muito o processamento.
+            const textoPagina = await page.evaluate(() => document.body.innerText);
             
-            console.log(`📄 DOM simplificado gerado. Tamanho: ${domSimplificado.length} caracteres.`);
+            console.log(`📄 Texto limpo da página capturado. Tamanho: ${textoPagina.length} caracteres.`);
             
+            if (!textoPagina || textoPagina.length < 200) {
+                throw new Error("Página carregada está vazia ou bloqueada pelo site.");
+            }
+
             // Prompt estratégico para extração de preços estruturados do BoaDica com o Gemini 2.5 Flash
             const prompt = `
             Você é um analisador sintático de e-commerce e inteligência de mercado altamente preciso especializado no agregador de preços BoaDica.
-            Sua missão é extrair todos os preços do produto e os dados das respectivas lojas físicas a partir do código HTML simplificado fornecido.
+            Sua missão é extrair todos os preços do produto e os dados das respectivas lojas físicas a partir do texto renderizado da página fornecido abaixo.
             
             URL do produto: ${link.url}
             
             REGRAS DE EXTRAÇÃO DO BOADICA:
             1. O BoaDica lista o produto de diversas lojas físicas diferentes com seus respectivos bairros e cidades.
-            2. Extraia TODOS os preços de venda válidos listados no HTML.
+            2. Extraia TODOS os preços de venda válidos listados no texto.
             3. Para cada preço, identifique:
                - O Nome da Loja física.
                - O Bairro onde a loja está localizada.
                - A Cidade onde a loja está localizada.
             4. No campo 'loja_nome', formate as informações obrigatoriamente no seguinte padrão: "Nome da Loja (Bairro - Cidade)".
                Exemplo: se a loja for "InfoBox", o bairro for "Centro" e a cidade for "Rio de Janeiro", formate como "InfoBox (Centro - Rio de Janeiro)".
-            5. Ignore preços de outros produtos, fretes ou anúncios patrocinados.
+            5. Ignore preços de outros produtos, fretes ou anúncios.
             6. Retorne estritamente um objeto JSON válido, sem cercas de markdown (\`\`\`json) ou textos explicativos, no seguinte formato:
             {
               "precos": [
@@ -131,11 +136,11 @@ async function rodarMonitoramento() {
               ]
             }
             
-            CÓDIGO HTML SIMPLIFICADO:
-            ${domSimplificado}
+            TEXTO RENDERIZADO DA PÁGINA:
+            ${textoPagina}
             `;
             
-            console.log('🤖 Enviando requisição para a API do Gemini...');
+            console.log('🤖 Enviando texto para a API do Gemini...');
             const responseGemini = await model.generateContent(prompt);
             let responseText = responseGemini.response.text().trim();
             
@@ -150,7 +155,7 @@ async function rodarMonitoramento() {
             const resultado = JSON.parse(responseText);
             
             if (resultado && resultado.precos && resultado.precos.length > 0) {
-                console.log(`✅ Sucesso! Extraídos ${resultado.precos.length} preço(s). Salvando no banco...`);
+                console.log(`✅ Sucesso! Extraídos ${resultado.precos.length} preço(s) do BoaDica. Salvando no banco...`);
                 
                 for (const item of resultado.precos) {
                     // Converter preço para float puro e tratar formatações brasileiras (ex: "R$ 1.500,00" -> 1500.00)
@@ -171,18 +176,18 @@ async function rodarMonitoramento() {
                         .from('produto_precos_historico')
                         .insert({
                             link_id: link.id,
-                            loja_nome: item.loja_nome || link.plataforma,
+                            loja_nome: item.loja_nome || "BoaDica",
                             preco: precoNumerico
                         });
                         
                     if (dbErr) {
-                        console.error(`❌ Erro ao salvar preço no Supabase (${item.loja_nome}):`, dbErr.message);
+                        console.error(`   ❌ Erro ao salvar preço (${item.loja_nome}):`, dbErr.message);
                     } else {
-                        console.log(`   - Loja: ${item.loja_nome || link.plataforma} | Preço: R$ ${precoNumerico.toFixed(2)}`);
+                        console.log(`   - Loja: ${item.loja_nome} | Preço: R$ ${precoNumerico.toFixed(2)}`);
                     }
                 }
             } else {
-                console.warn('⚠️ O Gemini não encontrou preços válidos no HTML simplificado.');
+                console.warn('⚠️ O Gemini não encontrou preços válidos no texto da página.');
             }
             
         } catch (err) {
@@ -190,7 +195,10 @@ async function rodarMonitoramento() {
         } finally {
             await context.close();
         }
-    }
+    };
+
+    // 5. Executar em lote com limite de concorrência
+    await executarEmLote(links, LIMITE_CONCORRENCIA, processarLink);
     
     await browser.close();
     console.log('\n🏁 Processamento completo finalizado com sucesso.');
