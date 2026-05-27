@@ -40,7 +40,6 @@ async function verificarSessao() {
             
             await carregarSubcategoriasBanco();
             atualizarTudo();
-            if (typeof solicitarPermissaoNotificacao === 'function') solicitarPermissaoNotificacao();
             
             await carregarClientes();
             await carregarFornecedores();
