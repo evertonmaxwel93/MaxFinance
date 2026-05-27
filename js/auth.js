@@ -22,9 +22,6 @@ async function sair() {
 
 async function verificarSessao() {
     try {
-        // Garante o fechamento total de modais residuais ao carregar/trocar aba (Correção de Bug)
-        document.querySelectorAll('.modal-blur').forEach(el => el.classList.add('hidden'));
-
         const { data: { session }, error } = await clienteSupabase.auth.getSession();
         if (error) throw error;
         if (session) {

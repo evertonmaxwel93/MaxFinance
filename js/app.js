@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
     clienteSupabase.auth.onAuthStateChange((event) => {
         if (event === 'SIGNED_OUT') {
             window.location.reload();
-        } else {
+        } else if (!userAtual || event === 'SIGNED_IN') {
             verificarSessao();
         }
     });
