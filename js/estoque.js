@@ -341,7 +341,7 @@ async function deletarLinkProduto(linkId, produtoId) {
 window.filtrosBairrosSelecionados = window.filtrosBairrosSelecionados || new Set();
 window.dadosPrecosCache = null;
 
-// Configurar ouvintes globais para o dropdown customizado
+// Configurar ouvintes globais para o dropdown customizado e a tela de Ajustes
 document.addEventListener('DOMContentLoaded', () => {
     const btnDropdown = document.getElementById('btn-dropdown-localidades');
     const menuDropdown = document.getElementById('menu-dropdown-localidades');
@@ -384,6 +384,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 filtrarOpcoesDropdown(e.target.value);
             });
         }
+    }
+
+    // Configurar o input de Filtro Padrão de Localidades na tela de Ajustes
+    const inputFiltroPadrao = document.getElementById('config-filtro-localidades-padrao');
+    const btnSalvarFiltroPadrao = document.getElementById('btn-salvar-filtro-padrao');
+    
+    if (inputFiltroPadrao) {
+        const salvo = localStorage.getItem('maxfinance-filtro-padrao') || '';
+        inputFiltroPadrao.value = salvo;
+    }
+    
+    if (btnSalvarFiltroPadrao && inputFiltroPadrao) {
+        btnSalvarFiltroPadrao.addEventListener('click', () => {
+            const val = inputFiltroPadrao.value.trim();
+            localStorage.setItem('maxfinance-filtro-padrao', val);
+            if (typeof mostrarToast === 'function') {
+                mostrarToast("Filtro padrão de localidade salvo!", "success");
+            }
+        });
     }
 });
 
@@ -447,8 +466,36 @@ async function carregarPrecosEHistorico(produtoId) {
             historico: historico
         };
         
-        // Limpar filtros anteriores ao abrir outro produto
+        // Limpar filtros anteriores e carregar os filtros padrões da tela de Ajustes
         window.filtrosBairrosSelecionados.clear();
+        
+        const filtroPadraoSalvo = localStorage.getItem('maxfinance-filtro-padrao');
+        if (filtroPadraoSalvo) {
+            const filtrosPadrao = filtroPadraoSalvo.split(',')
+                .map(f => f.trim())
+                .filter(f => f.length > 0);
+            
+            // Compilar as localidades disponíveis para evitar a ativação de filtros fantasmas
+            const localidadesSet = new Set();
+            const regexLocalidade = /^(.*?)\s*\((.*?)\s*-\s*(.*?)\)$/;
+            
+            historico.forEach(h => {
+                const match = h.loja_nome.match(regexLocalidade);
+                if (match) {
+                    const bairro = match[2].trim();
+                    const cidade = match[3].trim();
+                    localidadesSet.add(`${cidade}/${bairro}`);
+                } else {
+                    localidadesSet.add("Geral");
+                }
+            });
+            
+            filtrosPadrao.forEach(f => {
+                if (localidadesSet.has(f)) {
+                    window.filtrosBairrosSelecionados.add(f);
+                }
+            });
+        }
         
         // Renderizar a visualização completa
         renderizarPrecosFiltrados();
