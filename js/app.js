@@ -287,6 +287,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnGerenciarFornecedores) {
         btnGerenciarFornecedores.addEventListener('click', abrirModalListaFornecedores);
     }
+    const pesquisaClientes = document.getElementById('pesquisa-clientes');
+    if (pesquisaClientes) {
+        pesquisaClientes.addEventListener('input', (e) => {
+            if (typeof filtrarClientes === 'function') filtrarClientes(e.target.value.toLowerCase());
+        });
+    }
+    const pesquisaFornecedores = document.getElementById('pesquisa-fornecedores');
+    if (pesquisaFornecedores) {
+        pesquisaFornecedores.addEventListener('input', (e) => {
+            if (typeof filtrarFornecedores === 'function') filtrarFornecedores(e.target.value.toLowerCase());
+        });
+    }
     const btnExportarJSON = document.getElementById('btn-exportar-json');
     if (btnExportarJSON) {
         btnExportarJSON.addEventListener('click', exportarBackupJSON);

@@ -1,6 +1,79 @@
 // ==========================================
 // CLIENTES E FORNECEDORES
 // ==========================================
+let filtroClientesTermo = "";
+let filtroFornecedoresTermo = "";
+
+function filtrarClientes(termo) {
+    filtroClientesTermo = termo;
+    renderizarClientes();
+}
+
+function filtrarFornecedores(termo) {
+    filtroFornecedoresTermo = termo;
+    renderizarFornecedores();
+}
+
+async function carregarHistoricoCliente(nome) {
+    const tbody = document.getElementById('historico-cliente-corpo');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-slate-400 font-medium">Carregando histórico...</td></tr>';
+    try {
+        const { data, error } = await clienteSupabase
+            .from('vendas')
+            .select('*')
+            .eq('cliente', nome)
+            .order('data', { ascending: false });
+        if (error) throw error;
+        tbody.innerHTML = '';
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-slate-400 font-medium">Nenhuma venda registrada.</td></tr>';
+            return;
+        }
+        data.forEach(v => {
+            tbody.innerHTML += `
+                <tr class="hover:bg-slate-100 transition">
+                    <td class="p-3 font-bold text-slate-700">${v.data.split('-').reverse().join('/')}</td>
+                    <td class="p-3 text-right font-black text-green-600">R$ ${parseFloat(v.total).toFixed(2).replace('.', ',')}</td>
+                </tr>
+            `;
+        });
+    } catch (err) {
+        console.error("Erro histórico cliente:", err);
+        tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-red-500 font-medium">Erro ao carregar histórico.</td></tr>';
+    }
+}
+
+async function carregarHistoricoFornecedor(nome) {
+    const tbody = document.getElementById('historico-fornecedor-corpo');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-slate-400 font-medium">Carregando histórico...</td></tr>';
+    try {
+        const { data, error } = await clienteSupabase
+            .from('compras')
+            .select('*')
+            .eq('fornecedor', nome)
+            .order('data', { ascending: false });
+        if (error) throw error;
+        tbody.innerHTML = '';
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-slate-400 font-medium">Nenhuma compra registrada.</td></tr>';
+            return;
+        }
+        data.forEach(c => {
+            tbody.innerHTML += `
+                <tr class="hover:bg-slate-100 transition">
+                    <td class="p-3 font-bold text-slate-700">${c.data.split('-').reverse().join('/')}</td>
+                    <td class="p-3 text-right font-black text-red-600">R$ ${parseFloat(c.total).toFixed(2).replace('.', ',')}</td>
+                </tr>
+            `;
+        });
+    } catch (err) {
+        console.error("Erro histórico fornecedor:", err);
+        tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-red-500 font-medium">Erro ao carregar histórico.</td></tr>';
+    }
+}
+
 async function carregarClientes() {
     try {
         const { data, error } = await clienteSupabase.from('clientes').select('*').order('nome');
@@ -18,31 +91,39 @@ function renderizarClientes() {
     const tbody = document.getElementById('lista-clientes');
     if(!tbody) return;
     tbody.innerHTML = '';
-    if (clientesGlobais.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum cliente cadastrado.</td></tr>';
+    
+    let filtrados = clientesGlobais;
+    if (filtroClientesTermo) {
+        filtrados = filtrados.filter(c => c.nome.toLowerCase().includes(filtroClientesTermo));
+    }
+    
+    const genericoNome = "Genérico/Não Cadastrado";
+    if (!filtroClientesTermo || genericoNome.toLowerCase().includes(filtroClientesTermo)) {
+        const trGen = document.createElement('tr');
+        trGen.className = "hover:bg-slate-50 transition cursor-pointer font-bold text-slate-800";
+        trGen.onclick = () => abrirModalCliente({ id: 'generico', nome: genericoNome });
+        trGen.innerHTML = `
+            <td class="p-3 flex items-center gap-2">
+                <i class="fas fa-user-shield text-slate-400"></i> ${genericoNome}
+            </td>
+        `;
+        tbody.appendChild(trGen);
+    }
+    
+    if (filtrados.length === 0 && !(!filtroClientesTermo || genericoNome.toLowerCase().includes(filtroClientesTermo))) {
+        tbody.innerHTML = '<tr><td class="p-4 text-center text-slate-400">Nenhum cliente correspondente.</td></tr>';
         return;
     }
-    clientesGlobais.forEach(c => {
+    
+    filtrados.forEach(c => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition";
-        // Stringify seguro para evitar quebras por aspas no HTML
-        const clientStr = JSON.stringify(c).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+        tr.className = "hover:bg-slate-50 transition cursor-pointer";
+        tr.onclick = () => abrirModalCliente(c);
         tr.innerHTML = `
             <td class="p-3 font-bold text-slate-800">${c.nome}</td>
-            <td class="p-3 text-slate-600">${c.telefone || '-'}</td>
-            <td class="p-3 text-slate-600">${c.email || '-'}</td>
-            <td class="p-3 text-slate-600">${c.documento || '-'}</td>
-            <td class="p-3 text-center">
-                <button onclick='abrirModalClienteEditar(${clientStr})' class="text-blue-500 hover:bg-blue-50 p-2 rounded-lg transition" title="Editar"><i class="fas fa-edit"></i></button>
-            </td>
         `;
         tbody.appendChild(tr);
     });
-}
-
-// Wrapper para converter o clique e chamar com segurança
-function abrirModalClienteEditar(cliente) {
-    abrirModalCliente(cliente);
 }
 
 function preencherSelectClientes() {
@@ -76,18 +157,36 @@ function abrirModalCliente(cliente = null) {
     document.getElementById('btn_excluir_cliente').classList.add('hidden');
     document.getElementById('modalCliente').dataset.rapido = 'false';
     
-    if (cliente) {
-        document.getElementById('modalClienteTitulo').textContent = 'Editar Cliente';
-        document.getElementById('cliente_id').value = cliente.id;
-        document.getElementById('cliente_nome').value = cliente.nome;
-        document.getElementById('cliente_telefone').value = cliente.telefone || '';
-        document.getElementById('cliente_email').value = cliente.email || '';
-        document.getElementById('cliente_documento').value = cliente.documento || '';
-        document.getElementById('cliente_endereco').value = cliente.endereco || '';
+    const formContainer = document.getElementById('container-form-cliente');
+    const infoGenerico = document.getElementById('info-cliente-generico');
+    
+    if (cliente && cliente.id === 'generico') {
+        document.getElementById('modalClienteTitulo').textContent = 'Cliente: Genérico/Não Cadastrado';
+        formContainer.classList.add('hidden');
+        infoGenerico.classList.remove('hidden');
+        carregarHistoricoCliente("Genérico/Não Cadastrado");
+    } else {
+        formContainer.classList.remove('hidden');
+        infoGenerico.classList.add('hidden');
         
-        const btnExcluir = document.getElementById('btn_excluir_cliente');
-        btnExcluir.classList.remove('hidden');
-        btnExcluir.classList.add('flex-1');
+        if (cliente) {
+            document.getElementById('modalClienteTitulo').textContent = 'Editar Cliente';
+            document.getElementById('cliente_id').value = cliente.id;
+            document.getElementById('cliente_nome').value = cliente.nome;
+            document.getElementById('cliente_telefone').value = cliente.telefone || '';
+            document.getElementById('cliente_email').value = cliente.email || '';
+            document.getElementById('cliente_documento').value = cliente.documento || '';
+            document.getElementById('cliente_endereco').value = cliente.endereco || '';
+            
+            const btnExcluir = document.getElementById('btn_excluir_cliente');
+            btnExcluir.classList.remove('hidden');
+            btnExcluir.classList.add('flex-1');
+            
+            carregarHistoricoCliente(cliente.nome);
+        } else {
+            const tbody = document.getElementById('historico-cliente-corpo');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-slate-400 font-medium">Nenhuma venda registrada.</td></tr>';
+        }
     }
     abrirModal('modalCliente');
 }
@@ -108,8 +207,14 @@ async function salvarCliente(e) {
             endereco: document.getElementById('cliente_endereco').value
         };
         if (id) {
+            const oldNome = clientesGlobais.find(x => x.id === id)?.nome;
             const { error } = await clienteSupabase.from('clientes').update(dados).eq('id', id);
             if(error) throw error;
+            
+            if (oldNome && oldNome !== nome) {
+                await clienteSupabase.from('vendas').update({ cliente: nome }).eq('cliente', oldNome);
+                await clienteSupabase.from('transacoes').update({ descricao: nome }).eq('descricao', oldNome).eq('subcategoria', 'Vendas');
+            }
             mostrarToast("Cliente atualizado!", "success");
         } else {
             const { error } = await clienteSupabase.from('clientes').insert([dados]);
@@ -135,13 +240,23 @@ async function salvarCliente(e) {
 
 async function excluirClienteModal() {
     const id = document.getElementById('cliente_id').value;
-    if(!id || !confirm("Deseja excluir este cliente?")) return;
+    if(!id) return;
+    const cli = clientesGlobais.find(x => x.id === id);
+    if (!cli) return;
+    
+    if(!confirm(`Deseja realmente excluir o cliente "${cli.nome}"? As vendas vinculadas a ele serão mescladas com "Genérico/Não Cadastrado".`)) return;
+    
     try {
         const { error } = await clienteSupabase.from('clientes').delete().eq('id', id);
         if(error) throw error;
+        
+        await clienteSupabase.from('vendas').update({ cliente: 'Genérico/Não Cadastrado' }).eq('cliente', cli.nome);
+        await clienteSupabase.from('transacoes').update({ descricao: 'Genérico/Não Cadastrado' }).eq('descricao', cli.nome).eq('subcategoria', 'Vendas');
+        
         mostrarToast("Excluído com sucesso", "success");
         fecharModal('modalCliente');
-        carregarClientes();
+        await carregarClientes();
+        atualizarTudo();
     } catch(err) { mostrarToast("Erro: "+err.message, "error"); }
 }
 
@@ -162,29 +277,39 @@ function renderizarFornecedores() {
     const tbody = document.getElementById('lista-fornecedores');
     if(!tbody) return;
     tbody.innerHTML = '';
-    if (fornecedoresGlobais.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum fornecedor cadastrado.</td></tr>';
+    
+    let filtrados = fornecedoresGlobais;
+    if (filtroFornecedoresTermo) {
+        filtrados = filtrados.filter(c => c.nome.toLowerCase().includes(filtroFornecedoresTermo));
+    }
+    
+    const genericoNome = "Genérico/Não Cadastrado";
+    if (!filtroFornecedoresTermo || genericoNome.toLowerCase().includes(filtroFornecedoresTermo)) {
+        const trGen = document.createElement('tr');
+        trGen.className = "hover:bg-slate-50 transition cursor-pointer font-bold text-slate-800";
+        trGen.onclick = () => abrirModalFornecedor({ id: 'generico', nome: genericoNome });
+        trGen.innerHTML = `
+            <td class="p-3 flex items-center gap-2">
+                <i class="fas fa-user-shield text-slate-400"></i> ${genericoNome}
+            </td>
+        `;
+        tbody.appendChild(trGen);
+    }
+    
+    if (filtrados.length === 0 && !(!filtroFornecedoresTermo || genericoNome.toLowerCase().includes(filtroFornecedoresTermo))) {
+        tbody.innerHTML = '<tr><td class="p-4 text-center text-slate-400">Nenhum fornecedor correspondente.</td></tr>';
         return;
     }
-    fornecedoresGlobais.forEach(c => {
+    
+    filtrados.forEach(c => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition";
-        const supplierStr = JSON.stringify(c).replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+        tr.className = "hover:bg-slate-50 transition cursor-pointer";
+        tr.onclick = () => abrirModalFornecedor(c);
         tr.innerHTML = `
             <td class="p-3 font-bold text-slate-800">${c.nome}</td>
-            <td class="p-3 text-slate-600">${c.telefone || '-'}</td>
-            <td class="p-3 text-slate-600">${c.email || '-'}</td>
-            <td class="p-3 text-slate-600">${c.documento || '-'}</td>
-            <td class="p-3 text-center">
-                <button onclick='abrirModalFornecedorEditar(${supplierStr})' class="text-blue-500 hover:bg-blue-50 p-2 rounded-lg transition" title="Editar"><i class="fas fa-edit"></i></button>
-            </td>
         `;
         tbody.appendChild(tr);
     });
-}
-
-function abrirModalFornecedorEditar(fornecedor) {
-    abrirModalFornecedor(fornecedor);
 }
 
 function preencherSelectFornecedores() {
@@ -218,18 +343,36 @@ function abrirModalFornecedor(fornecedor = null) {
     document.getElementById('btn_excluir_fornecedor').classList.add('hidden');
     document.getElementById('modalFornecedor').dataset.rapido = 'false';
     
-    if (fornecedor) {
-        document.getElementById('modalFornecedorTitulo').textContent = 'Editar Fornecedor';
-        document.getElementById('fornecedor_id').value = fornecedor.id;
-        document.getElementById('fornecedor_nome').value = fornecedor.nome;
-        document.getElementById('fornecedor_telefone').value = fornecedor.telefone || '';
-        document.getElementById('fornecedor_email').value = fornecedor.email || '';
-        document.getElementById('fornecedor_documento').value = fornecedor.documento || '';
-        document.getElementById('fornecedor_endereco').value = fornecedor.endereco || '';
+    const formContainer = document.getElementById('container-form-fornecedor');
+    const infoGenerico = document.getElementById('info-fornecedor-generico');
+    
+    if (fornecedor && fornecedor.id === 'generico') {
+        document.getElementById('modalFornecedorTitulo').textContent = 'Fornecedor: Genérico/Não Cadastrado';
+        formContainer.classList.add('hidden');
+        infoGenerico.classList.remove('hidden');
+        carregarHistoricoFornecedor("Genérico/Não Cadastrado");
+    } else {
+        formContainer.classList.remove('hidden');
+        infoGenerico.classList.add('hidden');
         
-        const btnExcluir = document.getElementById('btn_excluir_fornecedor');
-        btnExcluir.classList.remove('hidden');
-        btnExcluir.classList.add('flex-1');
+        if (fornecedor) {
+            document.getElementById('modalFornecedorTitulo').textContent = 'Editar Fornecedor';
+            document.getElementById('fornecedor_id').value = fornecedor.id;
+            document.getElementById('fornecedor_nome').value = fornecedor.nome;
+            document.getElementById('fornecedor_telefone').value = fornecedor.telefone || '';
+            document.getElementById('fornecedor_email').value = fornecedor.email || '';
+            document.getElementById('fornecedor_documento').value = fornecedor.documento || '';
+            document.getElementById('fornecedor_endereco').value = fornecedor.endereco || '';
+            
+            const btnExcluir = document.getElementById('btn_excluir_fornecedor');
+            btnExcluir.classList.remove('hidden');
+            btnExcluir.classList.add('flex-1');
+            
+            carregarHistoricoFornecedor(fornecedor.nome);
+        } else {
+            const tbody = document.getElementById('historico-fornecedor-corpo');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-slate-400 font-medium">Nenhuma compra registrada.</td></tr>';
+        }
     }
     abrirModal('modalFornecedor');
 }
@@ -250,9 +393,15 @@ async function salvarFornecedor(e) {
             endereco: document.getElementById('fornecedor_endereco').value
         };
         if (id) {
+            const oldNome = fornecedoresGlobais.find(x => x.id === id)?.nome;
             const { error } = await clienteSupabase.from('fornecedores').update(dados).eq('id', id);
             if(error) throw error;
-            mostrarToast("Fornecedor atualizado!", "success");
+            
+            if (oldNome && oldNome !== nome) {
+                await clienteSupabase.from('compras').update({ fornecedor: nome }).eq('fornecedor', oldNome);
+                await clienteSupabase.from('transacoes').update({ descricao: nome }).eq('descricao', oldNome).eq('subcategoria', 'Compras');
+            }
+            mostrarToast("Fornecedor updated!", "success");
         } else {
             const { error } = await clienteSupabase.from('fornecedores').insert([dados]);
             if(error) throw error;
@@ -277,18 +426,35 @@ async function salvarFornecedor(e) {
 
 async function excluirFornecedorModal() {
     const id = document.getElementById('fornecedor_id').value;
-    if(!id || !confirm("Deseja excluir este fornecedor?")) return;
+    if(!id) return;
+    const forn = fornecedoresGlobais.find(x => x.id === id);
+    if (!forn) return;
+    
+    if(!confirm(`Deseja realmente excluir o fornecedor "${forn.nome}"? As compras vinculadas a ele serão mescladas com "Genérico/Não Cadastrado".`)) return;
+    
     try {
         const { error } = await clienteSupabase.from('fornecedores').delete().eq('id', id);
         if(error) throw error;
+        
+        await clienteSupabase.from('compras').update({ fornecedor: 'Genérico/Não Cadastrado' }).eq('fornecedor', forn.nome);
+        await clienteSupabase.from('transacoes').update({ descricao: 'Genérico/Não Cadastrado' }).eq('descricao', forn.nome).eq('subcategoria', 'Compras');
+        
         mostrarToast("Excluído com sucesso", "success");
         fecharModal('modalFornecedor');
-        carregarFornecedores();
+        await carregarFornecedores();
+        atualizarTudo();
     } catch(err) { mostrarToast("Erro: "+err.message, "error"); }
 }
 
 function abrirModalListaClientes() { abrirModal('modalListaClientes'); }
+// Wrapper para converter o clique e chamar com segurança
+function abrirModalClienteEditar(cliente) {
+    abrirModalCliente(cliente);
+}
 function abrirModalListaFornecedores() { abrirModal('modalListaFornecedores'); }
+function abrirModalFornecedorEditar(fornecedor) {
+    abrirModalFornecedor(fornecedor);
+}
 
 function abrirModalClienteRapido() {
     const form = document.getElementById('form-cliente');
@@ -297,6 +463,12 @@ function abrirModalClienteRapido() {
     document.getElementById('modalClienteTitulo').textContent = 'Novo Cliente';
     document.getElementById('btn_excluir_cliente').classList.add('hidden');
     document.getElementById('modalCliente').dataset.rapido = 'true';
+    
+    const formContainer = document.getElementById('container-form-cliente');
+    const infoGenerico = document.getElementById('info-cliente-generico');
+    formContainer.classList.remove('hidden');
+    infoGenerico.classList.add('hidden');
+    
     abrirModal('modalCliente');
 }
 
@@ -307,6 +479,12 @@ function abrirModalFornecedorRapido() {
     document.getElementById('modalFornecedorTitulo').textContent = 'Novo Fornecedor';
     document.getElementById('btn_excluir_fornecedor').classList.add('hidden');
     document.getElementById('modalFornecedor').dataset.rapido = 'true';
+    
+    const formContainer = document.getElementById('container-form-fornecedor');
+    const infoGenerico = document.getElementById('info-fornecedor-generico');
+    formContainer.classList.remove('hidden');
+    infoGenerico.classList.add('hidden');
+    
     abrirModal('modalFornecedor');
 }
 
