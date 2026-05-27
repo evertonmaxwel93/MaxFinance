@@ -155,7 +155,17 @@ async function rodarMonitoramento() {
             const resultado = JSON.parse(responseText);
             
             if (resultado && resultado.precos && resultado.precos.length > 0) {
-                console.log(`✅ Sucesso! Extraídos ${resultado.precos.length} preço(s) do BoaDica. Salvando no banco...`);
+                console.log(`✅ Sucesso! Extraídos ${resultado.precos.length} preço(s) do BoaDica. Limpando preços antigos e salvando os atuais...`);
+                
+                // Limpar preços antigos para economizar espaço e manter apenas os atuais no Supabase
+                const { error: dbDelErr } = await supabase
+                    .from('produto_precos_historico')
+                    .delete()
+                    .eq('link_id', link.id);
+                
+                if (dbDelErr) {
+                    console.error(`⚠️ Erro ao limpar preços antigos para o link ${link.id}:`, dbDelErr.message);
+                }
                 
                 for (const item of resultado.precos) {
                     // Converter preço para float puro e tratar formatações brasileiras (ex: "R$ 1.500,00" -> 1500.00)

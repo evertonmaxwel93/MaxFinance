@@ -341,13 +341,74 @@ async function deletarLinkProduto(linkId, produtoId) {
 window.filtrosBairrosSelecionados = window.filtrosBairrosSelecionados || new Set();
 window.dadosPrecosCache = null;
 
+// Configurar ouvintes globais para o dropdown customizado
+document.addEventListener('DOMContentLoaded', () => {
+    const btnDropdown = document.getElementById('btn-dropdown-localidades');
+    const menuDropdown = document.getElementById('menu-dropdown-localidades');
+    const buscaInput = document.getElementById('busca-dropdown-localidades');
+    const iconChevron = document.getElementById('icon-dropdown-chevron');
+    
+    if (btnDropdown && menuDropdown) {
+        // Toggle dropdown open/close
+        btnDropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isHidden = menuDropdown.classList.contains('hidden');
+            if (isHidden) {
+                menuDropdown.classList.remove('hidden');
+                if (iconChevron) iconChevron.style.transform = 'rotate(180deg)';
+                if (buscaInput) {
+                    buscaInput.value = '';
+                    buscaInput.focus();
+                    filtrarOpcoesDropdown('');
+                }
+            } else {
+                menuDropdown.classList.add('hidden');
+                if (iconChevron) iconChevron.style.transform = 'rotate(0deg)';
+            }
+        });
+        
+        // Impedir fechamento ao clicar dentro do menu do dropdown
+        menuDropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
+        // Fechar ao clicar fora
+        document.addEventListener('click', () => {
+            menuDropdown.classList.add('hidden');
+            if (iconChevron) iconChevron.style.transform = 'rotate(0deg)';
+        });
+        
+        // Campo de busca com filtro em tempo real
+        if (buscaInput) {
+            buscaInput.addEventListener('input', (e) => {
+                filtrarOpcoesDropdown(e.target.value);
+            });
+        }
+    }
+});
+
+function filtrarOpcoesDropdown(termo) {
+    const optionsContainer = document.getElementById('opcoes-dropdown-localidades');
+    if (!optionsContainer) return;
+    
+    const termoMin = termo.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const items = optionsContainer.querySelectorAll('.dropdown-opcao-item');
+    
+    items.forEach(item => {
+        const text = item.getAttribute('data-value').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        if (text.includes(termoMin)) {
+            item.classList.remove('hidden');
+        } else {
+            item.classList.add('hidden');
+        }
+    });
+}
+
 async function carregarPrecosEHistorico(produtoId) {
     const tbody = document.getElementById('lista-precos-atuais-corpo');
-    const canvas = document.getElementById('graficoPrecosHistorico');
     const filterContainer = document.getElementById('filtro-localidades-container');
-    const filterList = document.getElementById('lista-pills-localidades');
     
-    if (!tbody || !canvas) return;
+    if (!tbody) return;
     
     tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-medium">Carregando dados...</td></tr>';
     if (filterContainer) filterContainer.classList.add('hidden');
@@ -362,16 +423,12 @@ async function carregarPrecosEHistorico(produtoId) {
         
         if (!links || links.length === 0) {
             tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-medium">Nenhum link cadastrado para este produto. Cadastre na aba "Links Externos".</td></tr>';
-            if (window.graficoPrecosInstance) {
-                window.graficoPrecosInstance.destroy();
-                window.graficoPrecosInstance = null;
-            }
             return;
         }
         
         const linkIds = links.map(l => l.id);
         
-        // 2. Carregar histórico de preços coletados
+        // 2. Carregar histórico de preços coletados (que agora armazena apenas o último preço)
         const { data: historico, error: hErr } = await clienteSupabase
             .from('produto_precos_historico')
             .select('*')
@@ -381,10 +438,6 @@ async function carregarPrecosEHistorico(produtoId) {
         
         if (!historico || historico.length === 0) {
             tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-medium">Nenhum preço coletado pelo robô de monitoramento ainda.</td></tr>';
-            if (window.graficoPrecosInstance) {
-                window.graficoPrecosInstance.destroy();
-                window.graficoPrecosInstance = null;
-            }
             return;
         }
         
@@ -412,9 +465,12 @@ function renderizarPrecosFiltrados() {
     const { links, historico } = window.dadosPrecosCache;
     const tbody = document.getElementById('lista-precos-atuais-corpo');
     const filterContainer = document.getElementById('filtro-localidades-container');
-    const filterList = document.getElementById('lista-pills-localidades');
+    const optionsContainer = document.getElementById('opcoes-dropdown-localidades');
+    const labelDropdown = document.getElementById('label-dropdown-selecionado');
     
-    // 1. Mapear e extrair todas as Localidades (Bairro - Cidade) únicas a partir de loja_nome
+    if (!tbody) return;
+    
+    // 1. Mapear e extrair todas as Localidades (Cidade/Bairro) únicas a partir de loja_nome
     const localidadesSet = new Set();
     const regexLocalidade = /^(.*?)\s*\((.*?)\s*-\s*(.*?)\)$/;
     
@@ -423,7 +479,7 @@ function renderizarPrecosFiltrados() {
         if (match) {
             const bairro = match[2].trim();
             const cidade = match[3].trim();
-            localidadesSet.add(`${bairro} - ${cidade}`);
+            localidadesSet.add(`${cidade}/${bairro}`);
         } else {
             localidadesSet.add("Geral");
         }
@@ -431,25 +487,57 @@ function renderizarPrecosFiltrados() {
     
     const listaLocalidades = Array.from(localidadesSet).sort();
     
-    // Exibir/ocultar contêiner de filtros
-    if (listaLocalidades.length > 1 && filterContainer && filterList) {
+    // Exibir/ocultar contêiner de filtros e preencher opções
+    if (listaLocalidades.length > 1 && filterContainer && optionsContainer) {
         filterContainer.classList.remove('hidden');
-        filterList.innerHTML = '';
+        optionsContainer.innerHTML = '';
+        
+        // Botão para limpar filtros
+        if (window.filtrosBairrosSelecionados.size > 0) {
+            const clearBtn = document.createElement('div');
+            clearBtn.className = "p-2.5 text-blue-600 hover:bg-blue-50 font-bold cursor-pointer text-left text-[11px] transition flex justify-between items-center";
+            clearBtn.innerHTML = `<span>Limpar Filtros</span><i class="fas fa-trash-alt text-xs"></i>`;
+            clearBtn.onclick = (e) => {
+                e.stopPropagation();
+                window.filtrosBairrosSelecionados.clear();
+                renderizarPrecosFiltrados();
+            };
+            optionsContainer.appendChild(clearBtn);
+        }
         
         listaLocalidades.forEach(loc => {
             const ativo = window.filtrosBairrosSelecionados.has(loc);
-            const badgeClass = ativo
-                ? "bg-blue-600 text-white font-bold px-3 py-1.5 rounded-full text-[10px] cursor-pointer select-none transition shadow-sm border border-blue-600"
-                : "bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-3 py-1.5 rounded-full text-[10px] cursor-pointer select-none transition border border-slate-200";
-            
-            const pill = document.createElement('span');
-            pill.className = badgeClass;
-            pill.innerHTML = `${loc} ${ativo ? '✓' : ''}`;
-            pill.onclick = () => toggleFiltroLocalidade(loc);
-            filterList.appendChild(pill);
+            const item = document.createElement('div');
+            item.className = `dropdown-opcao-item p-2.5 hover:bg-slate-50 cursor-pointer transition flex items-center justify-between text-left ${ativo ? 'bg-blue-50/50 font-bold text-blue-600' : 'text-slate-700'}`;
+            item.setAttribute('data-value', loc);
+            item.innerHTML = `
+                <span>${loc}</span>
+                ${ativo ? '<i class="fas fa-check text-blue-600 text-[10px]"></i>' : ''}
+            `;
+            item.onclick = (e) => {
+                e.stopPropagation();
+                toggleFiltroLocalidade(loc);
+            };
+            optionsContainer.appendChild(item);
         });
-    } else if (filterContainer) {
-        filterContainer.classList.add('hidden');
+        
+        // Atualizar texto do botão do dropdown
+        if (window.filtrosBairrosSelecionados.size === 0) {
+            if (labelDropdown) {
+                labelDropdown.textContent = "Selecione cidade e bairro";
+                labelDropdown.className = "text-slate-400 font-medium text-xs";
+            }
+        } else {
+            const arrayFiltros = Array.from(window.filtrosBairrosSelecionados);
+            if (labelDropdown) {
+                labelDropdown.textContent = window.filtrosBairrosSelecionados.size === 1 
+                    ? arrayFiltros[0] 
+                    : `${window.filtrosBairrosSelecionados.size} selecionados`;
+                labelDropdown.className = "text-blue-600 font-bold text-xs";
+            }
+        }
+    } else {
+        if (filterContainer) filterContainer.classList.add('hidden');
     }
     
     // 2. Filtrar histórico com base nos filtros selecionados
@@ -460,7 +548,7 @@ function renderizarPrecosFiltrados() {
         
         const match = h.loja_nome.match(regexLocalidade);
         if (match) {
-            const loc = `${match[2].trim()} - ${match[3].trim()}`;
+            const loc = `${match[3].trim()}/${match[2].trim()}`;
             return window.filtrosBairrosSelecionados.has(loc);
         } else {
             return window.filtrosBairrosSelecionados.has("Geral");
@@ -507,30 +595,13 @@ function renderizarPrecosFiltrados() {
             
             tbody.innerHTML += `
                 <tr class="hover:bg-slate-50 transition">
-                    <td class="p-3 font-bold text-slate-700">${pa.loja}</td>
+                    <td class="p-3 font-bold text-slate-700 text-left">${pa.loja}</td>
                     <td class="p-3 text-right font-black ${isMelhorPreco ? 'text-green-600 text-sm' : 'text-slate-800'}">R$ ${formattedPreco}${badge}</td>
                     <td class="p-3 text-center text-slate-500 font-medium">${dateStr}</td>
                 </tr>
             `;
         });
     }
-    
-    // 4. Compilar Histórico por Dia Filtrado (Menor preço de cada dia)
-    const historicoPorDia = {};
-    historicoFiltrado.forEach(h => {
-        const dia = h.data_coleta.split('T')[0];
-        const precoNum = parseFloat(h.preco);
-        if (!historicoPorDia[dia] || historicoPorDia[dia] > precoNum) {
-            historicoPorDia[dia] = precoNum;
-        }
-    });
-    
-    const diasOrdenados = Object.keys(historicoPorDia).sort();
-    const valoresOrdenados = diasOrdenados.map(d => historicoPorDia[d]);
-    const labelsDatas = diasOrdenados.map(d => d.split('-').reverse().slice(0, 2).join('/')); // DD/MM
-    
-    // Desenhar o gráfico atualizado
-    desenharGraficoHistorico(labelsDatas, valoresOrdenados);
 }
 
 function toggleFiltroLocalidade(localidade) {
@@ -539,74 +610,6 @@ function toggleFiltroLocalidade(localidade) {
     } else {
         window.filtrosBairrosSelecionados.add(localidade);
     }
-    // Re-renderiza instantaneamente com os filtros aplicados
+    // Re-renderiza com os filtros aplicados
     renderizarPrecosFiltrados();
-}
-
-function desenharGraficoHistorico(labels, valores) {
-    const canvas = document.getElementById('graficoPrecosHistorico');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    
-    if (window.graficoPrecosInstance) {
-        window.graficoPrecosInstance.destroy();
-    }
-    
-    const gradient = ctx.createLinearGradient(0, 0, 0, 250);
-    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.25)'); // Blue-600
-    gradient.addColorStop(1, 'rgba(37, 99, 235, 0.00)');
-    
-    window.graficoPrecosInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Menor Preço Encontrado (R$)',
-                data: valores,
-                borderColor: '#2563eb', // Blue-600
-                borderWidth: 2.5,
-                pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#2563eb',
-                pointBorderWidth: 2,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                fill: true,
-                backgroundColor: gradient,
-                tension: 0.25
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: '#1e293b',
-                    titleColor: '#f8fafc',
-                    bodyColor: '#f8fafc',
-                    padding: 10,
-                    callbacks: {
-                        label: function(context) {
-                            return ` Menor Preço: R$ ${context.parsed.y.toFixed(2).replace('.', ',')}`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    grid: { color: 'rgba(226, 232, 240, 0.6)' },
-                    ticks: {
-                        callback: function(value) {
-                            return 'R$ ' + value.toFixed(2).replace('.', ',');
-                        },
-                        font: { size: 9, weight: 'bold' }
-                    }
-                },
-                x: {
-                    grid: { display: false },
-                    ticks: { font: { size: 9, weight: 'bold' } }
-                }
-            }
-        }
-    });
 }
