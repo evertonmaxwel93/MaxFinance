@@ -337,14 +337,6 @@ async function deletarLinkProduto(linkId, produtoId) {
     }
 }
 
-async function carregarPrecosEHistorico(produtoId) {
-    const tbody = document.getElementById('lista-precos-atuais-corpo');
-    const canvas = document.getElementById('graficoPrecosHistorico');
-    if (!tbody || !canvas) return;
-    
-    tbody.innerHTML = '<tr><td colspan="3" class="p-4 text-center text-slate-400 font-medium">Carregando dados...</td></tr>';
-    
-    try {
 // Variáveis de controle globais de filtro para Bairros/Cidades
 window.filtrosBairrosSelecionados = window.filtrosBairrosSelecionados || new Set();
 window.dadosPrecosCache = null;
