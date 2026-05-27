@@ -764,14 +764,23 @@
     <div id="modalEstoque" class="fixed inset-0 bg-black/60 hidden z-[50] flex items-center justify-center p-4 modal-blur">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col relative">
             <button type="button" id="close-estoque" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition z-10"><i class="fas fa-times"></i></button>
-            <div class="flex justify-between items-center p-4 md:p-6 border-b border-slate-100">
-                <h3 id="modal-estoque-titulo" class="text-xl font-bold text-slate-800"><i class="fas fa-box text-blue-500 mr-2"></i>Novo Produto</h3>
+            <div class="flex flex-col border-b border-slate-100">
+                <div class="flex justify-between items-center p-4 md:p-6 pb-2">
+                    <h3 id="modal-estoque-titulo" class="text-xl font-bold text-slate-800"><i class="fas fa-box text-blue-500 mr-2"></i>Novo Produto</h3>
+                </div>
+                <!-- Abas do Modal de Estoque -->
+                <div class="flex border-t border-slate-100 px-4 md:px-6 bg-slate-50/50">
+                    <button type="button" id="tab-estoque-geral" class="px-4 py-3 font-bold text-xs text-blue-600 border-b-2 border-blue-600 transition outline-none">Geral</button>
+                    <button type="button" id="tab-estoque-movimentacao" class="px-4 py-3 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-700 transition outline-none">Movimentações</button>
+                    <button type="button" id="tab-estoque-links" class="px-4 py-3 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-700 transition outline-none">Links Externos</button>
+                    <button type="button" id="tab-estoque-precos" class="px-4 py-3 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-700 transition outline-none">Preços & Gráficos</button>
+                </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 md:p-6 overflow-y-auto max-h-[75vh]">
-                <!-- Painel de Dados do Produto -->
-                <div>
-                    <form id="form-estoque" class="space-y-4">
+            <div class="p-4 md:p-6 overflow-y-auto max-h-[75vh]">
+                <!-- Aba Geral: Cadastro e Edição -->
+                <div id="content-estoque-geral" class="space-y-4">
+                    <form id="form-estoque" class="space-y-4 max-w-lg mx-auto py-4">
                         <input type="hidden" id="estoque_id">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Categoria</label>
@@ -792,12 +801,12 @@
                     </form>
                 </div>
 
-                <!-- Painel de Histórico de Movimentação -->
-                <div class="flex flex-col">
+                <!-- Aba Movimentações: Histórico interno de estoque -->
+                <div id="content-estoque-movimentacao" class="hidden space-y-4">
                     <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2 border-b pb-2">
                         <i class="fas fa-exchange-alt text-blue-500"></i> Histórico de Movimentação
                     </h4>
-                    <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-slate-50 flex-1 min-h-[250px] max-h-[50vh]">
+                    <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-slate-50 min-h-[250px] max-h-[60vh]">
                         <table class="w-full text-left border-collapse text-xs whitespace-nowrap">
                             <thead>
                                 <tr class="bg-slate-100 text-slate-500 font-bold uppercase border-b text-[9px] tracking-wider">
@@ -814,6 +823,84 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Aba Links Externos: Gerenciamento dos links para monitoramento -->
+                <div id="content-estoque-links" class="hidden space-y-4">
+                    <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2 border-b pb-2">
+                        <i class="fas fa-link text-blue-500"></i> Gerenciar Links Externos
+                    </h4>
+                    <p class="text-xs text-slate-500 mb-4">Adicione links do mesmo produto em outras lojas para que o sistema possa coletar os preços diariamente.</p>
+                    
+                    <form id="form-link-estoque" class="flex flex-col sm:flex-row gap-3">
+                        <select id="link_plataforma" required class="border-none bg-slate-50 rounded-xl p-3 font-bold text-sm outline-none ring-1 ring-slate-200 w-full sm:w-48">
+                            <option value="" disabled selected>Plataforma</option>
+                            <option value="Kabum">Kabum</option>
+                            <option value="Pichau">Pichau</option>
+                            <option value="Mercado Livre">Mercado Livre</option>
+                            <option value="BoaDica">BoaDica</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                        <input type="url" id="link_url" placeholder="Cole aqui a URL completa do produto (ex: https://...)" required class="flex-1 border-none bg-slate-50 rounded-xl p-3 text-sm font-medium outline-none ring-1 ring-slate-200">
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold shadow transition whitespace-nowrap">Adicionar Link</button>
+                    </form>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mt-4">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead class="bg-slate-50 border-b">
+                                    <tr class="text-[10px] font-bold text-slate-400 uppercase">
+                                        <th class="py-3 px-4">Plataforma</th>
+                                        <th class="py-3 px-4">URL</th>
+                                        <th class="py-3 px-4 text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lista-links-corpo" class="text-sm divide-y divide-slate-100">
+                                    <tr>
+                                        <td colspan="3" class="p-4 text-center text-slate-400 font-medium">Nenhum link cadastrado para este produto.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aba Preços: Valores coletados e Gráfico evolutivo -->
+                <div id="content-estoque-precos" class="hidden space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Tabela de Preços Atuais -->
+                        <div class="flex flex-col">
+                            <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2 border-b pb-2">
+                                <i class="fas fa-tag text-blue-500"></i> Preços Atuais Encontrados
+                            </h4>
+                            <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-slate-50 min-h-[250px] max-h-[60vh]">
+                                <table class="w-full text-left border-collapse text-xs whitespace-nowrap">
+                                    <thead>
+                                        <tr class="bg-slate-100 text-slate-500 font-bold uppercase border-b text-[9px] tracking-wider">
+                                            <th class="p-3">Loja/Plataforma</th>
+                                            <th class="p-3 text-right">Preço</th>
+                                            <th class="p-3 text-center">Última Coleta</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="lista-precos-atuais-corpo" class="divide-y divide-slate-200">
+                                        <tr>
+                                            <td colspan="3" class="p-4 text-center text-slate-400 font-medium">Nenhum preço coletado recentemente.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Gráfico de Evolução -->
+                        <div class="flex flex-col">
+                            <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2 border-b pb-2">
+                                <i class="fas fa-chart-line text-blue-500"></i> Histórico de Variação de Preços
+                            </h4>
+                            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-center min-h-[250px] h-[300px]">
+                                <canvas id="graficoPrecosHistorico" class="w-full h-full"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -930,6 +1017,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Chart.js para os gráficos de histórico de preços de concorrentes -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Scripts Desacoplados em Pastas Lógicas (Approach A) -->
     <script src="js/db.js"></script>

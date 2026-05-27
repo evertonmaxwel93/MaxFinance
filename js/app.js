@@ -250,6 +250,22 @@ document.addEventListener('DOMContentLoaded', () => {
         btnNovoProduto.addEventListener('click', abrirModalEstoque);
     }
 
+    // Ouvintes das Abas do Modal de Estoque
+    const tabEstoqueGeral = document.getElementById('tab-estoque-geral');
+    if (tabEstoqueGeral) tabEstoqueGeral.addEventListener('click', () => alternarAbaEstoque('geral'));
+    const tabEstoqueMov = document.getElementById('tab-estoque-movimentacao');
+    if (tabEstoqueMov) tabEstoqueMov.addEventListener('click', () => alternarAbaEstoque('movimentacao'));
+    const tabEstoqueLinks = document.getElementById('tab-estoque-links');
+    if (tabEstoqueLinks) tabEstoqueLinks.addEventListener('click', () => alternarAbaEstoque('links'));
+    const tabEstoquePrecos = document.getElementById('tab-estoque-precos');
+    if (tabEstoquePrecos) tabEstoquePrecos.addEventListener('click', () => alternarAbaEstoque('precos'));
+
+    // Cadastro de novo link de monitoramento
+    const formLinkEstoque = document.getElementById('form-link-estoque');
+    if (formLinkEstoque) {
+        formLinkEstoque.addEventListener('submit', salvarLinkProduto);
+    }
+
     // 8. Aba Vendas
     const filtroDataInicioVendas = document.getElementById('filtro-data-inicio-vendas');
     if (filtroDataInicioVendas) {
