@@ -90,7 +90,7 @@ async function carregarClientes() {
     try {
         const { data, error } = await clienteSupabase.from('clientes').select('*').order('nome');
         if (error) throw error;
-        clientesGlobais = data || [];
+        clientesGlobais = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(data) : (data || []);
         renderizarClientes();
         preencherSelectClientes();
     } catch(e) { 
@@ -228,8 +228,8 @@ async function salvarCliente(e) {
                 await clienteSupabase.from('transacoes').update({ descricao: nome }).eq('descricao', oldNome).eq('subcategoria', 'Vendas');
             }
             mostrarToast("Cliente atualizado!", "success");
-        } else {
-            const { error } = await clienteSupabase.from('clientes').insert([dados]);
+            const dadosInjetados = typeof injetarLojaAtiva === 'function' ? injetarLojaAtiva(dados) : dados;
+            const { error } = await clienteSupabase.from('clientes').insert([dadosInjetados]);
             if(error) throw error;
             mostrarToast("Cliente cadastrado!", "success");
         }
@@ -276,7 +276,7 @@ async function carregarFornecedores() {
     try {
         const { data, error } = await clienteSupabase.from('fornecedores').select('*').order('nome');
         if (error) throw error;
-        fornecedoresGlobais = data || [];
+        fornecedoresGlobais = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(data) : (data || []);
         renderizarFornecedores();
         preencherSelectFornecedores();
     } catch(e) { 
@@ -414,8 +414,8 @@ async function salvarFornecedor(e) {
                 await clienteSupabase.from('transacoes').update({ descricao: nome }).eq('descricao', oldNome).eq('subcategoria', 'Compras');
             }
             mostrarToast("Fornecedor updated!", "success");
-        } else {
-            const { error } = await clienteSupabase.from('fornecedores').insert([dados]);
+            const dadosInjetados = typeof injetarLojaAtiva === 'function' ? injetarLojaAtiva(dados) : dados;
+            const { error } = await clienteSupabase.from('fornecedores').insert([dadosInjetados]);
             if(error) throw error;
             mostrarToast("Fornecedor cadastrado!", "success");
         }
@@ -507,7 +507,7 @@ async function carregarCompras() {
     try {
         const { data, error } = await clienteSupabase.from('compras').select('*').order('data', { ascending: false });
         if (error) throw error;
-        comprasGlobais = data || [];
+        comprasGlobais = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(data) : (data || []);
         renderizarCompras();
     } catch (err) {
         mostrarToast("Erro ao carregar compras", "error");
@@ -694,7 +694,7 @@ async function salvarCompra(e) {
         }
 
         // 1. Inserir Transação (Financeiro)
-        const { data: trData, error: trErr } = await clienteSupabase.from('transacoes').insert({
+        const trPayload = {
             user_id: userAtual.id,
             tipo: 'Saída',
             subcategoria: 'Compras',
@@ -707,17 +707,21 @@ async function salvarCompra(e) {
             grupo_id: crypto.randomUUID(),
             total_parcelas: 1,
             parcela_atual: 1
-        }).select().single();
+        };
+        const trPayloadInjetado = typeof injetarLojaAtiva === 'function' ? injetarLojaAtiva(trPayload) : trPayload;
+        const { data: trData, error: trErr } = await clienteSupabase.from('transacoes').insert(trPayloadInjetado).select().single();
         if (trErr) throw trErr;
 
         // 2. Inserir Compra
-        const { data: compData, error: cErr } = await clienteSupabase.from('compras').insert({
+        const compPayload = {
             user_id: userAtual.id,
             data: document.getElementById('compra_data').value,
             fornecedor: document.getElementById('compra_fornecedor').value,
             total: total,
             transacao_id: trData.id
-        }).select().single();
+        };
+        const compPayloadInjetado = typeof injetarLojaAtiva === 'function' ? injetarLojaAtiva(compPayload) : compPayload;
+        const { data: compData, error: cErr } = await clienteSupabase.from('compras').insert(compPayloadInjetado).select().single();
         if (cErr) throw cErr;
 
         // 3. Inserir Itens e Atualizar Estoque
@@ -835,7 +839,7 @@ async function carregarVendas() {
     try {
         const { data, error } = await clienteSupabase.from('vendas').select('*, vendas_itens(*)').order('data', { ascending: false });
         if (error) throw error;
-        vendasGlobais = data || [];
+        vendasGlobais = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(data) : (data || []);
         renderizarVendas();
     } catch (err) {
         mostrarToast("Erro ao carregar vendas", "error");
@@ -1068,7 +1072,7 @@ async function salvarVenda(e) {
             }
         }
 
-        const { data: trData, error: trErr } = await clienteSupabase.from('transacoes').insert({
+        const trPayload = {
             user_id: userAtual.id,
             tipo: 'Entrada',
             subcategoria: 'Vendas',
@@ -1081,10 +1085,12 @@ async function salvarVenda(e) {
             grupo_id: crypto.randomUUID(),
             total_parcelas: 1,
             parcela_atual: 1
-        }).select().single();
+        };
+        const trPayloadInjetado = typeof injetarLojaAtiva === 'function' ? injetarLojaAtiva(trPayload) : trPayload;
+        const { data: trData, error: trErr } = await clienteSupabase.from('transacoes').insert(trPayloadInjetado).select().single();
         if (trErr) throw trErr;
 
-        const { data: vData, error: vErr } = await clienteSupabase.from('vendas').insert({
+        const vPayload = {
             user_id: userAtual.id,
             data: document.getElementById('venda_data').value,
             cliente: document.getElementById('venda_cliente').value,
@@ -1092,7 +1098,9 @@ async function salvarVenda(e) {
             total: total,
             custo_total: custoTotalVenda,
             transacao_id: trData.id
-        }).select().single();
+        };
+        const vPayloadInjetado = typeof injetarLojaAtiva === 'function' ? injetarLojaAtiva(vPayload) : vPayload;
+        const { data: vData, error: vErr } = await clienteSupabase.from('vendas').insert(vPayloadInjetado).select().single();
         if (vErr) throw vErr;
 
         const { data: latestProds, error: pErr } = await clienteSupabase.from('produtos').select('*');

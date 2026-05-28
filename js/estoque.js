@@ -2,7 +2,7 @@ async function carregarProdutos() {
     try {
         const { data, error } = await clienteSupabase.from('produtos').select('*').order('categoria').order('nome');
         if (error) throw error;
-        produtos = data || [];
+        produtos = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(data) : (data || []);
         renderizarEstoque();
     } catch (err) {
         mostrarToast("Erro ao carregar estoque: " + err.message, "error");
@@ -189,7 +189,8 @@ async function salvarProduto(e) {
             if (error) throw error;
             mostrarToast("Produto atualizado com sucesso!", "success");
         } else {
-            const { error } = await clienteSupabase.from('produtos').insert(payload);
+            const payloadInjetado = typeof injetarLojaAtiva === 'function' ? injetarLojaAtiva(payload) : payload;
+            const { error } = await clienteSupabase.from('produtos').insert(payloadInjetado);
             if (error) throw error;
             mostrarToast("Produto cadastrado com sucesso!", "success");
         }

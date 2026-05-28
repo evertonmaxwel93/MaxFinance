@@ -68,9 +68,31 @@
             </div>
             <h1 class="text-2xl font-extrabold text-slate-800 mb-2">MaxFinance</h1>
             <p class="text-xs text-slate-500 font-medium mb-6">Controle Financeiro</p>
+            
             <button id="btn-login-google" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition">
                 <i class="fab fa-google mr-2"></i> Entrar com o Google
             </button>
+
+            <div class="flex items-center my-4">
+                <div class="flex-1 border-t border-slate-200"></div>
+                <span class="px-3 text-xs text-slate-400 font-bold uppercase">ou</span>
+                <div class="flex-1 border-t border-slate-200"></div>
+            </div>
+
+            <form id="form-login-email" class="space-y-3 text-left">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Email</label>
+                    <input type="email" id="login-email" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200 focus:ring-blue-500 focus:bg-white transition">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Senha</label>
+                    <input type="password" id="login-senha" required class="w-full bg-slate-50 rounded-xl p-3 text-sm outline-none ring-1 ring-slate-200 focus:ring-blue-500 focus:bg-white transition">
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="submit" id="btn-entrar-email" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow transition text-sm">Entrar</button>
+                    <button type="button" id="btn-cadastrar-email" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl border border-slate-300 transition text-sm">Criar Conta</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -104,7 +126,8 @@
                     <i class="fas fa-cog mr-2"></i> Ajustes
                 </button>
             </nav>
-            <div class="flex items-center gap-4 ml-auto pl-4">
+            <div class="flex items-center gap-3 ml-auto pl-4">
+                <div id="seletor-lojas-container" class="flex items-center"></div>
                 <span id="user-info" class="text-xs text-slate-400 font-medium hidden md:inline"></span>
                 <button id="btn-logout" class="text-xs text-red-500 hover:bg-red-50 px-3 py-2 rounded-lg font-bold transition hidden md:flex items-center">
                     <i class="fas fa-sign-out-alt mr-1"></i> Sair
@@ -177,6 +200,117 @@
                         </div>
                     </div>
 
+                </div>
+
+                <!-- Inteligência Financeira: Projeção 12 Meses -->
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden transition-all duration-300">
+                    <!-- Header -->
+                    <div id="btn-toggle-projecoes" class="p-4 flex justify-between items-center bg-slate-50 cursor-pointer hover:bg-slate-100/80 transition-colors">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                                <i class="fas fa-brain text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-extrabold text-slate-700 leading-tight">Projeção Financeira Inteligente (12 Meses)</h3>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Previsão e análise preditiva baseada em comportamento e recorrências</p>
+                            </div>
+                        </div>
+                        <button class="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors">
+                            <i id="icone-toggle-projecoes" class="fas fa-chevron-down transform transition-transform duration-300"></i>
+                        </button>
+                    </div>
+
+                    <!-- Conteúdo da Projeção -->
+                    <div id="conteudo-projecoes" class="hidden p-6 space-y-6 bg-gradient-to-br from-white to-slate-50/50 border-t border-slate-100">
+                        
+                        <!-- KPIs Rápidos -->
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Saldo Inicial</span>
+                                <span id="proj-kpi-saldo-inicial" class="text-base font-black text-slate-700 mt-1">R$ 0,00</span>
+                            </div>
+                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Receita (3m)</span>
+                                <span id="proj-kpi-media-entrada" class="text-base font-black text-emerald-600 mt-1">R$ 0,00</span>
+                            </div>
+                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Despesa (3m)</span>
+                                <span id="proj-kpi-media-saida" class="text-base font-black text-rose-500 mt-1">R$ 0,00</span>
+                            </div>
+                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status Projetado</span>
+                                <span id="proj-kpi-alertas" class="text-base font-black mt-1 text-slate-500">Nenhum</span>
+                            </div>
+                        </div>
+
+                        <!-- Área do Gráfico de Barras Estilizado -->
+                        <div class="bg-white border border-slate-150 p-5 rounded-2xl shadow-sm">
+                            <div class="flex justify-between items-center mb-6">
+                                <div>
+                                    <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider">Evolução Projetada do Saldo de Caixa</h4>
+                                    <p class="text-[10px] text-slate-400 font-semibold">Projeção acumulada mês a mês (próximos 12 meses)</p>
+                                </div>
+                                <!-- Legenda -->
+                                <div class="flex items-center gap-4 text-[10px] font-bold text-slate-500">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Caixa Saudável
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Saldo Negativo
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Gráfico de barras responsivo com CSS -->
+                            <div class="h-64 flex items-end justify-between gap-1 md:gap-3 pt-6 pb-2 border-b border-slate-200 relative overflow-x-auto min-w-[500px]" id="projecao-grafico-barras">
+                                <!-- As barras serão injetadas via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Detalhes em tabela e Recomendações em 2 colunas -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Tabela de Valores Projetados -->
+                            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                                <div class="px-4 py-3 border-b bg-slate-50">
+                                    <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider">Demonstrativo Mês a Mês</h4>
+                                </div>
+                                <div class="max-h-60 overflow-y-auto">
+                                    <table class="w-full text-left border-collapse text-xs">
+                                        <thead>
+                                            <tr class="bg-slate-100/50 text-[10px] text-slate-400 font-bold uppercase tracking-wider border-b">
+                                                <th class="py-2 px-3">Mês/Ano</th>
+                                                <th class="py-2 px-3 text-right">Entradas Est.</th>
+                                                <th class="py-2 px-3 text-right">Saídas Est.</th>
+                                                <th class="py-2 px-3 text-right">Saldo Final</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="projecoes-lista-valores" class="divide-y divide-slate-100 font-medium text-slate-600">
+                                            <!-- Injetado via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Alertas e Dicas de Negócio -->
+                            <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 flex flex-col justify-between min-h-[200px]">
+                                <div class="mb-4">
+                                    <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                        <i class="fas fa-lightbulb text-yellow-500"></i>
+                                        <span>Recomendações e Insights Contábeis</span>
+                                    </h4>
+                                    <div id="projecoes-alertas-texto" class="text-xs text-slate-500 space-y-3 leading-relaxed">
+                                        <!-- Injetado via JS -->
+                                    </div>
+                                </div>
+                                
+                                <div class="border-t pt-3 flex justify-between items-center text-[10px] text-slate-400 font-bold">
+                                    <span>*Média de tendência baseada nos últimos 3 meses</span>
+                                    <span>MaxFinance AI ✨</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
  
                 <!-- Tabela de Movimentações -->
@@ -313,31 +447,101 @@
 
             <!-- Aba Relatórios -->
             <div id="aba-relatorios" class="hidden space-y-6">
+                <!-- CABEÇALHO DA ÁREA CONTÁBIL -->
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                    <h2 class="text-xl font-bold text-slate-800"><i class="fas fa-chart-line mr-2 text-blue-600"></i>Relatórios e Analytics</h2>
-                    <div class="flex gap-2">
-                        <select id="relatorio-mes" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-800 flex items-center gap-2"><i class="fas fa-balance-scale text-blue-600"></i>Área Contábil & Relatórios</h2>
+                        <p class="text-xs text-slate-400 font-medium">Demonstrativos de Resultados (DRE) e análise de performance do negócio.</p>
+                    </div>
+                    <div class="flex items-center gap-2 ml-auto sm:ml-0">
+                        <select id="relatorio-mes" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-xs outline-none ring-1 ring-slate-200">
                             <option value="01">Jan</option><option value="02">Fev</option><option value="03">Mar</option>
                             <option value="04">Abr</option><option value="05">Mai</option><option value="06">Jun</option>
                             <option value="07">Jul</option><option value="08">Ago</option><option value="09">Set</option>
                             <option value="10">Out</option><option value="11">Nov</option><option value="12">Dez</option>
                         </select>
-                        <select id="relatorio-ano" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-sm outline-none ring-1 ring-slate-200"></select>
+                        <select id="relatorio-ano" class="border-none bg-slate-50 rounded-lg p-2 font-bold text-xs outline-none ring-1 ring-slate-200"></select>
+                        <button onclick="imprimirDRE()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold p-2 rounded-lg text-xs transition flex items-center gap-1 shadow-sm">
+                            <i class="fas fa-print"></i> PDF
+                        </button>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Resumo Mensal -->
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                        <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Resumo Mensal por Categoria</h3>
-                        <div id="relatorio-resumo-mensal" class="space-y-4"></div>
+                <!-- CARDS DE KPIS CONTÁBEIS -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <div class="bg-white border border-slate-200 px-4 py-3 rounded-xl shadow-sm">
+                        <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider leading-none">EBITDA</p>
+                        <p id="kpi-ebitda" class="text-base font-black text-slate-700 mt-1.5 leading-none">R$ 0,00</p>
+                        <p class="text-[8px] text-slate-400 font-bold mt-1">Lançado Operacional</p>
                     </div>
-                    
-                    <!-- Ranking de Produtos -->
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                        <div class="flex justify-between items-center mb-4 border-b pb-2">
-                            <h3 class="text-lg font-bold text-slate-800">Ranking de Produtos</h3>
-                            <select id="relatorio-ranking-tipo" class="text-xs font-bold border-none bg-slate-50 rounded-lg p-1 outline-none ring-1 ring-slate-200">
+                    <div class="bg-white border border-slate-200 px-4 py-3 rounded-xl shadow-sm">
+                        <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider leading-none">Margem Líquida</p>
+                        <p id="kpi-margem-liquida" class="text-base font-black text-slate-700 mt-1.5 leading-none">0,0%</p>
+                        <p class="text-[8px] text-slate-400 font-bold mt-1">Margem do Exercício</p>
+                    </div>
+                    <div class="bg-white border border-slate-200 px-4 py-3 rounded-xl shadow-sm">
+                        <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider leading-none">Markup Médio</p>
+                        <p id="kpi-markup" class="text-base font-black text-slate-700 mt-1.5 leading-none">0,0%</p>
+                        <p class="text-[8px] text-slate-400 font-bold mt-1">Lucro sobre Custo</p>
+                    </div>
+                    <div class="bg-white border border-slate-200 px-4 py-3 rounded-xl shadow-sm">
+                        <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider leading-none">Ponto de Equilíbrio</p>
+                        <p id="kpi-ponto-equilibrio" class="text-base font-black text-slate-700 mt-1.5 leading-none">R$ 0,00</p>
+                        <p class="text-[8px] text-slate-400 font-bold mt-1">Faturamento Mínimo</p>
+                    </div>
+                </div>
+
+                <!-- TABS DE RELATÓRIOS -->
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+                    <div class="flex border-b bg-slate-50 overflow-x-auto hide-scrollbar">
+                        <button onclick="alternarTabRelatorio('competencia')" id="tab-rel-competencia" class="px-4 py-3 font-extrabold text-xs text-blue-600 border-b-2 border-blue-600 transition outline-none whitespace-nowrap">
+                            <i class="fas fa-file-invoice-dollar mr-1"></i> DRE por Competência
+                        </button>
+                        <button onclick="alternarTabRelatorio('caixa')" id="tab-rel-caixa" class="px-4 py-3 font-extrabold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-700 transition outline-none whitespace-nowrap">
+                            <i class="fas fa-hand-holding-usd mr-1"></i> DRE por Caixa
+                        </button>
+                        <button onclick="alternarTabRelatorio('produtos')" id="tab-rel-produtos" class="px-4 py-3 font-extrabold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-700 transition outline-none whitespace-nowrap">
+                            <i class="fas fa-boxes mr-1"></i> Performance de Produtos
+                        </button>
+                    </div>
+
+                    <!-- CONTEÚDO TAB: DRE POR COMPETÊNCIA -->
+                    <div id="content-rel-competencia" class="p-6 overflow-x-auto">
+                        <table class="w-full text-left text-sm border-collapse min-w-[500px]" id="dre-competencia-imprimir">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-500 text-[10px] font-extrabold uppercase border-b tracking-wider">
+                                    <th class="py-2.5 px-4">Estrutura da DRE (Regime de Competência)</th>
+                                    <th class="py-2.5 px-4 text-right">Valor (R$)</th>
+                                    <th class="py-2.5 px-4 text-right">% Receita</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dre-competencia-corpo" class="divide-y divide-slate-100 font-semibold text-slate-700">
+                                <!-- Preenchido dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- CONTEÚDO TAB: DRE POR CAIXA -->
+                    <div id="content-rel-caixa" class="p-6 hidden overflow-x-auto">
+                        <table class="w-full text-left text-sm border-collapse min-w-[500px]" id="dre-caixa-imprimir">
+                            <thead>
+                                <tr class="bg-slate-100 text-slate-500 text-[10px] font-extrabold uppercase border-b tracking-wider">
+                                    <th class="py-2.5 px-4">Estrutura da DRE (Regime de Caixa)</th>
+                                    <th class="py-2.5 px-4 text-right">Valor (R$)</th>
+                                    <th class="py-2.5 px-4 text-right">% Entradas</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dre-caixa-corpo" class="divide-y divide-slate-100 font-semibold text-slate-700">
+                                <!-- Preenchido dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- CONTEÚDO TAB: PERFORMANCE DE PRODUTOS -->
+                    <div id="content-rel-produtos" class="p-6 hidden">
+                        <div class="flex justify-between items-center mb-4 pb-2 border-b">
+                            <h3 class="font-bold text-slate-800 text-sm">Leaderboard de Vendas e Faturamento</h3>
+                            <select id="relatorio-ranking-tipo" class="text-xs font-bold border-none bg-slate-50 rounded-lg p-1.5 outline-none ring-1 ring-slate-200">
                                 <option value="qtd">Por Qtd Vendida</option>
                                 <option value="faturamento">Por Faturamento</option>
                                 <option value="lucro">Por Lucro</option>
@@ -346,12 +550,14 @@
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                                        <th class="p-2 font-bold">Produto</th>
-                                        <th class="p-2 font-bold text-right">Valor</th>
+                                    <tr class="bg-slate-50 text-slate-500 text-[10px] font-extrabold uppercase tracking-wider">
+                                        <th class="p-3">Produto</th>
+                                        <th class="p-3 text-right">Quantidade</th>
+                                        <th class="p-3 text-right">Faturamento</th>
+                                        <th class="p-3 text-right">Lucro</th>
                                     </tr>
                                 </thead>
-                                <tbody id="relatorio-ranking-lista" class="divide-y divide-slate-100 text-sm"></tbody>
+                                <tbody id="relatorio-ranking-lista" class="divide-y divide-slate-100 text-xs font-bold text-slate-700"></tbody>
                             </table>
                         </div>
                     </div>
@@ -380,6 +586,9 @@
                     </select>
                     <input type="text" id="novo-sub-nome" placeholder="Nome da subcategoria" required class="flex-1 border-none bg-slate-50 rounded-lg p-3 text-sm font-medium outline-none ring-1 ring-slate-200">
                     <button type="submit" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-lg font-bold shadow">Adicionar</button>
+                    <button type="button" id="btn-sugerir-subcategorias" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-6 py-3 rounded-lg font-bold transition flex items-center gap-1 shadow-sm">
+                        <i class="fas fa-magic"></i> Sugerir
+                    </button>
                 </form>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
@@ -389,6 +598,41 @@
                     <div>
                         <h3 class="font-bold text-green-600 border-b-2 border-green-100 pb-2 mb-3 uppercase text-xs">Entradas</h3>
                         <ul id="lista-sub-entradas" class="space-y-2"></ul>
+                    </div>
+                </div>
+
+                <!-- Compartilhamento de Acessos -->
+                <div id="secao-compartilhamento" class="mt-8 pt-6 border-t border-slate-200">
+                    <h3 class="font-bold text-slate-800 mb-2 flex items-center gap-2">
+                        <i class="fas fa-users-cog text-blue-500"></i> Compartilhamento de Acesso
+                    </h3>
+                    <p class="text-xs text-slate-500 mb-4">Convide outros usuários por email e dê uma função específica na sua loja atual.</p>
+                    
+                    <form id="form-compartilhamento" class="flex flex-col md:flex-row gap-3 mb-6">
+                        <input type="email" id="convite-email" placeholder="Email do convidado" required class="flex-1 border-none bg-slate-50 rounded-lg p-3 text-sm font-medium outline-none ring-1 ring-slate-200">
+                        <select id="convite-funcao" class="border-none bg-slate-50 rounded-lg p-3 font-bold text-sm outline-none ring-1 ring-slate-200">
+                            <option value="Total">Controle Total (Administrador)</option>
+                            <option value="Gerente">Gerente de Loja (Estoque, Compras, Vendas)</option>
+                            <option value="Caixa">Caixa (Somente Vendas)</option>
+                        </select>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold shadow transition">Convidar</button>
+                    </form>
+                    
+                    <div class="bg-slate-50 rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse whitespace-nowrap">
+                                <thead>
+                                    <tr class="bg-slate-100 text-slate-500 text-[10px] font-extrabold uppercase tracking-wider border-b border-slate-200">
+                                        <th class="py-3 px-4">Email</th>
+                                        <th class="py-3 px-4">Função</th>
+                                        <th class="py-3 px-4 text-center">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-colaboradores" class="text-xs divide-y divide-slate-100 font-semibold text-slate-700">
+                                    <!-- Preenchido dinamicamente -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -1092,6 +1336,42 @@
         </div>
     </div>
 
+    <!-- Modal de Sugestão de Subcategorias -->
+    <div id="modalSugestoesSubcategorias" class="fixed inset-0 bg-black/60 hidden z-[60] flex items-center justify-center p-4 modal-blur">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col relative animate-fade-in">
+            <button id="close-sugestoes-sub" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition z-10"><i class="fas fa-times"></i></button>
+            <div class="p-6 border-b">
+                <h2 class="text-lg font-extrabold flex items-center gap-2"><i class="fas fa-magic text-blue-500"></i> Sugestões de Subcategorias</h2>
+                <p class="text-xs text-slate-400 mt-1">Selecione as subcategorias ideais para o seu negócio e importe-as em lote de forma automática.</p>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-4 max-h-[60vh] bg-slate-50">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Entradas -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200">
+                        <h4 class="font-extrabold text-xs text-green-600 uppercase border-b pb-2 mb-3 flex items-center gap-1">
+                            <i class="fas fa-arrow-circle-up"></i> Entradas (Receitas)
+                        </h4>
+                        <div class="space-y-2.5" id="sugestoes-entradas-lista"></div>
+                    </div>
+                    <!-- Saídas -->
+                    <div class="bg-white p-4 rounded-xl border border-slate-200">
+                        <h4 class="font-extrabold text-xs text-red-600 uppercase border-b pb-2 mb-3 flex items-center gap-1">
+                            <i class="fas fa-arrow-circle-down"></i> Saídas (Despesas)
+                        </h4>
+                        <div class="space-y-2.5" id="sugestoes-saidas-lista"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-100 border-t flex justify-between items-center">
+                <button type="button" id="btn-marcar-todos-sugestoes" class="text-xs text-blue-600 font-bold hover:underline">Marcar Todos</button>
+                <div class="flex gap-2">
+                    <button type="button" id="btn-cancelar-sugestoes" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg text-sm transition">Cancelar</button>
+                    <button type="button" id="btn-importar-sugestoes" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-2 px-4 rounded-lg text-sm transition shadow-md">Importar Selecionados</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Chart.js para os gráficos de histórico de preços de concorrentes -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -1099,6 +1379,9 @@
     <script src="js/db.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/lojas.js"></script>
+    <script src="js/compartilhamento.js"></script>
+    <script src="js/projecoes.js"></script>
     <script src="js/financeiro.js"></script>
     <script src="js/estoque.js"></script>
     <script src="js/operacoes.js"></script>

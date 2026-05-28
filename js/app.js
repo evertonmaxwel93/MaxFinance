@@ -158,6 +158,9 @@ if ('serviceWorker' in navigator) {
 // LIGAÇÃO DE EVENTOS (Approach A - Event Listeners)
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar Projeções Financeiras
+    if (typeof initProjecoes === 'function') initProjecoes();
+
     // 1. Inicializar Sessão
     clienteSupabase.auth.onAuthStateChange((event) => {
         if (event === 'SIGNED_OUT') {
@@ -188,6 +191,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnLogout = document.getElementById('btn-logout');
     if (btnLogout) {
         btnLogout.addEventListener('click', sair);
+    }
+    const formLoginEmail = document.getElementById('form-login-email');
+    if (formLoginEmail) {
+        formLoginEmail.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const senha = document.getElementById('login-senha').value;
+            if (email && senha) {
+                loginComEmail(email, senha);
+            }
+        });
+    }
+    const btnCadastrarEmail = document.getElementById('btn-cadastrar-email');
+    if (btnCadastrarEmail) {
+        btnCadastrarEmail.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const senha = document.getElementById('login-senha').value;
+            if (!email || !senha) {
+                mostrarToast("Preencha email e senha para cadastrar uma nova conta.", "warning");
+                return;
+            }
+            if (senha.length < 6) {
+                mostrarToast("A senha deve ter pelo menos 6 caracteres.", "warning");
+                return;
+            }
+            cadastrarComEmail(email, senha);
+        });
     }
 
     // 4. Filtros da Aba Financeiro (Fluxo)
@@ -557,11 +588,26 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof salvarRascunhoCompra === 'function') salvarRascunhoCompra();
         });
     }
-    const formVenda = document.getElementById('form-venda');
-    if (formVenda) {
-        formVenda.addEventListener('input', () => {
-            if (typeof salvarRascunhoVenda === 'function') salvarRascunhoVenda();
-        });
+    // 17.6. Ouvintes de Sugestões de Subcategorias (Modal)
+    const btnSugerirSub = document.getElementById('btn-sugerir-subcategorias');
+    if (btnSugerirSub) {
+        btnSugerirSub.addEventListener('click', abrirModalSugestoes);
+    }
+    const closeSugestoesSub = document.getElementById('close-sugestoes-sub');
+    if (closeSugestoesSub) {
+        closeSugestoesSub.addEventListener('click', () => fecharModal('modalSugestoesSubcategorias'));
+    }
+    const btnCancelarSugestoes = document.getElementById('btn-cancelar-sugestoes');
+    if (btnCancelarSugestoes) {
+        btnCancelarSugestoes.addEventListener('click', () => fecharModal('modalSugestoesSubcategorias'));
+    }
+    const btnMarcarTodosSugestoes = document.getElementById('btn-marcar-todos-sugestoes');
+    if (btnMarcarTodosSugestoes) {
+        btnMarcarTodosSugestoes.addEventListener('click', marcarTodasSugestoes);
+    }
+    const btnImportarSugestoes = document.getElementById('btn-importar-sugestoes');
+    if (btnImportarSugestoes) {
+        btnImportarSugestoes.addEventListener('click', importarSugestoesSelecionadas);
     }
 
     // 18. Ouvinte de Rolagem para Paginação do Fluxo Financeiro (Scroll Infinito)

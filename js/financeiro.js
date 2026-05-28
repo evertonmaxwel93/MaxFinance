@@ -32,15 +32,22 @@ function atualizarTudo() {
         carregarDadosFluxo()
     ]).then(() => {
         if (typeof verificarVencimentos === 'function') verificarVencimentos();
+        
+        // Recalcular projeções se o painel estiver expandido
+        const conteudo = document.getElementById('conteudo-projecoes');
+        if (conteudo && !conteudo.classList.contains('hidden') && typeof calcularEExibirProjecoes === 'function') {
+            calcularEExibirProjecoes();
+        }
     }).finally(() => ocultarLoading());
 }
 
 async function calcularSaldoRealTotal() {
     try {
-        const { data, error } = await clienteSupabase.from('transacoes').select('tipo, valor_realizado').eq('status', 'Realizado');
+        const { data, error } = await clienteSupabase.from('transacoes').select('tipo, valor_realizado, loja_id').eq('status', 'Realizado');
         if (error) throw error;
         let saldo = 0;
-        if(data) data.forEach(t => { saldo += t.tipo === 'Entrada' ? parseFloat(t.valor_realizado) : -parseFloat(t.valor_realizado); });
+        const filtered = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(data) : data;
+        if(filtered) filtered.forEach(t => { saldo += t.tipo === 'Entrada' ? parseFloat(t.valor_realizado) : -parseFloat(t.valor_realizado); });
         
         const el = document.getElementById('card-saldo-real');
         if (el) {
@@ -54,14 +61,15 @@ async function calcularSaldoRealTotal() {
 
 async function carregarAnosFiltro() {
     try {
-        const { data, error } = await clienteSupabase.from('transacoes').select('data_vencimento');
+        const { data, error } = await clienteSupabase.from('transacoes').select('data_vencimento, loja_id');
         if (error) throw error;
         const selectAno = document.getElementById('filtro-ano');
         if (!selectAno) return;
         const anoAtualVal = selectAno.value;
         const anos = new Set();
-        if (data) {
-            data.forEach(t => {
+        const filtered = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(data) : data;
+        if (filtered) {
+            filtered.forEach(t => {
                 if (t.data_vencimento) anos.add(t.data_vencimento.split('-')[0]);
             });
         }
@@ -99,14 +107,15 @@ async function carregarDadosFluxo() {
             
             // Buscar totais em paralelo assincronamente para manter os cards corretos do filtro
             Promise.resolve().then(async () => {
-                let qCards = clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado');
+                let qCards = clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado, loja_id');
                 if (ano !== "Todos") {
                     qCards = qCards.gte('data_vencimento', `${ano}-01-01`).lte('data_vencimento', `${ano}-12-31`);
                 }
                 const { data: dCards } = await qCards;
-                if (dCards) {
+                const filteredCards = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(dCards) : dCards;
+                if (filteredCards) {
                     let pIn = 0; let pOut = 0;
-                    dCards.forEach(t => {
+                    filteredCards.forEach(t => {
                         const v = parseFloat(t.valor_parcela);
                         if(t.tipo === 'Entrada') pIn += v; else pOut += v;
                     });
@@ -129,10 +138,11 @@ async function carregarDadosFluxo() {
             
             query = query.gte('data_vencimento', dataInicioMes).lte('data_vencimento', dataFimMes);
 
-            const { data: dataAnt, error: errorAnt } = await clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado').lt('data_vencimento', dataInicioMes);
+            const { data: dataAnt, error: errorAnt } = await clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado, loja_id').lt('data_vencimento', dataInicioMes);
             if (errorAnt) throw errorAnt;
-            if(dataAnt) {
-                dataAnt.forEach(t => {
+            const filteredAnt = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(dataAnt) : dataAnt;
+            if(filteredAnt) {
+                filteredAnt.forEach(t => {
                     const v = parseFloat(t.status === 'Realizado' ? t.valor_realizado : t.valor_parcela);
                     saldoInicialProjetado += t.tipo === 'Entrada' ? v : -v;
                 });
@@ -142,10 +152,11 @@ async function carregarDadosFluxo() {
             const dataFimAno = `${ano}-12-31`;
             query = query.gte('data_vencimento', dataInicioAno).lte('data_vencimento', dataFimAno);
             
-            const { data: dataAnt, error: errorAnt } = await clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado').lt('data_vencimento', dataInicioAno);
+            const { data: dataAnt, error: errorAnt } = await clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado, loja_id').lt('data_vencimento', dataInicioAno);
             if (errorAnt) throw errorAnt;
-            if(dataAnt) {
-                dataAnt.forEach(t => {
+            const filteredAnt = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(dataAnt) : dataAnt;
+            if(filteredAnt) {
+                filteredAnt.forEach(t => {
                     const v = parseFloat(t.status === 'Realizado' ? t.valor_realizado : t.valor_parcela);
                     saldoInicialProjetado += t.tipo === 'Entrada' ? v : -v;
                 });
@@ -160,7 +171,7 @@ async function carregarDadosFluxo() {
         if (error) throw error;
         
         if (data) {
-            transacoesMes = data;
+            transacoesMes = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(data) : data;
             
             if (!usarPaginacao) {
                 let pIn = 0; let pOut = 0;
@@ -218,9 +229,10 @@ async function carregarMaisTransacoes() {
         const { data, error } = await query.order('data_vencimento', { ascending: true }).range(startOffset, endOffset);
         if (error) throw error;
 
-        if (data && data.length > 0) {
-            transacoesMes = transacoesMes.concat(data);
-            if (data.length < limitePaginaFluxo) {
+        const filtered = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(data) : data;
+        if (filtered && filtered.length > 0) {
+            transacoesMes = transacoesMes.concat(filtered);
+            if (filtered.length < limitePaginaFluxo) {
                 temMaisFluxo = false;
             }
             renderizarFluxo();
@@ -496,13 +508,13 @@ async function carregarSubcategoriasBanco() {
         const { data, error } = await clienteSupabase.from('subcategorias').select('*').order('nome', { ascending: true });
         if (error) throw error;
         if (data) {
-            subcategoriasGlobais = data;
+            subcategoriasGlobais = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(data) : data;
             const outL = document.getElementById('lista-sub-saidas'); 
             const inL = document.getElementById('lista-sub-entradas');
             if (outL && inL) {
                 outL.innerHTML = ''; inL.innerHTML = '';
                 subcategoriasGlobais.forEach(s => {
-                    const li = `<li class="flex justify-between items-center bg-slate-50 border border-slate-100 p-3 rounded-lg text-sm font-bold shadow-sm"><span class="text-slate-600">${s.nome}</span> <button onclick="deletarSubcategoria('${s.id}')" class="text-slate-400 hover:text-red-500"><i class="fas fa-trash-alt"></i></button></li>`;
+                    const li = `<li class="flex justify-between items-center py-1 px-2 border-b border-slate-100 text-xs hover:bg-slate-50 font-bold text-slate-600"><span class="truncate">${s.nome}</span> <button onclick="deletarSubcategoria('${s.id}')" class="text-slate-300 hover:text-red-500 transition p-1"><i class="fas fa-trash-alt"></i></button></li>`;
                     s.tipo === 'Saída' ? outL.innerHTML += li : inL.innerHTML += li;
                 });
             }
@@ -532,7 +544,9 @@ async function adicionarSubcategoria(e) {
             return;
         }
         const tipoInput = document.getElementById('novo-sub-tipo').value;
-        const { error } = await clienteSupabase.from('subcategorias').insert([{ user_id: userAtual.id, tipo: tipoInput, nome: nomeInput }]);
+        const payload = { user_id: userAtual.id, tipo: tipoInput, nome: nomeInput };
+        const payloadInjetado = typeof injetarLojaAtiva === 'function' ? injetarLojaAtiva(payload) : payload;
+        const { error } = await clienteSupabase.from('subcategorias').insert([payloadInjetado]);
         if (error) throw error;
         mostrarToast("Subcategoria adicionada com sucesso!", "success");
         document.getElementById('novo-sub-nome').value = ''; 
@@ -725,7 +739,8 @@ async function salvarTransacao(e) {
                     frequencia, status: 'Pendente' 
                 });
             }
-            const { error } = await clienteSupabase.from('transacoes').insert(ins);
+            const insPayload = typeof injetarLojaAtiva === 'function' ? injetarLojaAtiva(ins) : ins;
+            const { error } = await clienteSupabase.from('transacoes').insert(insPayload);
             if (error) throw error;
             mostrarToast(pTotal === 1 ? "Lançamento adicionado com sucesso!" : "Grupo de parcelas criado com sucesso!", "success");
             fecharModal('modalOverlayGestao');
@@ -857,10 +872,122 @@ async function carregarTransacoesGlobais() {
     try {
         const { data, error } = await clienteSupabase.from('transacoes').select('*');
         if (error) throw error;
-        transacoesGlobais = data || [];
+        transacoesGlobais = typeof filtrarPorLojaAtiva === 'function' ? filtrarPorLojaAtiva(data) : (data || []);
     } catch(e) {
         console.error("Erro transacoes globais:", e);
         mostrarToast("Erro ao carregar transações: " + e.message, "error");
+    }
+}
+
+// LÓGICA DE SUGESTÕES DE SUBCATEGORIAS
+const sugestoesPredefinidas = {
+    entradas: [
+        "Venda de Mercadorias",
+        "Prestação de Serviços",
+        "Receita de Parcerias",
+        "Rendimentos Financeiros",
+        "Aportes de Capital",
+        "Outras Receitas"
+    ],
+    saidas: [
+        "CMV (Custo de Mercadoria)",
+        "Aluguel Comercial",
+        "Energia Elétrica",
+        "Água e Saneamento",
+        "Telefone e Internet",
+        "Marketing e Propaganda",
+        "Salários e Encargos",
+        "Pró-Labore",
+        "Impostos e Taxas",
+        "Tarifas Bancárias",
+        "Material de Escritório",
+        "Licenças e Softwares",
+        "Serviços Contábeis",
+        "Eventos e Viagens"
+    ]
+};
+
+function abrirModalSugestoes() {
+    if (lojaCargo !== 'Total') {
+        mostrarToast("Apenas administradores podem gerenciar subcategorias.", "warning");
+        return;
+    }
+
+    const contEntradas = document.getElementById('sugestoes-entradas-lista');
+    const contSaidas = document.getElementById('sugestoes-saidas-lista');
+    if (!contEntradas || !contSaidas) return;
+
+    contEntradas.innerHTML = '';
+    contSaidas.innerHTML = '';
+
+    // Mapear nomes já cadastrados por tipo para validação rápida
+    const cadastradosEntradas = new Set(subcategoriasGlobais.filter(s => s.tipo === 'Entrada').map(s => s.nome));
+    const cadastradosSaidas = new Set(subcategoriasGlobais.filter(s => s.tipo === 'Saída').map(s => s.nome));
+
+    // Renderizar Entradas
+    sugestoesPredefinidas.entradas.forEach((nome, index) => {
+        const existe = cadastradosEntradas.has(nome);
+        contEntradas.innerHTML += `
+            <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100/70 p-2 rounded-lg cursor-pointer border border-slate-100 transition">
+                <input type="checkbox" name="sugestao-sub" value="Entrada:${nome}" ${existe ? 'disabled checked' : ''} class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
+                <span class="flex-1 ${existe ? 'text-slate-400 line-through' : ''}">${nome}</span>
+                ${existe ? '<span class="text-[9px] bg-green-100 text-green-700 font-extrabold px-1.5 py-0.5 rounded-lg uppercase">Já cadastrada</span>' : ''}
+            </label>
+        `;
+    });
+
+    // Renderizar Saídas
+    sugestoesPredefinidas.saidas.forEach((nome, index) => {
+        const existe = cadastradosSaidas.has(nome);
+        contSaidas.innerHTML += `
+            <label class="flex items-center gap-2 text-xs font-bold text-slate-700 bg-slate-50 hover:bg-slate-100/70 p-2 rounded-lg cursor-pointer border border-slate-100 transition">
+                <input type="checkbox" name="sugestao-sub" value="Saída:${nome}" ${existe ? 'disabled checked' : ''} class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500">
+                <span class="flex-1 ${existe ? 'text-slate-400 line-through' : ''}">${nome}</span>
+                ${existe ? '<span class="text-[9px] bg-green-100 text-green-700 font-extrabold px-1.5 py-0.5 rounded-lg uppercase">Já cadastrada</span>' : ''}
+            </label>
+        `;
+    });
+
+    document.getElementById('modalSugestoesSubcategorias').classList.remove('hidden');
+}
+
+function marcarTodasSugestoes() {
+    const checkboxes = document.querySelectorAll('input[name="sugestao-sub"]:not(:disabled)');
+    const allChecked = Array.from(checkboxes).every(c => c.checked);
+    checkboxes.forEach(c => c.checked = !allChecked);
+    document.getElementById('btn-marcar-todos-sugestoes').textContent = allChecked ? "Marcar Todos" : "Desmarcar Todos";
+}
+
+async function importarSugestoesSelecionadas() {
+    const selecionados = document.querySelectorAll('input[name="sugestao-sub"]:checked:not(:disabled)');
+    if (selecionados.length === 0) {
+        mostrarToast("Nenhuma nova subcategoria selecionada para importação.", "warning");
+        return;
+    }
+
+    mostrarLoading();
+    try {
+        const ins = [];
+        selecionados.forEach(c => {
+            const [tipo, nome] = c.value.split(':');
+            ins.push({
+                user_id: userAtual.id,
+                tipo: tipo,
+                nome: nome
+            });
+        });
+
+        const insInjetado = typeof injetarLojaAtiva === 'function' ? injetarLojaAtiva(ins) : ins;
+        const { error } = await clienteSupabase.from('subcategorias').insert(insInjetado);
+        if (error) throw error;
+
+        mostrarToast(`${selecionados.length} subcategorias importadas com sucesso!`, "success");
+        fecharModal('modalSugestoesSubcategorias');
+        await carregarSubcategoriasBanco();
+    } catch (err) {
+        mostrarToast("Erro ao importar subcategorias: " + err.message, "error");
+    } finally {
+        ocultarLoading();
     }
 }
 

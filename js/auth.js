@@ -35,13 +35,16 @@ async function verificarSessao() {
             
             if (typeof atualizarStatusNotificacao === 'function') atualizarStatusNotificacao();
             
-            await carregarSubcategoriasBanco();
-            atualizarTudo();
-            
-            await carregarClientes();
-            await carregarFornecedores();
-            await carregarTransacoesGlobais();
-            initRelatorios();
+            if (typeof initLojas === 'function') {
+                await initLojas();
+            } else {
+                await carregarSubcategoriasBanco();
+                atualizarTudo();
+                await carregarClientes();
+                await carregarFornecedores();
+                await carregarTransacoesGlobais();
+                initRelatorios();
+            }
             if (typeof verificarNotificacoesPush === 'function') {
                 setTimeout(verificarNotificacoesPush, 3000);
             }
@@ -53,5 +56,37 @@ async function verificarSessao() {
         }
     } catch (err) {
         mostrarToast("Erro ao verificar sessão: " + err.message, "error");
+    }
+}
+
+async function loginComEmail(email, senha) {
+    if (typeof mostrarLoading === 'function') mostrarLoading();
+    try {
+        const { data, error } = await clienteSupabase.auth.signInWithPassword({
+            email,
+            password: senha
+        });
+        if (error) throw error;
+        if (typeof mostrarToast === 'function') mostrarToast("Sessão iniciada com sucesso!", "success");
+    } catch (err) {
+        if (typeof mostrarToast === 'function') mostrarToast("Erro ao entrar: " + err.message, "error");
+    } finally {
+        if (typeof ocultarLoading === 'function') ocultarLoading();
+    }
+}
+
+async function cadastrarComEmail(email, senha) {
+    if (typeof mostrarLoading === 'function') mostrarLoading();
+    try {
+        const { data, error } = await clienteSupabase.auth.signUp({
+            email,
+            password: senha
+        });
+        if (error) throw error;
+        if (typeof mostrarToast === 'function') mostrarToast("Conta criada! Se necessário, confirme o link no seu email.", "success");
+    } catch (err) {
+        if (typeof mostrarToast === 'function') mostrarToast("Erro ao cadastrar: " + err.message, "error");
+    } finally {
+        if (typeof ocultarLoading === 'function') ocultarLoading();
     }
 }
