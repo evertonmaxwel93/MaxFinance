@@ -288,9 +288,9 @@ function abrirModalRenomearLoja() {
 function filtrarPorLojaAtiva(array) {
     if (!lojaAtiva || !array) return array || [];
     return array.filter(item => {
-        // Se o item não tem loja_id, associamos à loja 'default' ou assumimos verdadeira se for a única loja
+        // Se o item não tem loja_id, associamos à primeira loja do usuário para retrocompatibilidade
         if (!item.loja_id) {
-            return lojaAtiva.id === 'default' || fallbackLojasAtivo || lojasUsuario.length <= 1;
+            return lojasUsuario.length > 0 && lojaAtiva.id === lojasUsuario[0].id;
         }
         return item.loja_id === lojaAtiva.id;
     });

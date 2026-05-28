@@ -57,6 +57,11 @@ function mudarAba(abaId) {
         mostrarLoading();
         Promise.all([carregarProdutos(), carregarVendas(), carregarTransacoesGlobais()]).then(() => {
             initRelatorios();
+            // Calcular e exibir projeções se o painel estiver expandido
+            const conteudo = document.getElementById('conteudo-projecoes');
+            if (conteudo && !conteudo.classList.contains('hidden') && typeof calcularEExibirProjecoes === 'function') {
+                calcularEExibirProjecoes();
+            }
             ocultarLoading();
         });
     }

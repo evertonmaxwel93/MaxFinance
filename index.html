@@ -202,116 +202,6 @@
 
                 </div>
 
-                <!-- Inteligência Financeira: Projeção 12 Meses -->
-                <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden transition-all duration-300">
-                    <!-- Header -->
-                    <div id="btn-toggle-projecoes" class="p-4 flex justify-between items-center bg-slate-50 cursor-pointer hover:bg-slate-100/80 transition-colors">
-                        <div class="flex items-center gap-2.5">
-                            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
-                                <i class="fas fa-brain text-sm"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-extrabold text-slate-700 leading-tight">Projeção Financeira Inteligente (12 Meses)</h3>
-                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Previsão e análise preditiva baseada em comportamento e recorrências</p>
-                            </div>
-                        </div>
-                        <button class="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors">
-                            <i id="icone-toggle-projecoes" class="fas fa-chevron-down transform transition-transform duration-300"></i>
-                        </button>
-                    </div>
-
-                    <!-- Conteúdo da Projeção -->
-                    <div id="conteudo-projecoes" class="hidden p-6 space-y-6 bg-gradient-to-br from-white to-slate-50/50 border-t border-slate-100">
-                        
-                        <!-- KPIs Rápidos -->
-                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Saldo Inicial</span>
-                                <span id="proj-kpi-saldo-inicial" class="text-base font-black text-slate-700 mt-1">R$ 0,00</span>
-                            </div>
-                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Receita (3m)</span>
-                                <span id="proj-kpi-media-entrada" class="text-base font-black text-emerald-600 mt-1">R$ 0,00</span>
-                            </div>
-                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Despesa (3m)</span>
-                                <span id="proj-kpi-media-saida" class="text-base font-black text-rose-500 mt-1">R$ 0,00</span>
-                            </div>
-                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status Projetado</span>
-                                <span id="proj-kpi-alertas" class="text-base font-black mt-1 text-slate-500">Nenhum</span>
-                            </div>
-                        </div>
-
-                        <!-- Área do Gráfico de Barras Estilizado -->
-                        <div class="bg-white border border-slate-150 p-5 rounded-2xl shadow-sm">
-                            <div class="flex justify-between items-center mb-6">
-                                <div>
-                                    <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider">Evolução Projetada do Saldo de Caixa</h4>
-                                    <p class="text-[10px] text-slate-400 font-semibold">Projeção acumulada mês a mês (próximos 12 meses)</p>
-                                </div>
-                                <!-- Legenda -->
-                                <div class="flex items-center gap-4 text-[10px] font-bold text-slate-500">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Caixa Saudável
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Saldo Negativo
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Gráfico de barras responsivo com CSS -->
-                            <div class="h-64 flex items-end justify-between gap-1 md:gap-3 pt-6 pb-2 border-b border-slate-200 relative overflow-x-auto min-w-[500px]" id="projecao-grafico-barras">
-                                <!-- As barras serão injetadas via JS -->
-                            </div>
-                        </div>
-
-                        <!-- Detalhes em tabela e Recomendações em 2 colunas -->
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <!-- Tabela de Valores Projetados -->
-                            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                                <div class="px-4 py-3 border-b bg-slate-50">
-                                    <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider">Demonstrativo Mês a Mês</h4>
-                                </div>
-                                <div class="max-h-60 overflow-y-auto">
-                                    <table class="w-full text-left border-collapse text-xs">
-                                        <thead>
-                                            <tr class="bg-slate-100/50 text-[10px] text-slate-400 font-bold uppercase tracking-wider border-b">
-                                                <th class="py-2 px-3">Mês/Ano</th>
-                                                <th class="py-2 px-3 text-right">Entradas Est.</th>
-                                                <th class="py-2 px-3 text-right">Saídas Est.</th>
-                                                <th class="py-2 px-3 text-right">Saldo Final</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="projecoes-lista-valores" class="divide-y divide-slate-100 font-medium text-slate-600">
-                                            <!-- Injetado via JS -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            <!-- Alertas e Dicas de Negócio -->
-                            <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 flex flex-col justify-between min-h-[200px]">
-                                <div class="mb-4">
-                                    <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                        <i class="fas fa-lightbulb text-yellow-500"></i>
-                                        <span>Recomendações e Insights Contábeis</span>
-                                    </h4>
-                                    <div id="projecoes-alertas-texto" class="text-xs text-slate-500 space-y-3 leading-relaxed">
-                                        <!-- Injetado via JS -->
-                                    </div>
-                                </div>
-                                
-                                <div class="border-t pt-3 flex justify-between items-center text-[10px] text-slate-400 font-bold">
-                                    <span>*Média de tendência baseada nos últimos 3 meses</span>
-                                    <span>MaxFinance AI ✨</span>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
  
                 <!-- Tabela de Movimentações -->
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
@@ -488,6 +378,117 @@
                         <p class="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider leading-none">Ponto de Equilíbrio</p>
                         <p id="kpi-ponto-equilibrio" class="text-base font-black text-slate-700 mt-1.5 leading-none">R$ 0,00</p>
                         <p class="text-[8px] text-slate-400 font-bold mt-1">Faturamento Mínimo</p>
+                    </div>
+                </div>
+
+                <!-- Inteligência Financeira: Projeção 12 Meses -->
+                <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden transition-all duration-300">
+                    <!-- Header -->
+                    <div id="btn-toggle-projecoes" class="p-4 flex justify-between items-center bg-slate-50 cursor-pointer hover:bg-slate-100/80 transition-colors">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+                                <i class="fas fa-brain text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-extrabold text-slate-700 leading-tight">Projeção Financeira Inteligente (12 Meses)</h3>
+                                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Previsão e análise preditiva baseada em comportamento e recorrências</p>
+                            </div>
+                        </div>
+                        <button class="w-8 h-8 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors">
+                            <i id="icone-toggle-projecoes" class="fas fa-chevron-down transform transition-transform duration-300"></i>
+                        </button>
+                    </div>
+
+                    <!-- Conteúdo da Projeção -->
+                    <div id="conteudo-projecoes" class="hidden p-6 space-y-6 bg-gradient-to-br from-white to-slate-50/50 border-t border-slate-100">
+                        
+                        <!-- KPIs Rápidos -->
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Saldo Inicial</span>
+                                <span id="proj-kpi-saldo-inicial" class="text-base font-black text-slate-700 mt-1">R$ 0,00</span>
+                            </div>
+                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Receita (3m)</span>
+                                <span id="proj-kpi-media-entrada" class="text-base font-black text-emerald-600 mt-1">R$ 0,00</span>
+                            </div>
+                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Média Despesa (3m)</span>
+                                <span id="proj-kpi-media-saida" class="text-base font-black text-rose-500 mt-1">R$ 0,00</span>
+                            </div>
+                            <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm flex flex-col justify-between">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status Projetado</span>
+                                <span id="proj-kpi-alertas" class="text-base font-black mt-1 text-slate-500">Nenhum</span>
+                            </div>
+                        </div>
+
+                        <!-- Área do Gráfico de Barras Estilizado -->
+                        <div class="bg-white border border-slate-150 p-5 rounded-2xl shadow-sm">
+                            <div class="flex justify-between items-center mb-6">
+                                <div>
+                                    <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider">Evolução Projetada do Saldo de Caixa</h4>
+                                    <p class="text-[10px] text-slate-400 font-semibold">Projeção acumulada mês a mês (próximos 12 meses)</p>
+                                </div>
+                                <!-- Legenda -->
+                                <div class="flex items-center gap-4 text-[10px] font-bold text-slate-500">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Caixa Saudável
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Saldo Negativo
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Gráfico de barras responsivo com CSS -->
+                            <div class="h-64 flex items-end justify-between gap-1 md:gap-3 pt-6 pb-2 border-b border-slate-200 relative overflow-x-auto min-w-[500px]" id="projecao-grafico-barras">
+                                <!-- As barras serão injetadas via JS -->
+                            </div>
+                        </div>
+
+                        <!-- Detalhes em tabela e Recomendações em 2 colunas -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Tabela de Valores Projetados -->
+                            <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                                <div class="px-4 py-3 border-b bg-slate-50">
+                                    <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider">Demonstrativo Mês a Mês</h4>
+                                </div>
+                                <div class="max-h-60 overflow-y-auto">
+                                    <table class="w-full text-left border-collapse text-xs">
+                                        <thead>
+                                            <tr class="bg-slate-100/50 text-[10px] text-slate-400 font-bold uppercase tracking-wider border-b">
+                                                <th class="py-2 px-3">Mês/Ano</th>
+                                                <th class="py-2 px-3 text-right">Entradas Est.</th>
+                                                <th class="py-2 px-3 text-right">Saídas Est.</th>
+                                                <th class="py-2 px-3 text-right">Saldo Final</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="projecoes-lista-valores" class="divide-y divide-slate-100 font-medium text-slate-600">
+                                            <!-- Injetado via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Alertas e Dicas de Negócio -->
+                            <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 flex flex-col justify-between min-h-[200px]">
+                                <div class="mb-4">
+                                    <h4 class="text-xs font-black text-slate-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                                        <i class="fas fa-lightbulb text-yellow-500"></i>
+                                        <span>Recomendações e Insights Contábeis</span>
+                                    </h4>
+                                    <div id="projecoes-alertas-texto" class="text-xs text-slate-500 space-y-3 leading-relaxed">
+                                        <!-- Injetado via JS -->
+                                    </div>
+                                </div>
+                                
+                                <div class="border-t pt-3 flex justify-between items-center text-[10px] text-slate-400 font-bold">
+                                    <span>*Média de tendência baseada nos últimos 3 meses</span>
+                                    <span>MaxFinance AI ✨</span>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
