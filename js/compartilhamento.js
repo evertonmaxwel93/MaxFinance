@@ -212,9 +212,9 @@ function aplicarPermissoesDeCargo() {
 
     // Gerencia a visibilidade de elementos administrativos na tela de Ajustes
     const secaoCompartilhamento = document.getElementById('secao-compartilhamento');
-    const secaoSubcategorias = document.getElementById('form-subcategoria')?.parentElement; // Contêiner de adicionar subcategorias
+    const secaoSubcategorias = document.getElementById('secao-subcategorias'); // Contêiner de adicionar subcategorias
     const secaoBackup = document.getElementById('btn-exportar-json')?.parentElement?.parentElement; // Contêiner de backup
-    const secaoPerigo = document.getElementById('btn-resetar-contra')?.parentElement?.parentElement; // Zona de perigo
+    const secaoPerigo = document.getElementById('btn-resetar-conta')?.parentElement?.parentElement; // Zona de perigo
     
     if (lojaCargo === 'Total') {
         if (secaoCompartilhamento) secaoCompartilhamento.classList.remove('hidden');
