@@ -1,6 +1,6 @@
 # MaxFinance
 
-MaxFinance é um aplicativo completo de gestão financeira e de negócios, desenvolvido para ser simples, moderno e eficiente. Originalmente focado em fluxo de caixa pessoal e empresarial, o sistema agora integra ferramentas robustas para controle ponta a ponta das operações com um design limpo e focado na usabilidade de alta performance.
+MaxFinance é um sistema completo de gestão financeira e de negócios, desenvolvido para ser simples, moderno e eficiente. Focado em fluxo de caixa pessoal e empresarial, o sistema integra ferramentas robustas para controle ponta a ponta das operações com um design limpo e focado na usabilidade de alta performance.
 
 ---
 
@@ -10,8 +10,8 @@ MaxFinance é um aplicativo completo de gestão financeira e de negócios, desen
 - **📦 Gestão de Estoque:** Cadastre produtos, defina custos e preços de venda, configure alertas de estoque baixo (indicadores visuais dinâmicos) e acompanhe o lucro potencial do seu inventário com pesquisa rápida.
 - **🛒 Controle de Compras:** Registre aquisições com fornecedores selecionando-os diretamente de uma lista suspensa de parceiros cadastrados. As compras alimentam automaticamente as quantidades no estoque e geram os lançamentos de saída correspondentes no Financeiro.
 - **💰 Gestão de Vendas:** Registre vendas de produtos, deduzindo-os automaticamente do estoque e registrando a entrada no fluxo de caixa. O formulário conta com seleção dinâmica de clientes cadastrados e trava de segurança para impedir estoque negativo.
-- **👥 Clientes e Fornecedores Integrados (Novidade):** Gerencie seus contatos corporativos e parceiros diretamente na aba de **Ajustes** através de modais inteligentes. Totalmente integrado com as abas de Compras e Vendas para permitir um cadastro super rápido (`+`) no momento do lançamento, atualizando e selecionando automaticamente a nova entidade sem fechar o formulário.
-- **📱 Experiência Mobile Nativa (Novidade):** Interface reconstruída para dispositivos móveis com um **Dock de Navegação Inferior Premium** (estilo iOS/Android) com efeito de *glassmorphism* (`backdrop-blur`). Correção do incômodo zoom automático de foco de formulários no iOS (enforçando `16px` para inputs) e melhorias na área de toque.
+- **👥 Clientes e Fornecedores Integrados:** Gerencie seus contatos corporativos e parceiros diretamente na aba de **Ajustes** através de modais inteligentes. Totalmente integrado com as abas de Compras e Vendas para permitir um cadastro super rápido (`+`) no momento do lançamento, atualizando e selecionando automaticamente a nova entidade sem fechar o formulário.
+- **📱 Experiência Mobile Nativa:** Interface reconstruída para dispositivos móveis com um **Dock de Navegação Inferior Premium** (estilo iOS/Android) com efeito de *glassmorphism* (`backdrop-blur`). Correção do incômodo zoom automático de foco de formulários no iOS (enforçando `16px` para inputs) e melhorias na área de toque.
 - **📈 Relatórios e Analytics:** Aba dedicada para visualização mensal e anualizada de subcategorias de movimentações e ranking dos top 10 produtos mais vendidos (filtrável por quantidade, faturamento bruto ou margem de lucro líquido).
 - **🔔 Notificações Push PWA:** Sistema inteligente de notificações nativas no navegador que alertam o usuário logo após o login sobre contas pendentes vencendo hoje, amanhã ou que já estão atrasadas.
 - **💾 Backup e Restauração:** Exporte ou importe seus dados financeiros no formato JSON.
@@ -22,7 +22,7 @@ MaxFinance é um aplicativo completo de gestão financeira e de negócios, desen
 
 ## 🛠️ Como Funciona
 
-A arquitetura do projeto baseia-se num sistema *Single Page Application* (SPA) contido inteiramente no `index.html`. 
+A arquitetura do sistema baseia-se num formato *Single Page Application* (SPA) contido inteiramente no `index.html`.
 O armazenamento de dados, autenticação de usuários e Regras de Segurança (RLS) são garantidos pela integração direta via API do **Supabase**.
 
 1. **Clientes e Fornecedores:** Cadastre seus clientes e parceiros fornecedores para alimentar as listas de compras e vendas.
@@ -107,9 +107,29 @@ using (auth.uid() = user_id);
 
 ## 💻 Tecnologias Utilizadas
 
-- **Frontend:** HTML5, TailwindCSS, FontAwesome.
-- **Backend/Database:** Supabase (PostgreSQL, Auth).
-- **Scripts/Exportação:** SheetJS para `.xlsx`.
+| Camada | Tecnologia |
+|---|---|
+| Frontend | HTML5, TailwindCSS, FontAwesome |
+| Backend / Database | Supabase (PostgreSQL, Auth, RLS) |
+| Exportação | SheetJS (`.xlsx`) |
+| PWA | Service Worker, Manifest, Push Notifications |
 
 ---
-*MaxFinance - Simplificando a sua gestão.*
+
+## 📂 Estrutura do Projeto
+
+```
+MaxFinance/
+├── index.html        # Aplicação principal (SPA)
+├── landing.html      # Landing page institucional
+├── style.css         # Estilos customizados
+├── manifest.json     # Configuração PWA
+├── sw.js             # Service Worker
+├── js/               # Módulos JavaScript
+├── icons/            # Ícones da aplicação
+└── cron/             # Scripts de rotina
+```
+
+---
+
+*MaxFinance — Simplificando a sua gestão.*
