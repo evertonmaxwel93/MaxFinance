@@ -242,17 +242,26 @@ async function calcularEExibirProjecoes() {
                 ? `bottom: ${zeroLinePercent}%; height: ${barHeight}%;` 
                 : `top: ${100 - zeroLinePercent}%; height: ${barHeight}%;`;
 
+            // Ajusta a posição do balão e de sua seta para as extremidades (meses 1 e 12) para evitar corte horizontal
+            const tooltipPosClass = idx === 11 
+                ? 'right-0' 
+                : (idx === 0 ? 'left-0' : 'left-1/2 transform -translate-x-1/2');
+            
+            const tooltipArrowPosClass = idx === 11 
+                ? 'right-4 transform -translate-x-0' 
+                : (idx === 0 ? 'left-4 transform -translate-x-0' : 'left-1/2 transform -translate-x-1/2');
+
             corpoHtml += `
                 <div class="absolute group" style="left: ${leftPos}%; width: ${colWidthPercent}%; height: 100%; top: 0;">
                     <!-- Barra -->
                     <div class="absolute left-1 md:left-2.5 right-1 md:right-2.5 transition-all duration-300 ${barColorClass} ${barRoundedClass}"
                          style="${barPositionStyle}">
-                    </div>
+                      </div>
                     <!-- Tooltip ao passar o mouse -->
-                    <div class="hidden group-hover:block absolute z-20 left-1/2 transform -translate-x-1/2 -top-12 bg-slate-800 text-white text-[10px] font-extrabold py-1.5 px-2.5 rounded-lg shadow-xl whitespace-nowrap text-center">
+                    <div class="hidden group-hover:block absolute z-20 ${tooltipPosClass} -top-12 bg-slate-800 text-white text-[10px] font-extrabold py-1.5 px-2.5 rounded-lg shadow-xl whitespace-nowrap text-center">
                         <span class="block text-slate-400 uppercase text-[8px] leading-tight">${m.label}</span>
                         <span>${formattedBal}</span>
-                        <div class="absolute left-1/2 transform -translate-x-1/2 top-full w-2 h-2 bg-slate-800 rotate-45"></div>
+                        <div class="absolute ${tooltipArrowPosClass} top-full w-2 h-2 bg-slate-800 rotate-45"></div>
                     </div>
                 </div>
             `;

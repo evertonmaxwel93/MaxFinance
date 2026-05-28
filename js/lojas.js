@@ -10,6 +10,19 @@ let fallbackLojasAtivo = false;
 async function initLojas() {
     if (!userAtual) return;
     await carregarLojas();
+
+    // Carrega os dados operacionais da loja ativa inicialmente para evitar cards zerados (R$ 0,00)
+    if (lojaAtiva) {
+        if (typeof carregarSubcategoriasBanco === 'function') await carregarSubcategoriasBanco();
+        if (typeof atualizarTudo === 'function') atualizarTudo();
+        if (typeof carregarProdutos === 'function') await carregarProdutos();
+        if (typeof carregarCompras === 'function') await carregarCompras();
+        if (typeof carregarVendas === 'function') await carregarVendas();
+        if (typeof carregarClientes === 'function') await carregarClientes();
+        if (typeof carregarFornecedores === 'function') await carregarFornecedores();
+        if (typeof carregarTransacoesGlobais === 'function') await carregarTransacoesGlobais();
+        if (typeof initRelatorios === 'function') initRelatorios();
+    }
 }
 
 // Carrega as lojas que o usuário possui ou é colaborador
