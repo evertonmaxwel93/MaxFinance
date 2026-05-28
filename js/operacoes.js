@@ -220,17 +220,18 @@ async function salvarCliente(e) {
         };
         if (id) {
             const oldNome = clientesGlobais.find(x => x.id === id)?.nome;
-            const { error } = await clienteSupabase.from('clientes').update(dados).eq('id', id);
-            if(error) throw error;
+            const { error: errUpdate } = await clienteSupabase.from('clientes').update(dados).eq('id', id);
+            if(errUpdate) throw errUpdate;
             
             if (oldNome && oldNome !== nome) {
                 await clienteSupabase.from('vendas').update({ cliente: nome }).eq('cliente', oldNome);
                 await clienteSupabase.from('transacoes').update({ descricao: nome }).eq('descricao', oldNome).eq('subcategoria', 'Vendas');
             }
             mostrarToast("Cliente atualizado!", "success");
+        } else {
             const dadosInjetados = typeof injetarLojaAtiva === 'function' ? injetarLojaAtiva(dados) : dados;
-            const { error } = await clienteSupabase.from('clientes').insert([dadosInjetados]);
-            if(error) throw error;
+            const { error: errInsert } = await clienteSupabase.from('clientes').insert([dadosInjetados]);
+            if(errInsert) throw errInsert;
             mostrarToast("Cliente cadastrado!", "success");
         }
         
@@ -406,17 +407,18 @@ async function salvarFornecedor(e) {
         };
         if (id) {
             const oldNome = fornecedoresGlobais.find(x => x.id === id)?.nome;
-            const { error } = await clienteSupabase.from('fornecedores').update(dados).eq('id', id);
-            if(error) throw error;
+            const { error: errUpdate } = await clienteSupabase.from('fornecedores').update(dados).eq('id', id);
+            if(errUpdate) throw errUpdate;
             
             if (oldNome && oldNome !== nome) {
                 await clienteSupabase.from('compras').update({ fornecedor: nome }).eq('fornecedor', oldNome);
                 await clienteSupabase.from('transacoes').update({ descricao: nome }).eq('descricao', oldNome).eq('subcategoria', 'Compras');
             }
-            mostrarToast("Fornecedor updated!", "success");
+            mostrarToast("Fornecedor atualizado!", "success");
+        } else {
             const dadosInjetados = typeof injetarLojaAtiva === 'function' ? injetarLojaAtiva(dados) : dados;
-            const { error } = await clienteSupabase.from('fornecedores').insert([dadosInjetados]);
-            if(error) throw error;
+            const { error: errInsert } = await clienteSupabase.from('fornecedores').insert([dadosInjetados]);
+            if(errInsert) throw errInsert;
             mostrarToast("Fornecedor cadastrado!", "success");
         }
         
