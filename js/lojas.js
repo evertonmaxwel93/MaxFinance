@@ -14,7 +14,7 @@ async function initLojas() {
     // Carrega os dados operacionais da loja ativa inicialmente para evitar cards zerados (R$ 0,00)
     if (lojaAtiva) {
         if (typeof carregarSubcategoriasBanco === 'function') await carregarSubcategoriasBanco();
-        if (typeof atualizarTudo === 'function') atualizarTudo();
+        if (typeof atualizarTudo === 'function') await atualizarTudo();
         if (typeof carregarProdutos === 'function') await carregarProdutos();
         if (typeof carregarCompras === 'function') await carregarCompras();
         if (typeof carregarVendas === 'function') await carregarVendas();

@@ -26,7 +26,7 @@ function mudarFiltroStatus(status) {
 
 function atualizarTudo() {
     mostrarLoading();
-    Promise.all([
+    return Promise.all([
         carregarAnosFiltro(),
         calcularSaldoRealTotal(),
         carregarDadosFluxo()

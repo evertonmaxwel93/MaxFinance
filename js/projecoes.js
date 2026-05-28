@@ -228,7 +228,7 @@ async function calcularEExibirProjecoes() {
         mesesProjetados.forEach((m, idx) => {
             const bal = m.saldoProjetado;
             const isPositive = bal >= 0;
-            const barHeight = (Math.abs(bal) / range) * 90; // usa no máximo 90% da altura para dar respiro no topo
+            const barHeight = (Math.abs(bal) / range) * 75; // usa no máximo 75% da altura para dar respiro no topo
             const formattedBal = bal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             const leftPos = idx * colWidthPercent;
 
@@ -274,8 +274,8 @@ async function calcularEExibirProjecoes() {
         });
 
         graphContainer.innerHTML = `
-            <div class="w-full h-full flex flex-col justify-between">
-                <div class="flex-1 relative w-full" id="projecao-grafico-corpo">
+            <div class="w-full h-full flex flex-col justify-between" style="overflow: visible;">
+                <div class="flex-1 relative w-full" id="projecao-grafico-corpo" style="overflow: visible;">
                     ${corpoHtml}
                 </div>
                 <div class="h-6 flex justify-between items-center text-[10px] font-bold text-slate-400 border-t border-slate-100 pt-2" id="projecao-grafico-legendas">
