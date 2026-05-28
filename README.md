@@ -82,6 +82,27 @@ for all
 using (auth.uid() = user_id);
 ```
 
+### 3. Tabela de Mapeamento XML de Produtos
+```sql
+create table public.xml_produto_mapeamento (
+  id uuid default gen_random_uuid() not null primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  user_id uuid default auth.uid() not null references auth.users(id) on delete cascade,
+  fornecedor_cnpj text not null,
+  nome_produto_xml text not null,
+  produto_id uuid not null references public.produtos(id) on delete cascade
+);
+
+-- Habilitar RLS
+alter table public.xml_produto_mapeamento enable row level security;
+
+-- Criar Políticas de Acesso
+create policy "Usuários podem gerenciar seus próprios mapeamentos XML" 
+on public.xml_produto_mapeamento 
+for all 
+using (auth.uid() = user_id);
+```
+
 ---
 
 ## 💻 Tecnologias Utilizadas

@@ -6,6 +6,13 @@ let grupoIdAtual = null;
 let baixaIdAtual = null;
 let isSubmittingTransacao = false;
 
+// Estado da Paginação Híbrida
+let limitePaginaFluxo = 30;
+let paginaAtualFluxo = 0;
+let temMaisFluxo = true;
+let estaCarregandoMaisFluxo = false;
+
+
 function mudarFiltroStatus(status) {
     filtroStatusAtual = status;
     ['Pendente', 'Realizado', 'Todos'].forEach(id => {
@@ -78,6 +85,40 @@ async function carregarDadosFluxo() {
         let query = clienteSupabase.from('transacoes').select('*');
         
         saldoInicialProjetado = 0;
+        
+        // Reset da paginação híbrida
+        paginaAtualFluxo = 0;
+        temMaisFluxo = true;
+        estaCarregandoMaisFluxo = false;
+
+        const termoBusca = (document.getElementById('input-pesquisa')?.value || '').toLowerCase().trim();
+        const usarPaginacao = (ano === "Todos" || mes === "Todos" || termoBusca !== "");
+
+        if (usarPaginacao) {
+            query = query.range(0, limitePaginaFluxo - 1);
+            
+            // Buscar totais em paralelo assincronamente para manter os cards corretos do filtro
+            Promise.resolve().then(async () => {
+                let qCards = clienteSupabase.from('transacoes').select('tipo, status, valor_parcela, valor_realizado');
+                if (ano !== "Todos") {
+                    qCards = qCards.gte('data_vencimento', `${ano}-01-01`).lte('data_vencimento', `${ano}-12-31`);
+                }
+                const { data: dCards } = await qCards;
+                if (dCards) {
+                    let pIn = 0; let pOut = 0;
+                    dCards.forEach(t => {
+                        const v = parseFloat(t.valor_parcela);
+                        if(t.tipo === 'Entrada') pIn += v; else pOut += v;
+                    });
+                    const cardEnt = document.getElementById('card-entradas-prev');
+                    if (cardEnt) cardEnt.textContent = `R$ ${pIn.toFixed(2).replace('.', ',')}`;
+                    const cardSai = document.getElementById('card-saidas-prev');
+                    if (cardSai) cardSai.textContent = `R$ ${pOut.toFixed(2).replace('.', ',')}`;
+                    const cardBal = document.getElementById('card-balanco-prev');
+                    if (cardBal) cardBal.textContent = `R$ ${(pIn - pOut).toFixed(2).replace('.', ',')}`;
+                }
+            });
+        }
 
         if (ano !== "Todos" && mes !== "Todos") {
             const anoFiltro = parseInt(ano);
@@ -111,26 +152,84 @@ async function carregarDadosFluxo() {
             }
         }
 
+        if (termoBusca && usarPaginacao) {
+            query = query.or(`descricao.ilike.%${termoBusca}%,subcategoria.ilike.%${termoBusca}%`);
+        }
+
         const { data, error } = await query.order('data_vencimento', { ascending: true });
         if (error) throw error;
         
         if (data) {
             transacoesMes = data;
-            let pIn = 0; let pOut = 0;
-            transacoesMes.forEach(t => {
-                const v = parseFloat(t.valor_parcela);
-                if(t.tipo === 'Entrada') pIn += v; else pOut += v;
-            });
-            document.getElementById('card-entradas-prev').textContent = `R$ ${pIn.toFixed(2).replace('.', ',')}`;
-            document.getElementById('card-saidas-prev').textContent = `R$ ${pOut.toFixed(2).replace('.', ',')}`;
-            document.getElementById('card-balanco-prev').textContent = `R$ ${(pIn - pOut).toFixed(2).replace('.', ',')}`;
+            
+            if (!usarPaginacao) {
+                let pIn = 0; let pOut = 0;
+                transacoesMes.forEach(t => {
+                    const v = parseFloat(t.valor_parcela);
+                    if(t.tipo === 'Entrada') pIn += v; else pOut += v;
+                });
+                document.getElementById('card-entradas-prev').textContent = `R$ ${pIn.toFixed(2).replace('.', ',')}`;
+                document.getElementById('card-saidas-prev').textContent = `R$ ${pOut.toFixed(2).replace('.', ',')}`;
+                document.getElementById('card-balanco-prev').textContent = `R$ ${(pIn - pOut).toFixed(2).replace('.', ',')}`;
+            }
 
             renderizarFluxo();
         }
+}
+
+async function carregarMaisTransacoes() {
+    if (estaCarregandoMaisFluxo || !temMaisFluxo) return;
+    estaCarregandoMaisFluxo = true;
+
+    try {
+        paginaAtualFluxo++;
+        const selectAno = document.getElementById('filtro-ano');
+        const selectMes = document.getElementById('filtro-mes');
+        const ano = selectAno.value;
+        const mes = selectMes.value;
+        const termoBusca = (document.getElementById('input-pesquisa')?.value || '').toLowerCase().trim();
+
+        let query = clienteSupabase.from('transacoes').select('*');
+
+        if (ano !== "Todos" && mes !== "Todos") {
+            const anoFiltro = parseInt(ano);
+            const mesFiltro = parseInt(mes);
+            const dataInicioMes = `${anoFiltro}-${String(mesFiltro).padStart(2, '0')}-01`;
+            const ultimoDia = new Date(anoFiltro, mesFiltro, 0).getDate();
+            const dataFimMes = `${anoFiltro}-${String(mesFiltro).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`;
+            query = query.gte('data_vencimento', dataInicioMes).lte('data_vencimento', dataFimMes);
+        } else if (ano !== "Todos") {
+            const dataInicioAno = `${ano}-01-01`;
+            const dataFimAno = `${ano}-12-31`;
+            query = query.gte('data_vencimento', dataInicioAno).lte('data_vencimento', dataFimAno);
+        }
+
+        if (termoBusca) {
+            query = query.or(`descricao.ilike.%${termoBusca}%,subcategoria.ilike.%${termoBusca}%`);
+        }
+
+        const startOffset = paginaAtualFluxo * limitePaginaFluxo;
+        const endOffset = startOffset + limitePaginaFluxo - 1;
+
+        const { data, error } = await query.order('data_vencimento', { ascending: true }).range(startOffset, endOffset);
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+            transacoesMes = transacoesMes.concat(data);
+            if (data.length < limitePaginaFluxo) {
+                temMaisFluxo = false;
+            }
+            renderizarFluxo();
+        } else {
+            temMaisFluxo = false;
+        }
     } catch (err) {
-        mostrarToast("Erro ao carregar fluxo de caixa: " + err.message, "error");
+        console.error("Erro ao carregar mais transações:", err);
+    } finally {
+        estaCarregandoMaisFluxo = false;
     }
 }
+
 
 function renderizarFluxo() {
     const tbody = document.getElementById('tabela-corpo');
@@ -183,6 +282,7 @@ function renderizarFluxo() {
 
     let saldoEmCaixa = saldoInicialProjetado;
     const labelPeriodo = tipoAgrupamento === 'dia' ? 'Dia' : (tipoAgrupamento === 'semana' ? 'Semana' : 'Mês');
+    let htmlContent = '';
 
     Object.keys(grupos).sort().forEach(chave => {
         const grp = grupos[chave];
@@ -202,7 +302,7 @@ function renderizarFluxo() {
         const corBalanco = balancoDia >= 0 ? 'text-green-600' : 'text-red-600';
         const corCaixa = saldoEmCaixa >= 0 ? 'text-blue-600' : 'text-red-600';
 
-        tbody.innerHTML += `
+        htmlContent += `
             <tr class="bg-slate-100 border-y">
                 <td colspan="4" class="py-2 px-3">
                     <div class="flex flex-col md:flex-row justify-between md:items-center gap-2">
@@ -225,7 +325,7 @@ function renderizarFluxo() {
             const textoParcela = t.total_parcelas === 0 ? 'Recorrente' : `${t.parcela_atual}/${t.total_parcelas}`;
             const opacidade = isRealizado ? 'opacity-60 bg-slate-50' : '';
 
-            tbody.innerHTML += `
+            htmlContent += `
                 <tr onclick="abrirModalGestao('${t.id}')" class="hover:bg-blue-50/50 transition cursor-pointer group ${opacidade} clickable-row">
                     <td class="py-1.5 px-3 flex items-center gap-3">
                         <div onclick="event.stopPropagation(); alternarBaixaRapida('${t.id}', ${isRealizado}, ${t.valor_parcela})" class="text-lg cursor-pointer">
@@ -245,6 +345,8 @@ function renderizarFluxo() {
             `;
         });
     });
+
+    tbody.innerHTML = htmlContent;
 }
 
 async function alternarBaixaRapida(id, isRealizado, valorPadrao) {

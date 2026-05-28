@@ -555,14 +555,21 @@ function abrirModalCompra() {
         mostrarToast("Cadastre produtos no estoque antes de realizar compras.", "warning");
         return;
     }
+    document.getElementById('compra-rascunho-alert')?.remove();
     document.getElementById('form-compra').reset();
     document.getElementById('compra_id').value = '';
     document.getElementById('compra_transacao_id').value = '';
     document.getElementById('compra_data').value = new Date().toISOString().split('T')[0];
     document.getElementById('compra_itens_container').innerHTML = '';
     document.getElementById('btn_excluir_compra').classList.add('hidden');
-    adicionarItemCompra();
-    calcularTotalCompra();
+    
+    const temRascunho = localStorage.getItem('maxfinance_rascunho_compra');
+    if (temRascunho) {
+        restaurarRascunhoCompra();
+    } else {
+        adicionarItemCompra();
+        calcularTotalCompra();
+    }
     document.getElementById('modalCompra').classList.remove('hidden');
 }
 
@@ -662,20 +669,24 @@ async function salvarCompra(e) {
             const { data: latestProds, error: pErr } = await clienteSupabase.from('produtos').select('*');
             if (pErr) throw pErr;
 
-            for (const it of itensAntigos) {
+            const revertPromises = itensAntigos.map(async it => {
                 const p = latestProds.find(x => x.id === it.produto_id);
                 if (p) {
                     const novoEstoque = parseFloat(p.estoque_atual) - parseFloat(it.quantidade);
                     if (novoEstoque < 0) {
-                        isSubmittingCompra = false;
-                        return mostrarToast(`A reversão deixaria o estoque de ${p.nome} negativo.`, "error");
+                        throw new Error(`ESTOQUE_NEGATIVO:${p.nome}`);
                     }
-                    const { error: upErr } = await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
-                    if (upErr) throw upErr;
+                    return clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
                 } else {
                     throw new Error(`Produto ID ${it.produto_id} não encontrado no estoque para reversão.`);
                 }
+            });
+
+            const revertResults = await Promise.all(revertPromises);
+            for (const res of revertResults) {
+                if (res.error) throw res.error;
             }
+
             await clienteSupabase.from('compras').delete().eq('id', compraId);
             if (transacaoId) await clienteSupabase.from('transacoes').delete().eq('id', transacaoId);
             // Atualiza a lista local de produtos
@@ -714,6 +725,8 @@ async function salvarCompra(e) {
         if (pErr) throw pErr;
 
         const itensInsert = [];
+        const updatePromises = [];
+
         for (const el of itemsDiv) {
             const prodId = el.querySelector('.produto-select').value;
             const qtd = parseInt(el.querySelector('.quantidade-input').value, 10);
@@ -729,26 +742,38 @@ async function salvarCompra(e) {
             const prod = latestProds.find(p => p.id === prodId);
             if (prod) {
                 const novoEstoque = parseFloat(prod.estoque_atual) + qtd;
-                const { error: upErr } = await clienteSupabase.from('produtos').update({
-                    estoque_atual: novoEstoque,
-                    custo_unitario: custo
-                }).eq('id', prodId);
-                if (upErr) throw upErr;
+                updatePromises.push(
+                    clienteSupabase.from('produtos').update({
+                        estoque_atual: novoEstoque,
+                        custo_unitario: custo
+                    }).eq('id', prodId)
+                );
             } else {
                 throw new Error(`Produto ID ${prodId} não encontrado.`);
             }
+        }
+
+        const updateResults = await Promise.all(updatePromises);
+        for (const res of updateResults) {
+            if (res.error) throw res.error;
         }
 
         const { error: itErr } = await clienteSupabase.from('compras_itens').insert(itensInsert);
         if (itErr) throw itErr;
 
         mostrarToast(compraId ? "Compra atualizada!" : "Compra registrada com sucesso!", "success");
+        localStorage.removeItem('maxfinance_rascunho_compra');
+        document.getElementById('compra-rascunho-alert')?.remove();
         fecharModal('modalCompra');
         carregarProdutos();
         carregarCompras();
         atualizarTudo();
     } catch (err) {
-        mostrarToast("Erro ao registrar compra: " + err.message, "error");
+        let msg = err.message;
+        if (msg.startsWith("ESTOQUE_NEGATIVO:")) {
+            msg = `A reversão deixaria o estoque de "${msg.split(":")[1]}" negativo.`;
+        }
+        mostrarToast("Erro ao registrar compra: " + msg, "error");
     } finally {
         isSubmittingCompra = false;
     }
@@ -768,19 +793,22 @@ async function excluirCompraModal() {
         const { data: latestProds, error: pErr } = await clienteSupabase.from('produtos').select('*');
         if (pErr) throw pErr;
 
-        for (const it of itens) {
+        const revertPromises = itens.map(async it => {
             const p = latestProds.find(x => x.id === it.produto_id);
             if (p) {
                 const novoEstoque = parseFloat(p.estoque_atual) - parseFloat(it.quantidade);
                 if (novoEstoque < 0) {
-                    mostrarToast(`A exclusão deixaria o estoque de ${p.nome} negativo.`, "error");
-                    return;
+                    throw new Error(`ESTOQUE_NEGATIVO:${p.nome}`);
                 }
-                const { error: upErr } = await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
-                if (upErr) throw upErr;
+                return clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
             } else {
                 throw new Error(`Produto ID ${it.produto_id} não encontrado no estoque.`);
             }
+        });
+
+        const revertResults = await Promise.all(revertPromises);
+        for (const res of revertResults) {
+            if (res.error) throw res.error;
         }
 
         if (transacaoId) await clienteSupabase.from('transacoes').delete().eq('id', transacaoId);
@@ -792,7 +820,11 @@ async function excluirCompraModal() {
         carregarCompras();
         atualizarTudo();
     } catch (err) {
-        mostrarToast("Erro ao excluir compra: " + err.message, "error");
+        let msg = err.message;
+        if (msg.startsWith("ESTOQUE_NEGATIVO:")) {
+            msg = `A exclusão deixaria o estoque de "${msg.split(":")[1]}" negativo.`;
+        }
+        mostrarToast("Erro ao excluir compra: " + msg, "error");
     }
 }
 
@@ -865,14 +897,21 @@ function abrirModalVenda() {
         mostrarToast("Cadastre produtos no estoque antes de vender.", "warning");
         return;
     }
+    document.getElementById('venda-rascunho-alert')?.remove();
     document.getElementById('form-venda').reset();
     document.getElementById('venda_id').value = '';
     document.getElementById('venda_transacao_id').value = '';
     document.getElementById('venda_data').value = new Date().toISOString().split('T')[0];
     document.getElementById('venda_itens_container').innerHTML = '';
     document.getElementById('btn_excluir_venda').classList.add('hidden');
-    adicionarItemVenda();
-    calcularTotalVenda();
+    
+    const temRascunho = localStorage.getItem('maxfinance_rascunho_venda');
+    if (temRascunho) {
+        restaurarRascunhoVenda();
+    } else {
+        adicionarItemVenda();
+        calcularTotalVenda();
+    }
     document.getElementById('modalVenda').classList.remove('hidden');
 }
 
@@ -1001,16 +1040,21 @@ async function salvarVenda(e) {
             const { data: latestProds, error: pErr } = await clienteSupabase.from('produtos').select('*');
             if (pErr) throw pErr;
 
-            for (const it of itensAntigos) {
+            const revertPromises = itensAntigos.map(async it => {
                 const p = latestProds.find(x => x.id === it.produto_id);
                 if (p) {
                     const novoEstoque = parseFloat(p.estoque_atual) + parseFloat(it.quantidade);
-                    const { error: upErr } = await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
-                    if (upErr) throw upErr;
+                    return clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
                 } else {
                     throw new Error(`Produto ID ${it.produto_id} não encontrado no estoque para reversão.`);
                 }
+            });
+
+            const revertResults = await Promise.all(revertPromises);
+            for (const res of revertResults) {
+                if (res.error) throw res.error;
             }
+
             await clienteSupabase.from('vendas').delete().eq('id', vendaId);
             if (transacaoId) await clienteSupabase.from('transacoes').delete().eq('id', transacaoId);
             await carregarProdutos(); 
@@ -1055,6 +1099,8 @@ async function salvarVenda(e) {
         if (pErr) throw pErr;
 
         const itensInsert = [];
+        const updatePromises = [];
+
         for (const el of itemsDiv) {
             const prodSelect = el.querySelector('.produto-select');
             const prodId = prodSelect.value;
@@ -1073,19 +1119,27 @@ async function salvarVenda(e) {
             const prod = latestProds.find(p => p.id === prodId);
             if (prod) {
                 const novoEstoque = parseFloat(prod.estoque_atual) - qtd;
-                const { error: upErr } = await clienteSupabase.from('produtos').update({
-                    estoque_atual: novoEstoque
-                }).eq('id', prodId);
-                if (upErr) throw upErr;
+                updatePromises.push(
+                    clienteSupabase.from('produtos').update({
+                        estoque_atual: novoEstoque
+                    }).eq('id', prodId)
+                );
             } else {
                 throw new Error(`Produto ID ${prodId} não encontrado.`);
             }
+        }
+
+        const updateResults = await Promise.all(updatePromises);
+        for (const res of updateResults) {
+            if (res.error) throw res.error;
         }
 
         const { error: itErr } = await clienteSupabase.from('vendas_itens').insert(itensInsert);
         if (itErr) throw itErr;
 
         mostrarToast(vendaId ? "Venda atualizada!" : "Venda registrada com sucesso!", "success");
+        localStorage.removeItem('maxfinance_rascunho_venda');
+        document.getElementById('venda-rascunho-alert')?.remove();
         fecharModal('modalVenda');
         carregarProdutos();
         carregarVendas();
@@ -1111,15 +1165,19 @@ async function excluirVendaModal() {
         const { data: latestProds, error: pErr } = await clienteSupabase.from('produtos').select('*');
         if (pErr) throw pErr;
 
-        for (const it of itens) {
+        const revertPromises = itens.map(async it => {
             const p = latestProds.find(x => x.id === it.produto_id);
             if (p) {
                 const novoEstoque = parseFloat(p.estoque_atual) + parseFloat(it.quantidade);
-                const { error: upErr } = await clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
-                if (upErr) throw upErr;
+                return clienteSupabase.from('produtos').update({ estoque_atual: novoEstoque }).eq('id', p.id);
             } else {
                 throw new Error(`Produto ID ${it.produto_id} não encontrado no estoque.`);
             }
+        });
+
+        const revertResults = await Promise.all(revertPromises);
+        for (const res of revertResults) {
+            if (res.error) throw res.error;
         }
 
         if (transacaoId) await clienteSupabase.from('transacoes').delete().eq('id', transacaoId);
@@ -1134,3 +1192,432 @@ async function excluirVendaModal() {
         mostrarToast("Erro ao excluir venda: " + err.message, "error");
     }
 }
+
+// ==========================================
+// IMPORTAÇÃO INTELIGENTE DE NOTA FISCAL (XML)
+// ==========================================
+let xmlMapeamentosGlobais = [];
+let XMLDataAtual = null;
+
+async function carregarMapeamentosXML() {
+    try {
+        const { data, error } = await clienteSupabase.from('xml_produto_mapeamento').select('*');
+        if (error) throw error;
+        xmlMapeamentosGlobais = data || [];
+    } catch (err) {
+        console.error("Erro ao carregar mapeamentos XML:", err);
+    }
+}
+
+async function tratarUploadXML(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    mostrarLoading();
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(e.target.result, "text/xml");
+
+            // 1. Identificar Fornecedor (<emit>)
+            const emit = xmlDoc.querySelector("emit");
+            if (!emit) throw new Error("Emissor (fornecedor) não encontrado no XML.");
+
+            const cnpj = emit.querySelector("CNPJ")?.textContent || "";
+            const nomeFornecedor = emit.querySelector("xNome")?.textContent || "Fornecedor Importado";
+            const telefone = emit.querySelector("enderEmit > fone")?.textContent || "";
+            const endereco = emit.querySelector("enderEmit > xLgr")?.textContent || "";
+
+            if (!cnpj) throw new Error("CNPJ do fornecedor não encontrado no XML.");
+
+            // Verificar se o fornecedor já existe
+            let fornObj = fornecedoresGlobais.find(f => f.documento === cnpj || f.nome.toLowerCase() === nomeFornecedor.toLowerCase());
+            
+            if (!fornObj) {
+                mostrarToast(`Cadastrando fornecedor novo: ${nomeFornecedor}`, "info");
+                const { data, error } = await clienteSupabase.from('fornecedores').insert([{
+                    user_id: userAtual.id,
+                    nome: nomeFornecedor,
+                    telefone: telefone,
+                    documento: cnpj,
+                    endereco: endereco
+                }]).select().single();
+                
+                if (error) throw error;
+                fornObj = data;
+                await carregarFornecedores();
+            }
+
+            // Selecionar o fornecedor no formulário
+            document.getElementById('compra_fornecedor').value = fornObj.nome;
+
+            // Preencher data da compra com a data de emissão
+            const dhEmi = xmlDoc.querySelector("ide > dhEmi")?.textContent || xmlDoc.querySelector("ide > dEmi")?.textContent || "";
+            if (dhEmi) {
+                document.getElementById('compra_data').value = dhEmi.substring(0, 10);
+            }
+
+            // Carregar mapeamentos do banco de dados antes de processar
+            await carregarMapeamentosXML();
+
+            // 2. Processar Itens (<det>)
+            const itensXML = xmlDoc.querySelectorAll("det");
+            const itensProcessados = [];
+            const itensNaoMapeados = [];
+
+            for (const item of itensXML) {
+                const prod = item.querySelector("prod");
+                const cProd = prod.querySelector("cProd")?.textContent || "";
+                const xProd = prod.querySelector("xProd")?.textContent || "";
+                const cEAN = prod.querySelector("cEAN")?.textContent || "";
+                const qCom = parseFloat(prod.querySelector("qCom")?.textContent || "0");
+                const vUnCom = parseFloat(prod.querySelector("vUnCom")?.textContent || "0");
+
+                const itemObj = {
+                    codigo: cProd,
+                    descricao: xProd,
+                    ean: cEAN,
+                    quantidade: Math.max(1, Math.round(qCom)),
+                    custo: vUnCom,
+                    produto_id: null
+                };
+
+                // Tentar localizar produto no estoque por EAN ou pelo mapeamento salvo
+                let mappedProd = null;
+                if (cEAN && cEAN !== "SEM GTIN") {
+                    mappedProd = produtos.find(p => p.nome.includes(cEAN));
+                }
+                
+                if (!mappedProd) {
+                    // Buscar na tabela de mapeamento
+                    const mapReg = xmlMapeamentosGlobais.find(m => m.fornecedor_cnpj === cnpj && m.nome_produto_xml === xProd);
+                    if (mapReg) {
+                        mappedProd = produtos.find(p => p.id === mapReg.produto_id);
+                    }
+                }
+
+                if (mappedProd) {
+                    itemObj.produto_id = mappedProd.id;
+                    itensProcessados.push(itemObj);
+                } else {
+                    itensNaoMapeados.push(itemObj);
+                }
+            }
+
+            XMLDataAtual = {
+                cnpj: cnpj,
+                itensProcessados: itensProcessados,
+                itensNaoMapeados: itensNaoMapeados
+            };
+
+            if (itensNaoMapeados.length > 0) {
+                renderizarModalMapeamento(itensNaoMapeados);
+            } else {
+                aplicarItensXMLFinal();
+            }
+
+        } catch (err) {
+            mostrarToast("Erro ao processar XML: " + err.message, "error");
+        } finally {
+            ocultarLoading();
+            event.target.value = ''; // Limpar input
+        }
+    };
+    reader.readAsText(file);
+}
+
+function renderizarModalMapeamento(itens) {
+    const listContainer = document.getElementById('mapeamento-itens-lista');
+    if (!listContainer) return;
+    listContainer.innerHTML = '';
+
+    itens.forEach((it, idx) => {
+        let options = '<option value="novo">Cadastrar como NOVO produto</option>';
+        produtos.forEach(p => {
+            options += `<option value="${p.id}">${p.nome} (Atual: ${p.estoque_atual})</option>`;
+        });
+
+        const card = document.createElement('div');
+        card.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3 text-xs";
+        card.innerHTML = `
+            <div class="flex justify-between items-start border-b pb-2">
+                <span class="font-extrabold text-slate-700">Item XML #${idx + 1}</span>
+                <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold text-[9px] uppercase">Qtd: ${it.quantidade} | Custo: R$ ${it.custo.toFixed(2).replace('.', ',')}</span>
+            </div>
+            <div>
+                <p class="text-slate-400 font-bold text-[9px] uppercase">Descrição no XML</p>
+                <p class="font-extrabold text-slate-800 mt-0.5">${it.descricao}</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                <div>
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Ação / Destino no Estoque</label>
+                    <select id="map-action-${idx}" class="action-select w-full bg-slate-50 border rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500 font-bold">
+                        ${options}
+                    </select>
+                </div>
+                <div id="map-cat-container-${idx}">
+                    <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1">Categoria (Novo Produto)</label>
+                    <input type="text" id="map-cat-${idx}" placeholder="Ex: Bebidas" class="w-full bg-slate-50 border rounded-lg p-2 text-xs outline-none focus:ring-1 focus:ring-blue-500 font-medium">
+                </div>
+            </div>
+        `;
+
+        const select = card.querySelector('.action-select');
+        const catContainer = card.querySelector(`#map-cat-container-${idx}`);
+        select.addEventListener('change', (e) => {
+            if (e.target.value === 'novo') {
+                catContainer.classList.remove('hidden');
+            } else {
+                catContainer.classList.add('hidden');
+            }
+        });
+
+        listContainer.appendChild(card);
+    });
+
+    abrirModal('modalMapeamentoXML');
+}
+
+async function confirmarMapeamentoXML() {
+    if (!XMLDataAtual) return;
+    mostrarLoading();
+
+    try {
+        const mappingToSave = [];
+
+        for (let i = 0; i < XMLDataAtual.itensNaoMapeados.length; i++) {
+            const it = XMLDataAtual.itensNaoMapeados[i];
+            const selectAction = document.getElementById(`map-action-${i}`);
+            const action = selectAction.value;
+
+            if (action === 'novo') {
+                const catInput = document.getElementById(`map-cat-${i}`);
+                const categoria = catInput.value.trim() || "Importado";
+                
+                // 1. Criar novo produto no estoque
+                const { data: newProd, error } = await clienteSupabase.from('produtos').insert([{
+                    user_id: userAtual.id,
+                    categoria: categoria,
+                    nome: it.descricao + (it.ean && it.ean !== "SEM GTIN" ? ` (${it.ean})` : ''),
+                    valor_venda: parseFloat((it.custo * 1.5).toFixed(2)),
+                    estoque_atual: 0,
+                    custo_unitario: it.custo
+                }]).select().single();
+                
+                if (error) throw error;
+                
+                it.produto_id = newProd.id;
+                
+                mappingToSave.push({
+                    user_id: userAtual.id,
+                    fornecedor_cnpj: XMLDataAtual.cnpj,
+                    nome_produto_xml: it.descricao,
+                    produto_id: newProd.id
+                });
+            } else {
+                it.produto_id = action;
+                
+                mappingToSave.push({
+                    user_id: userAtual.id,
+                    fornecedor_cnpj: XMLDataAtual.cnpj,
+                    nome_produto_xml: it.descricao,
+                    produto_id: action
+                });
+            }
+            
+            XMLDataAtual.itensProcessados.push(it);
+        }
+
+        // Gravar todos os novos mapeamentos no Supabase
+        if (mappingToSave.length > 0) {
+            const { error: mapErr } = await clienteSupabase.from('xml_produto_mapeamento').insert(mappingToSave);
+            if (mapErr) throw mapErr;
+        }
+
+        // Recarregar os produtos localmente
+        await carregarProdutos();
+
+        // Fechar e aplicar
+        fecharModal('modalMapeamentoXML');
+        aplicarItensXMLFinal();
+
+    } catch (err) {
+        mostrarToast("Erro ao confirmar conciliação: " + err.message, "error");
+    } finally {
+        ocultarLoading();
+    }
+}
+
+function aplicarItensXMLFinal() {
+    if (!XMLDataAtual) return;
+
+    const container = document.getElementById('compra_itens_container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    XMLDataAtual.itensProcessados.forEach(it => {
+        adicionarItemCompra(it.produto_id, it.quantidade, it.custo);
+    });
+
+    calcularTotalCompra();
+    mostrarToast("NF-e importada e conciliação efetuada com sucesso!", "success");
+    XMLDataAtual = null;
+}
+
+// ==========================================
+// AUTOSSALVAMENTO E RESTAURAÇÃO DE RASCUNHOS
+// ==========================================
+function salvarRascunhoCompra() {
+    const compraId = document.getElementById('compra_id')?.value;
+    if (compraId) return;
+
+    const itens = [];
+    document.querySelectorAll('.item-compra').forEach(el => {
+        const prodSelect = el.querySelector('.produto-select');
+        if (prodSelect) {
+            itens.push({
+                produto_id: prodSelect.value,
+                quantidade: el.querySelector('.quantidade-input')?.value || '',
+                custo_unitario: el.querySelector('.custo-input')?.value || ''
+            });
+        }
+    });
+
+    const rascunho = {
+        data: document.getElementById('compra_data')?.value || '',
+        fornecedor: document.getElementById('compra_fornecedor')?.value || '',
+        itens: itens
+    };
+
+    localStorage.setItem('maxfinance_rascunho_compra', JSON.stringify(rascunho));
+}
+
+function restaurarRascunhoCompra() {
+    const raw = localStorage.getItem('maxfinance_rascunho_compra');
+    if (!raw) return;
+
+    try {
+        const rascunho = JSON.parse(raw);
+        if (!rascunho.itens || rascunho.itens.length === 0) return;
+
+        document.getElementById('compra-rascunho-alert')?.remove();
+
+        const form = document.getElementById('form-compra');
+        const alert = document.createElement('div');
+        alert.id = 'compra-rascunho-alert';
+        alert.className = 'p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl flex items-center justify-between text-xs mb-4 animate-fade-in';
+        alert.innerHTML = `
+            <span class="font-bold flex items-center gap-1"><i class="fas fa-exclamation-triangle"></i> Rascunho de compra recuperado.</span>
+            <button type="button" onclick="limparRascunhoCompra()" class="underline font-black hover:text-amber-950">Limpar Compra</button>
+        `;
+        form.prepend(alert);
+
+        if (rascunho.data) document.getElementById('compra_data').value = rascunho.data;
+        if (rascunho.fornecedor) document.getElementById('compra_fornecedor').value = rascunho.fornecedor;
+
+        const container = document.getElementById('compra_itens_container');
+        container.innerHTML = '';
+        rascunho.itens.forEach(it => {
+            adicionarItemCompra(it.produto_id, it.quantidade, it.custo_unitario);
+        });
+        calcularTotalCompra();
+
+    } catch (e) {
+        console.error("Erro ao restaurar rascunho de compra:", e);
+    }
+}
+
+function limparRascunhoCompra() {
+    localStorage.removeItem('maxfinance_rascunho_compra');
+    document.getElementById('compra-rascunho-alert')?.remove();
+    
+    document.getElementById('form-compra').reset();
+    document.getElementById('compra_data').value = new Date().toISOString().split('T')[0];
+    const container = document.getElementById('compra_itens_container');
+    if (container) {
+        container.innerHTML = '';
+        adicionarItemCompra();
+        calcularTotalCompra();
+    }
+    mostrarToast("Rascunho de compra limpo!", "info");
+}
+
+function salvarRascunhoVenda() {
+    const vendaId = document.getElementById('venda_id')?.value;
+    if (vendaId) return;
+
+    const itens = [];
+    document.querySelectorAll('.item-venda').forEach(el => {
+        const prodSelect = el.querySelector('.produto-select');
+        if (prodSelect) {
+            itens.push({
+                produto_id: prodSelect.value,
+                quantidade: el.querySelector('.quantidade-input')?.value || '',
+                venda_input: el.querySelector('.venda-input')?.value || ''
+            });
+        }
+    });
+
+    const rascunho = {
+        data: document.getElementById('venda_data')?.value || '',
+        cliente: document.getElementById('venda_cliente')?.value || '',
+        endereco: document.getElementById('venda_endereco')?.value || '',
+        itens: itens
+    };
+
+    localStorage.setItem('maxfinance_rascunho_venda', JSON.stringify(rascunho));
+}
+
+function restaurarRascunhoVenda() {
+    const raw = localStorage.getItem('maxfinance_rascunho_venda');
+    if (!raw) return;
+
+    try {
+        const rascunho = JSON.parse(raw);
+        if (!rascunho.itens || rascunho.itens.length === 0) return;
+
+        document.getElementById('venda-rascunho-alert')?.remove();
+
+        const form = document.getElementById('form-venda');
+        const alert = document.createElement('div');
+        alert.id = 'venda-rascunho-alert';
+        alert.className = 'p-3 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl flex items-center justify-between text-xs mb-4 animate-fade-in';
+        alert.innerHTML = `
+            <span class="font-bold flex items-center gap-1"><i class="fas fa-exclamation-triangle"></i> Rascunho de venda recuperado.</span>
+            <button type="button" onclick="limparRascunhoVenda()" class="underline font-black hover:text-amber-950">Limpar Venda</button>
+        `;
+        form.prepend(alert);
+
+        if (rascunho.data) document.getElementById('venda_data').value = rascunho.data;
+        if (rascunho.cliente) document.getElementById('venda_cliente').value = rascunho.cliente;
+        if (rascunho.endereco) document.getElementById('venda_endereco').value = rascunho.endereco;
+
+        const container = document.getElementById('venda_itens_container');
+        container.innerHTML = '';
+        rascunho.itens.forEach(it => {
+            adicionarItemVenda(it.produto_id, it.quantidade, it.venda_input);
+        });
+        calcularTotalVenda();
+
+    } catch (e) {
+        console.error("Erro ao restaurar rascunho de venda:", e);
+    }
+}
+
+function limparRascunhoVenda() {
+    localStorage.removeItem('maxfinance_rascunho_venda');
+    document.getElementById('venda-rascunho-alert')?.remove();
+    
+    document.getElementById('form-venda').reset();
+    document.getElementById('venda_data').value = new Date().toISOString().split('T')[0];
+    const container = document.getElementById('venda_itens_container');
+    if (container) {
+        container.innerHTML = '';
+        adicionarItemVenda();
+        calcularTotalVenda();
+    }
+    mostrarToast("Rascunho de venda limpo!", "info");
+}
+
+

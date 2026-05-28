@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Adicionando SheetJS para exportação profissional para Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Adicionando html5-qrcode para leitura de códigos de barra via câmera -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
     <!-- Estilos desacoplados do HTML -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -241,6 +243,9 @@
                                 <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
                                 <input type="text" id="input-pesquisa-estoque" placeholder="Pesquisar..." class="w-full pl-9 pr-3 py-2 border-none bg-white rounded-lg text-sm font-medium outline-none ring-1 ring-slate-200 focus:ring-blue-500">
                             </div>
+                            <button id="btn-scan-estoque" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-bold shadow-sm transition flex items-center gap-1">
+                                <i class="fas fa-barcode"></i> Escanear
+                            </button>
                         </div>
                         <button id="btn-novo-produto" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition whitespace-nowrap ml-auto">
                             <i class="fas fa-plus mr-1"></i> Novo Produto
@@ -471,6 +476,38 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal Global de Scanner de Código de Barras -->
+    <div id="modalBarcodeScanner" class="fixed inset-0 bg-black/60 hidden z-[99] flex items-center justify-center p-4 modal-blur">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col relative">
+            <button id="close-barcode-scanner" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition z-10"><i class="fas fa-times"></i></button>
+            <div class="p-6 flex flex-col items-center">
+                <h2 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2">
+                    <i class="fas fa-barcode text-blue-500"></i> Escanear Código
+                </h2>
+                <p class="text-xs text-slate-400 mb-4 text-center">Aponte a câmera do seu dispositivo para o código de barras do produto.</p>
+                <div id="scanner-reader" class="w-full bg-slate-100 rounded-xl overflow-hidden min-h-[250px] border border-slate-200"></div>
+                <div id="scanner-result" class="mt-4 text-xs font-bold text-slate-600 hidden"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Mapeamento de Itens XML -->
+    <div id="modalMapeamentoXML" class="fixed inset-0 bg-black/60 hidden z-[60] flex items-center justify-center p-4 modal-blur">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-hidden flex flex-col relative animate-fade-in">
+            <div class="p-6 border-b">
+                <h2 class="text-lg font-extrabold flex items-center"><i class="fas fa-exchange-alt text-blue-500 mr-2"></i>Conciliar Itens da NF-e</h2>
+                <p class="text-xs text-slate-400 mt-1">Alguns produtos desta nota fiscal não foram associados ao seu estoque. Escolha como associar cada item:</p>
+            </div>
+            <div id="mapeamento-itens-lista" class="p-6 overflow-y-auto flex-1 space-y-4 max-h-[60vh] bg-slate-50">
+                <!-- Preenchido dinamicamente por JS -->
+            </div>
+            <div class="p-4 bg-slate-100 border-t flex justify-end gap-3">
+                <button type="button" id="btn-cancelar-mapeamento" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2 px-4 rounded-lg text-sm transition">Cancelar</button>
+                <button type="button" id="btn-confirmar-mapeamento" class="bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-2 px-4 rounded-lg text-sm transition shadow-md">Confirmar Mapeamento</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal Lista de Clientes -->
@@ -933,6 +970,22 @@
                 <form id="form-compra" class="space-y-4">
                     <input type="hidden" id="compra_id">
                     <input type="hidden" id="compra_transacao_id">
+                    
+                    <!-- Upload de XML NF-e -->
+                    <div class="p-3 bg-blue-50/50 border border-blue-100 rounded-xl flex items-center justify-between gap-3 text-xs">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-file-code text-blue-500 text-base"></i>
+                            <div>
+                                <p class="font-bold text-slate-700">Importação Rápida NF-e (XML)</p>
+                                <p class="text-[10px] text-slate-400">Preencha fornecedor e produtos a partir do XML da nota</p>
+                            </div>
+                        </div>
+                        <label class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-3 rounded-lg cursor-pointer transition mb-0">
+                            <i class="fas fa-upload mr-1"></i> Carregar XML
+                            <input type="file" accept=".xml" id="input-importar-xml" class="hidden">
+                        </label>
+                    </div>
+
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Data da Compra</label>
@@ -1001,7 +1054,10 @@
                     <div class="border rounded-xl p-4 bg-slate-50 mt-4">
                         <h3 class="text-sm font-bold text-slate-700 mb-3">Itens da Venda</h3>
                         <div id="venda_itens_container" class="space-y-3"></div>
-                        <button type="button" id="btn-adicionar-item-venda" class="mt-3 text-xs font-bold text-blue-600 hover:text-blue-800"><i class="fas fa-plus mr-1"></i> Adicionar Item</button>
+                        <div class="flex gap-4 items-center mt-3">
+                            <button type="button" id="btn-adicionar-item-venda" class="text-xs font-bold text-blue-600 hover:text-blue-800"><i class="fas fa-plus mr-1"></i> Adicionar Item</button>
+                            <button type="button" id="btn-scan-item-venda" class="text-xs font-bold text-green-600 hover:text-green-800"><i class="fas fa-barcode mr-1"></i> Escanear Produto</button>
+                        </div>
                     </div>
                     <div class="text-right pt-4">
                         <span class="text-sm font-bold text-slate-500 uppercase">Total:</span>

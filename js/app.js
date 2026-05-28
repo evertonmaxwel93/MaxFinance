@@ -239,11 +239,41 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnNovaCompra) {
         btnNovaCompra.addEventListener('click', abrirModalCompra);
     }
+    
+    // Ouvintes para Importação e Mapeamento de XML
+    const inputImportarXML = document.getElementById('input-importar-xml');
+    if (inputImportarXML) {
+        inputImportarXML.addEventListener('change', tratarUploadXML);
+    }
+    const btnCancelarMapeamento = document.getElementById('btn-cancelar-mapeamento');
+    if (btnCancelarMapeamento) {
+        btnCancelarMapeamento.addEventListener('click', () => fecharModal('modalMapeamentoXML'));
+    }
+    const btnConfirmarMapeamento = document.getElementById('btn-confirmar-mapeamento');
+    if (btnConfirmarMapeamento) {
+        btnConfirmarMapeamento.addEventListener('click', confirmarMapeamentoXML);
+    }
 
     // 7. Aba Estoque
     const inputPesquisaEstoque = document.getElementById('input-pesquisa-estoque');
     if (inputPesquisaEstoque) {
         inputPesquisaEstoque.addEventListener('keyup', renderizarEstoque);
+    }
+    const btnScanEstoque = document.getElementById('btn-scan-estoque');
+    if (btnScanEstoque) {
+        btnScanEstoque.addEventListener('click', () => {
+            if (typeof iniciarLeitorCodigoBarras === 'function') {
+                iniciarLeitorCodigoBarras((codigo) => {
+                    const input = document.getElementById('input-pesquisa-estoque');
+                    if (input) {
+                        input.value = codigo;
+                        if (typeof renderizarEstoque === 'function') {
+                            renderizarEstoque();
+                        }
+                    }
+                });
+            }
+        });
     }
     const btnNovoProduto = document.getElementById('btn-novo-produto');
     if (btnNovoProduto) {
@@ -278,6 +308,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnNovaVenda = document.getElementById('btn-nova-venda');
     if (btnNovaVenda) {
         btnNovaVenda.addEventListener('click', abrirModalVenda);
+    }
+    const btnScanItemVenda = document.getElementById('btn-scan-item-venda');
+    if (btnScanItemVenda) {
+        btnScanItemVenda.addEventListener('click', () => {
+            if (typeof iniciarLeitorCodigoBarras === 'function') {
+                iniciarLeitorCodigoBarras((codigo) => {
+                    const prod = produtos.find(p => p.nome.includes(codigo) || p.categoria.includes(codigo));
+                    if (prod) {
+                        if (typeof adicionarItemVenda === 'function') {
+                            adicionarItemVenda(prod.id, 1, prod.valor_venda);
+                            if (typeof calcularTotalVenda === 'function') {
+                                calcularTotalVenda();
+                            }
+                            mostrarToast(`Produto "${prod.nome}" adicionado!`, "success");
+                        }
+                    } else {
+                        mostrarToast(`Produto com código "${codigo}" não encontrado no estoque.`, "warning");
+                    }
+                });
+            }
+        });
     }
 
     // 9. Aba Relatórios
@@ -496,6 +547,40 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById(formId);
         if (form) {
             form.addEventListener('submit', formsMap[formId]);
+        }
+    });
+
+    // 17.5. Ouvintes de Auto-salvamento de rascunhos (LocalStorage)
+    const formCompra = document.getElementById('form-compra');
+    if (formCompra) {
+        formCompra.addEventListener('input', () => {
+            if (typeof salvarRascunhoCompra === 'function') salvarRascunhoCompra();
+        });
+    }
+    const formVenda = document.getElementById('form-venda');
+    if (formVenda) {
+        formVenda.addEventListener('input', () => {
+            if (typeof salvarRascunhoVenda === 'function') salvarRascunhoVenda();
+        });
+    }
+
+    // 18. Ouvinte de Rolagem para Paginação do Fluxo Financeiro (Scroll Infinito)
+    window.addEventListener('scroll', () => {
+        const selectAno = document.getElementById('filtro-ano');
+        const selectMes = document.getElementById('filtro-mes');
+        if (!selectAno || !selectMes) return;
+        
+        const ano = selectAno.value;
+        const mes = selectMes.value;
+        const termoBusca = (document.getElementById('input-pesquisa')?.value || '').trim();
+        
+        const usarPaginacao = (ano === "Todos" || mes === "Todos" || termoBusca !== "");
+        if (!usarPaginacao || typeof temMaisFluxo === 'undefined' || !temMaisFluxo || typeof estaCarregandoMaisFluxo === 'undefined' || estaCarregandoMaisFluxo) return;
+        
+        if ((window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 150) {
+            if (typeof carregarMaisTransacoes === 'function') {
+                carregarMaisTransacoes();
+            }
         }
     });
 });
