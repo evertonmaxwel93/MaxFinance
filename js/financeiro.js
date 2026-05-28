@@ -717,6 +717,7 @@ async function salvarTransacao(e) {
                 if (freq === 'Mensal') { let d = dP.getDate(); dP.setMonth(dP.getMonth() + i); if(dP.getDate() !== d) dP.setDate(0); }
                 else if (freq === 'Semanal') dP.setDate(dP.getDate() + (i * 7));
                 else if (freq === 'Anual') dP.setFullYear(dP.getFullYear() + i);
+                else if (freq === 'Diário') dP.setDate(dP.getDate() + i);
 
                 ins.push({ 
                     user_id: userAtual.id, grupo_id, tipo, subcategoria, descricao, valor_parcela: valor, 
