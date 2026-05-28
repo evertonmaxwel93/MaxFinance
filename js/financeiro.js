@@ -175,6 +175,10 @@ async function carregarDadosFluxo() {
 
             renderizarFluxo();
         }
+    } catch (err) {
+        console.error("Erro carregar dados fluxo:", err);
+        mostrarToast("Erro ao carregar fluxo de caixa: " + err.message, "error");
+    }
 }
 
 async function carregarMaisTransacoes() {
