@@ -256,15 +256,12 @@ function renderizarSeletorLojas() {
                 <div class="max-h-48 overflow-y-auto space-y-1 hide-scrollbar">
                     ${optionsHtml}
                 </div>
+                ${lojaCargo === 'Total' ? `
                 <div class="border-t pt-1 mt-1">
-                    <button onclick="abrirModalNovaLoja()" class="w-full text-left px-4 py-2 text-xs text-blue-600 font-bold hover:bg-blue-50 transition rounded-lg flex items-center gap-2">
-                        <i class="fas fa-plus-circle"></i> Criar Nova Loja
-                    </button>
-                    ${lojaCargo === 'Total' ? `
                     <button onclick="abrirModalRenomearLoja()" class="w-full text-left px-4 py-2 text-xs text-slate-500 font-bold hover:bg-slate-50 transition rounded-lg flex items-center gap-2">
                         <i class="fas fa-edit"></i> Configurar Nome
-                    </button>` : ''}
-                </div>
+                    </button>
+                </div>` : ''}
             </div>
         </div>
     `;

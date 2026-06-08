@@ -14,8 +14,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Adicionando SheetJS para exportação profissional para Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Adicionando html5-qrcode para leitura de códigos de barra via câmera -->
-    <script src="https://unpkg.com/html5-qrcode"></script>
     <!-- Estilos desacoplados do HTML -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -267,9 +265,6 @@
                                 <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
                                 <input type="text" id="input-pesquisa-estoque" placeholder="Pesquisar..." class="w-full pl-9 pr-3 py-2 border-none bg-white rounded-lg text-sm font-medium outline-none ring-1 ring-slate-200 focus:ring-blue-500">
                             </div>
-                            <button id="btn-scan-estoque" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-bold shadow-sm transition flex items-center gap-1">
-                                <i class="fas fa-barcode"></i> Escanear
-                            </button>
                         </div>
                         <button id="btn-novo-produto" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition whitespace-nowrap ml-auto">
                             <i class="fas fa-plus mr-1"></i> Novo Produto
@@ -289,6 +284,16 @@
                                 </tr>
                             </thead>
                             <tbody id="tabela-estoque" class="text-sm divide-y divide-slate-100"></tbody>
+                            <tfoot class="bg-slate-50 border-t hidden" id="rodape-estoque">
+                                <tr>
+                                    <td colspan="2" class="py-3 px-4 text-right font-bold text-slate-600">Total:</td>
+                                    <td class="py-3 px-4 text-center font-bold text-slate-800" id="total-qtd-estoque">0</td>
+                                    <td class="py-3 px-4 text-right font-bold text-slate-500" id="total-custo-estoque">R$ 0,00</td>
+                                    <td class="py-3 px-4 text-right font-bold text-slate-800" id="total-venda-estoque">R$ 0,00</td>
+                                    <td class="py-3 px-4 text-right font-bold text-blue-600"></td>
+                                    <td class="py-3 px-4 text-right font-bold text-green-600" id="total-lucro-estoque">R$ 0,00</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -609,15 +614,10 @@
                     <h3 class="font-bold text-slate-800 mb-2 flex items-center gap-2">
                         <i class="fas fa-users-cog text-blue-500"></i> Compartilhamento de Acesso
                     </h3>
-                    <p class="text-xs text-slate-500 mb-4">Convide outros usuários por email e dê uma função específica na sua loja atual.</p>
+                    <p class="text-xs text-slate-500 mb-4">Convide outros usuários por email para ter acesso à sua loja.</p>
                     
                     <form id="form-compartilhamento" class="flex flex-col md:flex-row gap-3 mb-6">
                         <input type="email" id="convite-email" placeholder="Email do convidado" required class="flex-1 border-none bg-slate-50 rounded-lg p-3 text-sm font-medium outline-none ring-1 ring-slate-200">
-                        <select id="convite-funcao" class="border-none bg-slate-50 rounded-lg p-3 font-bold text-sm outline-none ring-1 ring-slate-200">
-                            <option value="Total">Controle Total (Administrador)</option>
-                            <option value="Gerente">Gerente de Loja (Estoque, Compras, Vendas)</option>
-                            <option value="Caixa">Caixa (Somente Vendas)</option>
-                        </select>
                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold shadow transition">Convidar</button>
                     </form>
                     
@@ -725,20 +725,7 @@
         </main>
     </div>
 
-    <!-- Modal Global de Scanner de Código de Barras -->
-    <div id="modalBarcodeScanner" class="fixed inset-0 bg-black/60 hidden z-[99] flex items-center justify-center p-4 modal-blur">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col relative">
-            <button id="close-barcode-scanner" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 transition z-10"><i class="fas fa-times"></i></button>
-            <div class="p-6 flex flex-col items-center">
-                <h2 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2">
-                    <i class="fas fa-barcode text-blue-500"></i> Escanear Código
-                </h2>
-                <p class="text-xs text-slate-400 mb-4 text-center">Aponte a câmera do seu dispositivo para o código de barras do produto.</p>
-                <div id="scanner-reader" class="w-full bg-slate-100 rounded-xl overflow-hidden min-h-[250px] border border-slate-200"></div>
-                <div id="scanner-result" class="mt-4 text-xs font-bold text-slate-600 hidden"></div>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Modal de Mapeamento de Itens XML -->
     <div id="modalMapeamentoXML" class="fixed inset-0 bg-black/60 hidden z-[60] flex items-center justify-center p-4 modal-blur">
@@ -1304,7 +1291,6 @@
                         <div id="venda_itens_container" class="space-y-3"></div>
                         <div class="flex gap-4 items-center mt-3">
                             <button type="button" id="btn-adicionar-item-venda" class="text-xs font-bold text-blue-600 hover:text-blue-800"><i class="fas fa-plus mr-1"></i> Adicionar Item</button>
-                            <button type="button" id="btn-scan-item-venda" class="text-xs font-bold text-green-600 hover:text-green-800"><i class="fas fa-barcode mr-1"></i> Escanear Produto</button>
                         </div>
                     </div>
                     <div class="text-right pt-4">

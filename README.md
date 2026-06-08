@@ -34,14 +34,34 @@ O armazenamento de dados, autenticação de usuários e Regras de Segurança (RL
 
 ## 🗄️ Estruturação do Banco de Dados (Supabase SQL)
 
-Para que os módulos de **Clientes** e **Fornecedores** funcionem perfeitamente, é necessário aplicar as seguintes migrações de banco de dados através do editor SQL do seu console Supabase:
+Para inicializar ou atualizar a estrutura de dados no Supabase, execute as migrações a seguir através do **Editor SQL** do seu console Supabase. O banco está estruturado para uso pessoal direto e seguro utilizando políticas de RLS (Row Level Security).
 
-### 1. Tabela de Clientes
+### Esquema Consolidado (Tabelas e Relacionamentos)
+
 ```sql
+-- 1. Tabela de Lojas
+create table public.lojas (
+  id uuid default gen_random_uuid() not null primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  user_id uuid default auth.uid() not null references auth.users(id) on delete cascade,
+  nome text not null
+);
+
+-- 2. Tabela de Colaboradores
+create table public.colaboradores (
+  id uuid default gen_random_uuid() not null primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  loja_id uuid not null references public.lojas(id) on delete cascade,
+  email_convidado text not null,
+  funcao text default 'Total'::text not null
+);
+
+-- 3. Tabela de Clientes
 create table public.clientes (
   id uuid default gen_random_uuid() not null primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   user_id uuid default auth.uid() not null references auth.users(id) on delete cascade,
+  loja_id uuid references public.lojas(id) on delete cascade,
   nome text not null,
   telefone text,
   email text,
@@ -49,22 +69,12 @@ create table public.clientes (
   endereco text
 );
 
--- Habilitar RLS
-alter table public.clientes enable row level security;
-
--- Criar Políticas de Acesso
-create policy "Usuários podem gerenciar seus próprios clientes" 
-on public.clientes 
-for all 
-using (auth.uid() = user_id);
-```
-
-### 2. Tabela de Fornecedores
-```sql
+-- 4. Tabela de Fornecedores
 create table public.fornecedores (
   id uuid default gen_random_uuid() not null primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   user_id uuid default auth.uid() not null references auth.users(id) on delete cascade,
+  loja_id uuid references public.lojas(id) on delete cascade,
   nome text not null,
   telefone text,
   email text,
@@ -72,18 +82,96 @@ create table public.fornecedores (
   endereco text
 );
 
--- Habilitar RLS
-alter table public.fornecedores enable row level security;
+-- 5. Tabela de Produtos
+create table public.produtos (
+  id uuid default gen_random_uuid() not null primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  user_id uuid default auth.uid() not null references auth.users(id) on delete cascade,
+  loja_id uuid references public.lojas(id) on delete cascade,
+  categoria text not null,
+  nome text not null,
+  estoque_atual numeric default 0 not null,
+  custo_unitario numeric default 0 not null,
+  valor_venda numeric default 0 not null
+);
 
--- Criar Políticas de Acesso
-create policy "Usuários podem gerenciar seus próprios fornecedores" 
-on public.fornecedores 
-for all 
-using (auth.uid() = user_id);
-```
+-- 6. Tabela de Subcategorias
+create table public.subcategorias (
+  id uuid default gen_random_uuid() not null primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  user_id uuid default auth.uid() not null references auth.users(id) on delete cascade,
+  loja_id uuid references public.lojas(id) on delete cascade,
+  tipo text not null check (tipo in ('Entrada', 'Saída')),
+  nome text not null
+);
 
-### 3. Tabela de Mapeamento XML de Produtos
-```sql
+-- 7. Tabela de Transações
+create table public.transacoes (
+  id uuid default gen_random_uuid() not null primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  user_id uuid default auth.uid() not null references auth.users(id) on delete cascade,
+  loja_id uuid references public.lojas(id) on delete cascade,
+  tipo text not null check (tipo in ('Entrada', 'Saída')),
+  subcategoria text not null,
+  descricao text not null,
+  valor_parcela numeric not null,
+  valor_realizado numeric,
+  data_vencimento date not null,
+  data_realizacao date,
+  status text not null check (status in ('Pendente', 'Realizado')),
+  grupo_id uuid not null,
+  total_parcelas integer default 1 not null,
+  parcela_atual integer default 1 not null
+);
+
+-- 8. Tabela de Compras
+create table public.compras (
+  id uuid default gen_random_uuid() not null primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  user_id uuid default auth.uid() not null references auth.users(id) on delete cascade,
+  loja_id uuid references public.lojas(id) on delete cascade,
+  data date not null,
+  fornecedor text not null,
+  total numeric not null,
+  transacao_id uuid references public.transacoes(id) on delete set null
+);
+
+-- 9. Tabela de Itens de Compra
+create table public.compras_itens (
+  id uuid default gen_random_uuid() not null primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  compra_id uuid not null references public.compras(id) on delete cascade,
+  produto_id uuid not null references public.produtos(id) on delete cascade,
+  quantidade numeric not null,
+  custo_unitario numeric not null
+);
+
+-- 10. Tabela de Vendas
+create table public.vendas (
+  id uuid default gen_random_uuid() not null primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  user_id uuid default auth.uid() not null references auth.users(id) on delete cascade,
+  loja_id uuid references public.lojas(id) on delete cascade,
+  data date not null,
+  cliente text not null,
+  endereco text,
+  total numeric not null,
+  custo_total numeric default 0 not null,
+  transacao_id uuid references public.transacoes(id) on delete set null
+);
+
+-- 11. Tabela de Itens de Venda
+create table public.vendas_itens (
+  id uuid default gen_random_uuid() not null primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  venda_id uuid not null references public.vendas(id) on delete cascade,
+  produto_id uuid not null references public.produtos(id) on delete cascade,
+  quantidade numeric not null,
+  valor_venda numeric not null,
+  custo_unitario numeric default 0 not null
+);
+
+-- 12. Tabela de Mapeamento XML de Produtos
 create table public.xml_produto_mapeamento (
   id uuid default gen_random_uuid() not null primary key,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
@@ -93,14 +181,52 @@ create table public.xml_produto_mapeamento (
   produto_id uuid not null references public.produtos(id) on delete cascade
 );
 
--- Habilitar RLS
+-- 13. Tabela de Links de Produtos (BoaDica)
+create table public.produto_links (
+  id uuid default gen_random_uuid() not null primary key,
+  criado_em timestamp with time zone default timezone('utc'::text, now()) not null,
+  produto_id uuid not null references public.produtos(id) on delete cascade,
+  plataforma text not null,
+  url text not null
+);
+
+-- 14. Tabela de Histórico de Preços
+create table public.produto_precos_historico (
+  id uuid default gen_random_uuid() not null primary key,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  link_id uuid not null references public.produto_links(id) on delete cascade,
+  loja_name text not null,
+  preco numeric not null,
+  data_coleta timestamp with time zone default timezone('utc'::text, now()) not null
+);
+```
+
+### Configurações de Segurança (RLS - Row Level Security)
+
+Para habilitar a segurança e permitir que cada conta gerencie apenas seus próprios dados, ative o RLS e configure as políticas para as tabelas principais:
+
+```sql
+-- Ativar RLS
+alter table public.lojas enable row level security;
+alter table public.clientes enable row level security;
+alter table public.fornecedores enable row level security;
+alter table public.produtos enable row level security;
+alter table public.subcategorias enable row level security;
+alter table public.transacoes enable row level security;
+alter table public.compras enable row level security;
+alter table public.vendas enable row level security;
 alter table public.xml_produto_mapeamento enable row level security;
 
 -- Criar Políticas de Acesso
-create policy "Usuários podem gerenciar seus próprios mapeamentos XML" 
-on public.xml_produto_mapeamento 
-for all 
-using (auth.uid() = user_id);
+create policy "Gerenciar próprias lojas" on public.lojas for all using (auth.uid() = user_id);
+create policy "Gerenciar próprios clientes" on public.clientes for all using (auth.uid() = user_id);
+create policy "Gerenciar próprios fornecedores" on public.fornecedores for all using (auth.uid() = user_id);
+create policy "Gerenciar próprios produtos" on public.produtos for all using (auth.uid() = user_id);
+create policy "Gerenciar próprias subcategorias" on public.subcategorias for all using (auth.uid() = user_id);
+create policy "Gerenciar próprias transacoes" on public.transacoes for all using (auth.uid() = user_id);
+create policy "Gerenciar próprias compras" on public.compras for all using (auth.uid() = user_id);
+create policy "Gerenciar próprias vendas" on public.vendas for all using (auth.uid() = user_id);
+create policy "Gerenciar próprios mapeamentos XML" on public.xml_produto_mapeamento for all using (auth.uid() = user_id);
 ```
 
 ---

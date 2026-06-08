@@ -68,12 +68,8 @@ function renderizarTabelaColaboradores() {
             <tr class="hover:bg-slate-50 transition">
                 <td class="py-3 px-4 font-bold text-slate-700">${c.email_convidado}</td>
                 <td class="py-3 px-4">
-                    <span class="px-2 py-0.5 rounded-lg text-[10px] font-extrabold uppercase ${
-                        c.funcao === 'Total' 
-                        ? 'bg-blue-100 text-blue-700' 
-                        : (c.funcao === 'Gerente' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')
-                    }">
-                        ${c.funcao === 'Total' ? 'Total (Admin)' : (c.funcao === 'Gerente' ? 'Gerente de Loja' : 'Caixa')}
+                    <span class="px-2 py-0.5 rounded-lg text-[10px] font-extrabold uppercase bg-blue-100 text-blue-700">
+                        Acesso Total
                     </span>
                 </td>
                 <td class="py-3 px-4 text-center">${deleteButton}</td>
@@ -93,11 +89,10 @@ async function convidarColaboradorSubmit(e) {
     }
 
     const emailInput = document.getElementById('convite-email');
-    const funcaoSelect = document.getElementById('convite-funcao');
-    if (!emailInput || !funcaoSelect) return;
+    if (!emailInput) return;
 
     const email = emailInput.value.trim().toLowerCase();
-    const funcao = funcaoSelect.value;
+    const funcao = 'Total';
 
     if (email === userAtual.email) {
         mostrarToast("Você não pode convidar a si mesmo!", "warning");

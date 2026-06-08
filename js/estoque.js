@@ -16,14 +16,27 @@ function renderizarEstoque() {
     const termo = (document.getElementById('input-pesquisa-estoque')?.value || '').toLowerCase();
     const filtrados = produtos.filter(p => p.nome.toLowerCase().includes(termo) || p.categoria.toLowerCase().includes(termo));
     
+    const tfoot = document.getElementById('rodape-estoque');
     if (filtrados.length === 0) {
         tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-slate-400 font-medium text-sm">Nenhum produto encontrado.</td></tr>';
+        if (tfoot) tfoot.classList.add('hidden');
         return;
     }
+
+    let totalQtd = 0;
+    let totalCusto = 0;
+    let totalVenda = 0;
+    let totalLucro = 0;
 
     filtrados.forEach(p => {
         const lucroUn = p.valor_venda - p.custo_unitario;
         const lucroTot = lucroUn * p.estoque_atual;
+        
+        totalQtd += parseFloat(p.estoque_atual || 0);
+        totalCusto += parseFloat(p.custo_unitario || 0) * parseFloat(p.estoque_atual || 0);
+        totalVenda += parseFloat(p.valor_venda || 0) * parseFloat(p.estoque_atual || 0);
+        totalLucro += lucroTot;
+
         tbody.innerHTML += `
             <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="editarEstoque('${p.id}')">
                 <td class="py-3 px-4 font-bold text-slate-600 text-xs">${p.categoria}</td>
@@ -36,6 +49,14 @@ function renderizarEstoque() {
             </tr>
         `;
     });
+
+    if (tfoot) {
+        tfoot.classList.remove('hidden');
+        document.getElementById('total-qtd-estoque').textContent = totalQtd;
+        document.getElementById('total-custo-estoque').textContent = `R$ ${totalCusto.toFixed(2).replace('.', ',')}`;
+        document.getElementById('total-venda-estoque').textContent = `R$ ${totalVenda.toFixed(2).replace('.', ',')}`;
+        document.getElementById('total-lucro-estoque').textContent = `R$ ${totalLucro.toFixed(2).replace('.', ',')}`;
+    }
 }
 
 async function carregarHistoricoEstoque(produtoId) {

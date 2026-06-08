@@ -295,22 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inputPesquisaEstoque) {
         inputPesquisaEstoque.addEventListener('keyup', renderizarEstoque);
     }
-    const btnScanEstoque = document.getElementById('btn-scan-estoque');
-    if (btnScanEstoque) {
-        btnScanEstoque.addEventListener('click', () => {
-            if (typeof iniciarLeitorCodigoBarras === 'function') {
-                iniciarLeitorCodigoBarras((codigo) => {
-                    const input = document.getElementById('input-pesquisa-estoque');
-                    if (input) {
-                        input.value = codigo;
-                        if (typeof renderizarEstoque === 'function') {
-                            renderizarEstoque();
-                        }
-                    }
-                });
-            }
-        });
-    }
+
     const btnNovoProduto = document.getElementById('btn-novo-produto');
     if (btnNovoProduto) {
         btnNovoProduto.addEventListener('click', abrirModalEstoque);
@@ -345,27 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnNovaVenda) {
         btnNovaVenda.addEventListener('click', abrirModalVenda);
     }
-    const btnScanItemVenda = document.getElementById('btn-scan-item-venda');
-    if (btnScanItemVenda) {
-        btnScanItemVenda.addEventListener('click', () => {
-            if (typeof iniciarLeitorCodigoBarras === 'function') {
-                iniciarLeitorCodigoBarras((codigo) => {
-                    const prod = produtos.find(p => p.nome.includes(codigo) || p.categoria.includes(codigo));
-                    if (prod) {
-                        if (typeof adicionarItemVenda === 'function') {
-                            adicionarItemVenda(prod.id, 1, prod.valor_venda);
-                            if (typeof calcularTotalVenda === 'function') {
-                                calcularTotalVenda();
-                            }
-                            mostrarToast(`Produto "${prod.nome}" adicionado!`, "success");
-                        }
-                    } else {
-                        mostrarToast(`Produto com código "${codigo}" não encontrado no estoque.`, "warning");
-                    }
-                });
-            }
-        });
-    }
+
 
     // 9. Aba Relatórios
     const relatorioMes = document.getElementById('relatorio-mes');
